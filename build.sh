@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+# Build Galaxy Map Normandy from this repo's sources and the player's own game files, then put the M3 mod folder in
+# dist/Galaxy Map Normandy (moddesc.ini at its root). Install that folder with ME3Tweaks Mod Manager, game closed.
+#   ./build.sh            build everything
+# Runs in WSL. The tools are Windows programs: lectool and mele-mcp are built from the toolkit (MELE_TOOLKIT) into
+# build/tools, vgmstream decodes the LE3 travel sound. Settings come from the environment or from build.env (not in
+# git, see build.env.example). Nothing is written outside build/ and dist/; the game files are only read.
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$HERE/build.env" ]]; then . "$HERE/build.env"; fi
+
+TOOLKIT="${MELE_TOOLKIT:-$HERE/../../mele-toolkit}"
+DOTNET="${MELE_DOTNET:-dotnet.exe}"
+VGMSTREAM="${MELE_VGMSTREAM:-vgmstream-cli}"
+LE_DIR="${MELE_LE_DIR:?set MELE_LE_DIR to the Legendary Edition folder, as a Windows path}"
+LE1="$LE_DIR\\Game\\ME1\\BioGame\\CookedPCConsole"
+LE3="$LE_DIR\\Game\\ME3\\BioGame\\CookedPCConsole"
+BUILD="$HERE/build"
+DIST="$HERE/dist/Galaxy Map Normandy"
+COOKED="$DIST/DLC_MOD_GalaxyMapNormandy/CookedPCConsole"
+
+# The three LE3 sources of Play_gui_galaxy_travel_start, in SFXGame.pcc's Wwise_Generic_Galaxy_Map bank: the whoosh,
+# then the two layers of the engine loop (docs/09 §5.2).
+BANK_UINDEX=53327
+WHOOSH=256246750
+LOOP_A=191335730
+LOOP_B=634254545
+# The SR-1 static mesh in BIOA_ICE20_11_LAY.pcc (ice20_normandy).
+SR1_UINDEX=31
+
+win() { wslpath -w "$1"; }
+die() { echo "build.sh: $*" >&2; exit 1; }
+
+for t in python3 ffmpeg git; do command -v "$t" >/dev/null || die "$t not found"; done
+command -v "$DOTNET" >/dev/null || die "$DOTNET not found: set MELE_DOTNET to the Windows dotnet.exe (.NET 8 SDK or later)"
+command -v "$VGMSTREAM" >/dev/null || die "$VGMSTREAM not found: set MELE_VGMSTREAM (Legendary Explorer ships exec/vgmstream/vgmstream.exe)"
+[[ -f "$TOOLKIT/tools/lectool/lectool.csproj" ]] || die "no toolkit at $TOOLKIT: set MELE_TOOLKIT to a mele-toolkit checkout"
+[[ -f "$TOOLKIT/tools/mele-mcp/external/LegendaryExplorer/LegendaryExplorer/LegendaryExplorerCore/LegendaryExplorerCore.csproj" ]] \
+    || die "the toolkit's LEC submodule is missing: git -C '$TOOLKIT' submodule update --init"
+
+mkdir -p "$BUILD/tools" "$BUILD/sound"
+
+# Tools: rebuilt when the toolkit's commit or working tree changed since the last build.
+stamp="$(git -C "$TOOLKIT" rev-parse HEAD) $(git -C "$TOOLKIT" status --porcelain | md5sum | cut -c1-8)"
+build_tool() {    # build_tool <name> <project dir> <csproj> <output file>
+    local out="$BUILD/tools/$1"
+    if [[ -f "$out.stamp" && "$(cat "$out.stamp")" == "$stamp" ]]; then return; fi
+    echo "== building $1"
+    rm -rf "$out"
+    (cd "$2" && "$DOTNET" build "$3" -c Release -nologo -v q -o "$(win "$out")" | tr -d '\r' | grep -E ' error ' | sort -u) || true
+    [[ -f "$out/$4" ]] || die "$1 did not build"
+    chmod +x "$out/$4"    # a file Windows writes on the WSL disk has no exec bit
+    echo "$stamp" > "$out.stamp"
+}
+build_tool lectool "$TOOLKIT/tools/lectool" lectool.csproj lectool.exe
+build_tool mele-mcp "$TOOLKIT/tools/mele-mcp" src/MeleMcp/MeleMcp.csproj MeleMcp.dll
+LECTOOL="$BUILD/tools/lectool/lectool.exe"
+
+# lectool <command> <args>: its output lands in $OUT; LEC's own log (stderr) is shown only on a failure.
+OUT="$BUILD/lectool.out"
+lectool() {
+    if ! MELE_LE_DIR="$LE_DIR" WSLENV="MELE_LE_DIR:LECGAME:WEMDIR:WEMIDS${WSLENV:+:$WSLENV}" "$LECTOOL" "$@" \
+            > "$OUT.raw" 2> "$BUILD/lectool.err"; then
+        tr -d '\r' < "$OUT.raw"; tr -d '\r' < "$BUILD/lectool.err" | tail -20 >&2
+        die "lectool $1 failed"
+    fi
+    tr -d '\r' < "$OUT.raw" > "$OUT"
+}
+
+# 1. Startup_MOD_GalaxyMapNormandy.pcc: the two classes, loaded at startup through AutoLoad.ini.
+echo "== classes"
+lectool compileclass "$(win "$BUILD/Startup_MOD_GalaxyMapNormandy.pcc")" GalaxyMapNormandy \
+    "$(win "$HERE/src/GalaxyMapNormandyShipLight.uc")" "$(win "$HERE/src/GalaxyMapNormandyDirector.uc")"
+grep -E '^log:|\sClass\s' "$OUT" || true
+
+# 2. GalaxyMapNormandy_NOR10.pcc: an empty level with one director actor, sideloaded with the Normandy by LE1CP.
+echo "== level"
+rm -f "$BUILD/GalaxyMapNormandy_NOR10.pcc"
+MELE_DOTNET="$DOTNET" MELE_DLL="$(win "$BUILD/tools/mele-mcp/MeleMcp.dll")" MELE_LE_DIR="$LE_DIR" \
+    python3 -I "$TOOLKIT/tools/mele-mcp/scripts/mcp_call.py" level_new \
+    "$(python3 -I -c 'import json, sys; print(json.dumps({"path": sys.argv[1]}))' "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")")" \
+    > "$BUILD/level_new.json" || { cat "$BUILD/level_new.json" >&2; die "level_new failed"; }
+lectool addactor "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")" GalaxyMapNormandy GalaxyMapNormandyDirector
+cat "$OUT"
+
+# 3. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix as in docs/09 §5.2.
+echo "== sound"
+S="$BUILD/sound"
+rm -f "$S"/*
+LECGAME=LE3 WEMDIR="$(win "$S")" WEMIDS="$WHOOSH,$LOOP_A,$LOOP_B" lectool wwise "$LE3\\SFXGame.pcc" "$BANK_UINDEX"
+grep -E '^bank .*Wwise_Generic_Galaxy_Map' "$OUT" \
+    || die "SFXGame.pcc export $BANK_UINDEX is not the Wwise_Generic_Galaxy_Map bank"
+for id in "$WHOOSH" "$LOOP_A" "$LOOP_B"; do
+    [[ -f "$S/$id.wem" ]] || die "WEM $id was not in the bank"
+    if [[ "$VGMSTREAM" == *.exe ]]; then
+        "$VGMSTREAM" -i -o "$(win "$S/$id.wav")" "$(win "$S/$id.wem")" > /dev/null
+    else
+        "$VGMSTREAM" -i -o "$S/$id.wav" "$S/$id.wem" > /dev/null
+    fi
+done
+ff() { ffmpeg -v error -y "$@"; }
+# Whoosh: layer gain 0.8, then mono (its donor wave is mono).
+ff -i "$S/$WHOOSH.wav" -af "volume=0.8" -c:a pcm_s16le "$S/whoosh_stereo.wav"
+ff -i "$S/whoosh_stereo.wav" -ac 1 -c:a pcm_s16le "$S/travel_whoosh.wav"
+# Loop: LOOP_A cut at its last sound; LOOP_B without its encoder padding, stretched to the same length, on both
+# sides; mixed at 0.8 each.
+ff -i "$S/$LOOP_A.wav" -af "atrim=end_sample=111744" "$S/loop_a.wav"
+ff -i "$S/$LOOP_B.wav" -af "atrim=end_sample=97088,atempo=0.86885,pan=stereo|c0=c0|c1=c0,atrim=end_sample=111744,apad=whole_len=111744" "$S/loop_b.wav"
+ff -i "$S/loop_a.wav" -i "$S/loop_b.wav" \
+    -filter_complex "[0][1]amix=inputs=2:normalize=0,volume=0.8,atrim=end_sample=111744" -c:a pcm_s16le "$S/loop_mix.wav"
+# Seamless loop: the last 20 ms are crossfaded into the first 20 ms and cut off.
+python3 -I - "$S/loop_mix.wav" "$S/travel_loop.wav" <<'EOF'
+import struct, sys, wave
+src, dst = sys.argv[1:3]
+with wave.open(src) as w:
+    n, ch, rate = w.getnframes(), w.getnchannels(), w.getframerate()
+    d = struct.unpack('<%dh' % (n * ch), w.readframes(n))
+xf = int(rate * 0.02)
+m = n - xf
+out = []
+for c in range(ch):
+    a = list(d[c::ch])
+    head = a[:m]
+    for i in range(xf):
+        t = i / xf
+        head[i] = int(round(a[i] * t + a[m + i] * (1 - t)))
+    out.append(head)
+with wave.open(dst, 'wb') as w:
+    w.setnchannels(ch); w.setsampwidth(2); w.setframerate(rate)
+    w.writeframes(struct.pack('<%dh' % (m * ch), *[s for frame in zip(*out) for s in frame]))
+EOF
+for f in travel_whoosh travel_loop; do ff -i "$S/$f.wav" -c:a libvorbis -q:a 8 "$S/$f.ogg"; done
+frames() { python3 -I -c 'import sys, wave; print(wave.open(sys.argv[1]).getnframes())' "$1"; }
+
+# 4. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues) and the SR-1 mesh.
+echo "== sfx"
+SFX="$(win "$BUILD/GalaxyMapNormandy_SFX.pcc")"
+rm -f "$BUILD/GalaxyMapNormandy_SFX.pcc"
+lectool buildsound "$LE1\\snd_gui.pcc" c_snd_guiswish "$(win "$S/travel_whoosh.ogg")" "$(frames "$S/travel_whoosh.wav")" 1 44100 \
+    "$SFX" c_travel_whoosh travel_whoosh 0.5
+grep -E '^wave' "$OUT" || true
+lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$S/travel_loop.ogg")" "$(frames "$S/travel_loop.wav")" 2 44100 \
+    "$SFX" c_travel_loop travel_loop 0.5 --loop
+grep -E '^wave' "$OUT" || true
+lectool portmesh "$LE1\\BIOA_ICE20_11_LAY.pcc" "$SR1_UINDEX" "$SFX" SR1_Normandy
+if grep -E 'BROKEN' "$OUT"; then die "broken material in the SR-1 port"; fi
+
+# 5. The M3 mod folder.
+echo "== dist"
+rm -rf "$DIST"
+mkdir -p "$DIST"
+cp -r "$HERE/mod/." "$DIST/"
+cp "$BUILD"/{Startup_MOD_GalaxyMapNormandy,GalaxyMapNormandy_NOR10,GalaxyMapNormandy_SFX}.pcc "$COOKED/"
+echo "built $(win "$DIST") (modver $(sed -n 's/^modver=//p' "$HERE/mod/moddesc.ini" | tr -d '\r'))"
+ls -l "$COOKED" | tail -n +2
