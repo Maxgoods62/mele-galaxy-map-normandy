@@ -1,0 +1,2 @@
+[BioGame.ini SFXGame.SideloaderFramework]
++Levels=(LevelName="GalaxyMapNormandy_NOR10", LoadIfPrefix=("BIOA_NOR10"))

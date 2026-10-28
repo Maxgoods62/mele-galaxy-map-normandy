@@ -1,0 +1,8 @@
+*.pcc
+*.wav
+*.ogg
+*.wem
+*.7z
+ini*/
+build/
+dist/
