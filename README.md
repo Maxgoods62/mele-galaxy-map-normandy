@@ -26,8 +26,8 @@ travel sound), so none are committed. They go in `mod/DLC_MOD_GalaxyMapNormandy/
 | `GalaxyMapNormandy_NOR10.pcc` | mele-mcp `level_new`, then `lectool addactor <level.pcc> GalaxyMapNormandy GalaxyMapNormandyDirector` |
 | `GalaxyMapNormandy_SFX.pcc` | `lectool portmesh` (the SR-1 from `BIOA_ICE20_11_LAY`) and `lectool buildsound` (docs/09 §5.1, §5.2) |
 
-`lectool` is a helper built on LegendaryExplorerCore; it is not in this repo yet. Install the mod with ME3Tweaks Mod
-Manager while the game is closed.
+`lectool` is in [tools/lectool](../../tools/lectool/README.md). Install the mod with ME3Tweaks Mod Manager while the
+game is closed.
 
 ## Tuning
 
