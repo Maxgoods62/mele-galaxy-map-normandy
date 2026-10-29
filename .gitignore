@@ -7,4 +7,5 @@ ini*/
 build/
 dist/
 build.env
-.claude/settings.local.json
+.mcp.json
+.claude/

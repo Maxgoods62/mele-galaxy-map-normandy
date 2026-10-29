@@ -156,6 +156,7 @@ dist/Galaxy Map Normandy/
 | `build/GalaxyMapNormandy_SFX.pcc` | the two cues and the SR-1 mesh |
 | `build/lectool.out`, `build/lectool.out.raw`, `build/lectool.err` | the last lectool command's output, and LegendaryExplorerCore's log |
 | `dist/Galaxy Map Normandy/` | the M3 mod folder |
+| `dist/GalaxyMapNormandy-v<modver>.zip`, `dist/SHA256SUMS` | the zip that `package.sh` writes, and its checksum ([Package](#package)) |
 
 The startup package rebuilds byte for byte from the same sources. The level and the SFX package come out with
 different bytes on every run (the package GUID, the Ogg stream serial) and the same content. A comment-only change in a
@@ -165,6 +166,16 @@ different bytes on every run (the package GUID, the Ogg stream serial) and the s
 
 Edit `src/*.uc` or `mod/`, run `./build.sh` again and apply the new `dist/Galaxy Map Normandy` with M3, game closed.
 To try values before you rebuild, see [tuning.md](tuning.md).
+
+## Package
+
+`./package.sh` runs `build.sh`, then writes `dist/GalaxyMapNormandy-v<modver>.zip` (the `Galaxy Map Normandy` folder,
+with `NOTICE` and `LICENSE` added to it) and its checksum in `dist/SHA256SUMS`. With `--no-build` it zips the folder
+already in `dist/`, and stops if a file there is missing, added, or differs from `mod/`. M3 imports the zip if you drop
+it on its window, with a warning that the mod was not deployed through M3. The zip holds content derived from your game
+files ([NOTICE](../NOTICE)), so keep it for your own tests. The Nexus archive is the 7z that M3 makes: turn on Developer
+mode in M3's settings, then use Mod Utils > Deploy mod to 7z file for distribution, which checks the mod first and needs
+M3's backup of LE1.
 
 ## Troubleshooting
 

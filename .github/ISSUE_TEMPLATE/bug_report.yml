@@ -1,0 +1,48 @@
+name: Bug report
+description: Something goes wrong with Galaxy Map Normandy, in the game or in the install.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the galaxy map on the Normandy
+        2. Go to a cluster with the mouse
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Mod version
+      description: The `modver` of the mod you installed.
+      placeholder: "0.14"
+    validations:
+      required: true
+  - type: input
+    id: le1cp
+    attributes:
+      label: LE1 Community Patch version
+      placeholder: "2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: The other mods installed in LE1.
+  - type: textarea
+    id: log
+    attributes:
+      label: M3 log or screenshot
+      description: >-
+        For an install problem, upload M3's log (Help > Mod Manager Logs & Game Diagnostics) and paste the link.
+        For a problem in the game, a screenshot helps (drag it here).

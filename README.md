@@ -93,6 +93,7 @@ their defaults at the end of [`src/GalaxyMapNormandyDirector.uc`](src/GalaxyMapN
 | `src/GalaxyMapNormandyShipLight.uc` | the ship's own sky light (lighting channel `Unnamed_6`) |
 | `mod/` | the M3 mod folder without its packages: `moddesc.ini`, `AutoLoad.ini`, the Sideloader config `ConfigDelta-GalaxyMapNormandy.m3cd` |
 | `build.sh`, `build.env.example` | the build ([docs/building.md](docs/building.md)) |
+| `package.sh` | zips the built mod folder for local tests ([Package](docs/building.md#package)) |
 | [`docs/ASSETS.md`](docs/ASSETS.md) | which game files the build reads and what it does with them |
 
 The three `.pcc` packages are build output, and `GalaxyMapNormandy_SFX.pcc` holds BioWare content, so none of them is
