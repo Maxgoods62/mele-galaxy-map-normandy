@@ -6,7 +6,7 @@ Class GalaxyMapNormandyDirector extends Actor
 // when it starts to fly, and an engine loop that lasts as long as it flies, then fades out. The ship brings its own
 // sky light (GalaxyMapNormandyShipLight): nothing else lights the hub's persistent level out in the map scene.
 // One of these sits in GalaxyMapNormandy_NOR10, a level LE1CP's Sideloader loads with the Normandy's levels, so the
-// vanilla galaxy map handler stays in place (a handler subclass broke zooming out of the planet view, S7).
+// vanilla galaxy map handler stays in place (a handler subclass broke zooming out of the planet view).
 // With the mouse it plays like ME2: an arrow pointer moves freely, and holding the left button flies the ship (the map
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
 

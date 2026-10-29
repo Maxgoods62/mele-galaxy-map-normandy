@@ -21,7 +21,7 @@ DIST="$HERE/dist/Galaxy Map Normandy"
 COOKED="$DIST/DLC_MOD_GalaxyMapNormandy/CookedPCConsole"
 
 # The three LE3 sources of Play_gui_galaxy_travel_start, in SFXGame.pcc's Wwise_Generic_Galaxy_Map bank: the whoosh,
-# then the two layers of the engine loop (docs/09 §5.2).
+# then the two layers of the engine loop (docs/ASSETS.md).
 BANK_UINDEX=53327
 WHOOSH=256246750
 LOOP_A=191335730
@@ -33,7 +33,7 @@ win() { wslpath -w "$1"; }
 die() { echo "build.sh: $*" >&2; exit 1; }
 
 for t in python3 ffmpeg git; do command -v "$t" >/dev/null || die "$t not found"; done
-command -v "$DOTNET" >/dev/null || die "$DOTNET not found: set MELE_DOTNET to the Windows dotnet.exe (.NET 8 SDK or later)"
+command -v "$DOTNET" >/dev/null || die "$DOTNET not found: set MELE_DOTNET to the Windows dotnet.exe (.NET SDK 10.0.402 or later, as the toolkit's global.json asks)"
 command -v "$VGMSTREAM" >/dev/null || die "$VGMSTREAM not found: set MELE_VGMSTREAM (Legendary Explorer ships exec/vgmstream/vgmstream.exe)"
 [[ -f "$TOOLKIT/tools/lectool/lectool.csproj" ]] || die "no toolkit at $TOOLKIT: set MELE_TOOLKIT to a mele-toolkit checkout"
 [[ -f "$TOOLKIT/tools/mele-mcp/external/LegendaryExplorer/LegendaryExplorer/LegendaryExplorerCore/LegendaryExplorerCore.csproj" ]] \
@@ -84,7 +84,7 @@ MELE_DOTNET="$DOTNET" MELE_DLL="$(win "$BUILD/tools/mele-mcp/MeleMcp.dll")" MELE
 lectool addactor "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")" GalaxyMapNormandy GalaxyMapNormandyDirector
 cat "$OUT"
 
-# 3. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix as in docs/09 §5.2.
+# 3. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix them (docs/ASSETS.md).
 echo "== sound"
 S="$BUILD/sound"
 rm -f "$S"/*

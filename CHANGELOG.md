@@ -1,0 +1,98 @@
+# Changelog
+
+No version has been released yet. Every version below was a development build, made and installed in the game on
+2026-10-28. The version number is `modver` in `mod/moddesc.ini`.
+
+## Unreleased
+
+- `build.sh` builds the mod from this repository and the player's own game files. The mod itself does not change: a
+  rebuild has the same exports and the same decoded sound as v0.14.
+- `moddesc.ini`: a description for players, the LE1 Community Patch 2.0 or later as the required DLC, and this
+  repository as the mod site.
+- In game: the rebuilt mod works.
+
+## v0.14
+
+- The mouse's virtual stick caps come from live tests: `MouseStickCluster` 1.75, so the ship is faster at cluster
+  level, and `MouseStickSystem` 0.85.
+
+## v0.13
+
+- Virtual stick: while the left button is held, the mouse feeds a virtual controller stick, from the ship toward the
+  arrow, into the game's own cursor control. The mouse now moves the ship exactly as the controller does.
+- The v0.12 heading model stays in the code behind `bVirtualStick`.
+- In game: right in system view, too slow at cluster level.
+
+## v0.12
+
+- Heading model: the nose turns toward the arrow at a limited rate (`FlyTurnRate`) and the ship thrusts along it, so a
+  reversal is a tight U-turn.
+- Smaller ship at cluster level (`ShipScale` 0.08) and a lower cluster speed (`FlyClusterSpeed` 150).
+- In game: turns were better, but the mouse still did not feel like the controller.
+
+## v0.11
+
+- The arrow reads the mouse every frame and is kept as a screen position, so it moves smoothly. The vanilla game only
+  passes the mouse on when its counts change from one frame to the next.
+- In game: almost right in system view. Reversals slid through a stop, and at cluster level the ship was too fast and
+  too big.
+
+## v0.10
+
+- While another panel has focus, such as the travel prompt, the arrow is hidden and the left button works as in
+  vanilla.
+- In game: the travel prompt worked. The arrow felt laggy, and the ship was too fast.
+
+## v0.9
+
+- ME2 mouse control: an arrow pointer; holding the left button flies the cursor toward it; a click shorter than 0.25 s
+  selects. The left button's own binding is cleared at cluster and system level.
+- In game: the travel prompt could not be clicked.
+
+## v0.8
+
+- The raw mouse counts are scaled (`MouseScale` 0.4) and capped (`MouseMaxRate`) before the game moves the cursor.
+- In game: better, but a far target still took several swipes.
+
+## v0.7
+
+- The controller stick fields are rescaled while the mouse moves, to slow the mouse down.
+- In game: no change, because the mouse does not go through those fields.
+
+## v0.6
+
+- `bLoopRestart` is on by default: the engine loop restarts on a second sound with a crossfade, so it lasts as long as
+  the ship flies.
+- Smaller ship in system view (`SystemShipScale` 0.05).
+- The ISACT loop flag of v0.5 is gone.
+- The ship's speed is capped (`ClusterMaxSpeed` 1300, `SystemMaxSpeed` 250).
+- In game: the sound worked. With the mouse, the hidden cursor and the system view still moved much too fast.
+
+## v0.5
+
+- The ship has its own sky light (`GalaxyMapNormandyShipLight`, lighting channel `Unnamed_6`).
+- Turns in system view are twice as fast (`SystemTurnSpeed` 12). `FullSpeed` is 550.
+- An ISACT loop flag on the loop's wave.
+- New `bLoopRestart` (off by default) restarts the engine loop with a crossfade.
+- In game: the ship was much better lit. The loop flag did not make the loop repeat; `bLoopRestart`, switched on live,
+  did.
+
+## v0.4
+
+- The cursor ring's mesh is hidden while the ship shows.
+- The sound is split as in ME3: a whoosh when the ship starts to fly after a rest of at least 0.6 s, and an engine loop
+  that fades in, follows the ship's speed in pitch and volume, and fades out when it stops.
+- In game: the loop stopped after about 3 s, the ship looked nearly black, and turns felt rough in system view.
+
+## v0.3
+
+- The code moved into an actor, `GalaxyMapNormandyDirector`, in a small level, `GalaxyMapNormandy_NOR10`, that the LE1
+  Community Patch's Sideloader loads with the Normandy. The vanilla galaxy map handler stays, so zooming out of the
+  planet view works again. The mod requires the LE1 Community Patch from this version on.
+- In game: the ship and its sound showed up at cluster level. The orange ring still showed, and the travel sound
+  played as one 2.5 s clip on every small move.
+
+## v0.2
+
+- First script build: a subclass of the galaxy map's handler ran the code every frame.
+- In game: zooming out of the planet view stopped working.

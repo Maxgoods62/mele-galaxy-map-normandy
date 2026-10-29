@@ -1,0 +1,16 @@
+Galaxy Map Normandy
+
+Mass Effect, Mass Effect Legendary Edition and all of their content belong to Electronic Arts and BioWare. This mod is
+not affiliated with or endorsed by Electronic Arts or BioWare.
+
+This repository contains no game files. Its own files (the UnrealScript sources, the mod's .ini and .m3cd files, the
+build script and the documentation) are under the GNU General Public License v3.0, in LICENSE.
+
+build.sh reads game files from the player's own installed copy of Mass Effect Legendary Edition: the SR-1 Normandy
+model from LE1's BIOA_ICE20_11_LAY.pcc, two interface sound cues from LE1's snd_gui.pcc (used as templates), and the
+Mass Effect 3 galaxy map travel sound from LE3's SFXGame.pcc. docs/ASSETS.md lists what it takes and what it does
+with each file.
+
+The built packages contain content derived from those files: GalaxyMapNormandy_SFX.pcc holds the model and the
+sounds. That content is not covered by the GPL. The built packages are for personal use with a legitimate copy of the
+game.
