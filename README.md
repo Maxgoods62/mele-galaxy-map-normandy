@@ -108,9 +108,9 @@ in git.
 - The LE1 Community Patch team, for the Sideloader that loads the mod's level.
 - ME3Tweaks: ME3Tweaks Mod Manager, and [Legendary Explorer](https://github.com/ME3Tweaks/LegendaryExplorer), whose
   LegendaryExplorerCore library the build tools use.
-- [mele-toolkit](https://github.com/Maxgoods62/mele-toolkit): the build tools
-  ([lectool](https://github.com/Maxgoods62/mele-toolkit/blob/main/tools/lectool/README.md) and mele-mcp) and the
-  in-game bridge used for tuning.
+- [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit): the build tools
+  ([lectool](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/tools/lectool/README.md) and mele-mcp)
+  and the in-game bridge used for tuning.
 - vgmstream and FFmpeg, which decode and encode the sound.
 
 ## License

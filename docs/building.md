@@ -12,14 +12,14 @@
 | `python3`, `ffmpeg` and `git` in WSL | | `build.sh` stops if one of them is not on `PATH`. `ffmpeg` needs the `libvorbis` encoder. |
 | The Windows .NET SDK 10.0.402 or a later 10.0 SDK, and the .NET 8 runtime | `MELE_DOTNET` | The toolkit's `global.json` files pin SDK 10.0.402 (`rollForward: latestFeature`). lectool and mele-mcp target `net8.0-windows` and run on .NET 8. The first build restores NuGet packages. |
 | vgmstream | `MELE_VGMSTREAM` | `vgmstream-cli` in WSL, or the Windows `vgmstream.exe` that Legendary Explorer ships in `exec/vgmstream/`. |
-| A [mele-toolkit](https://github.com/Maxgoods62/mele-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version. |
+| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version. |
 | LE1 and LE3 in one Legendary Edition folder | `MELE_LE_DIR` | The build reads LE1's `snd_gui.pcc` and `BIOA_ICE20_11_LAY.pcc` and LE3's `SFXGame.pcc` ([ASSETS.md](ASSETS.md)). |
 
 To get the toolkit:
 
 ```bash
-git clone https://github.com/Maxgoods62/mele-toolkit.git
-git -C mele-toolkit submodule update --init
+git clone https://github.com/Maxgoods62/mele-maxgoods-toolkit.git
+git -C mele-maxgoods-toolkit submodule update --init
 ```
 
 ## Settings
@@ -36,7 +36,7 @@ cp build.env.example build.env
 MELE_LE_DIR='C:\Program Files (x86)\Steam\steamapps\common\Mass Effect Legendary Edition'
 MELE_DOTNET='/mnt/c/Program Files/dotnet/dotnet.exe'
 MELE_VGMSTREAM='/mnt/c/<ME3Tweaks Mod Manager data>/ExternalTools/Legendary Explorer/exec/vgmstream/vgmstream.exe'
-# MELE_TOOLKIT=../../mele-toolkit   # a mele-toolkit checkout (default: ../../mele-toolkit from build.sh's folder)
+# MELE_TOOLKIT=../../mele-maxgoods-toolkit   # a mele-maxgoods-toolkit checkout (default: ../../mele-maxgoods-toolkit from build.sh's folder)
 ```
 
 `build.sh` sources `build.env` before it applies its defaults, so a value in `build.env` replaces the same variable
@@ -47,7 +47,7 @@ from the environment.
 | `MELE_LE_DIR` | none: `build.sh` stops without it | The Legendary Edition folder (the one that holds `Game\ME1` and `Game\ME3`), as a Windows path |
 | `MELE_DOTNET` | `dotnet.exe` on `PATH` | The Windows `dotnet.exe`, as a WSL path |
 | `MELE_VGMSTREAM` | `vgmstream-cli` | vgmstream. A path that ends in `.exe` gets Windows paths for its files. |
-| `MELE_TOOLKIT` | `../../mele-toolkit`, from this repository's folder | A mele-toolkit checkout. The default fits a layout with `<folder>/mele-toolkit` and `<folder>/mods/galaxy-map-normandy`. A relative path you set is read from the folder you run `build.sh` in, so an absolute path is safer. |
+| `MELE_TOOLKIT` | `../../mele-maxgoods-toolkit`, from this repository's folder | A mele-maxgoods-toolkit checkout. The default fits a layout with `<folder>/mele-maxgoods-toolkit` and `<folder>/mods/galaxy-map-normandy`. A relative path you set is read from the folder you run `build.sh` in, so an absolute path is safer. |
 
 ## Run
 
@@ -188,7 +188,7 @@ set.
 | `python3 not found`, `ffmpeg not found`, `git not found` | Install it in WSL. |
 | `dotnet.exe not found: set MELE_DOTNET to the Windows dotnet.exe (.NET 8 SDK or later)` | Set `MELE_DOTNET` to the WSL path of `dotnet.exe`. The SDK it runs must satisfy the toolkit's `global.json` (10.0.402 or a later 10.0 SDK), whatever the message says. |
 | `vgmstream-cli not found: set MELE_VGMSTREAM (Legendary Explorer ships exec/vgmstream/vgmstream.exe)` | Install `vgmstream-cli` in WSL, or set `MELE_VGMSTREAM` to a `vgmstream.exe`. |
-| `no toolkit at <path>: set MELE_TOOLKIT to a mele-toolkit checkout` | Clone mele-toolkit and set `MELE_TOOLKIT` to it. |
+| `no toolkit at <path>: set MELE_TOOLKIT to a mele-maxgoods-toolkit checkout` | Clone mele-maxgoods-toolkit and set `MELE_TOOLKIT` to it. |
 | `the toolkit's LEC submodule is missing: git -C '<path>' submodule update --init` | Run the command it shows. |
 | `lectool did not build`, `mele-mcp did not build` | The compiler's error lines are printed above it. Check the SDK version, network access for the NuGet restore, and the submodule. |
 | `lectool <command> failed` | lectool's output and the last 20 lines of LegendaryExplorerCore's log are printed above it; the full log is `build/lectool.err`. Check that `MELE_LE_DIR` is the right folder and that the game files are there. |

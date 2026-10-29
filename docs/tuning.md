@@ -8,10 +8,11 @@ run `./build.sh` and apply the mod again with M3 ([building.md](building.md)).
 ## Changing values in a running game
 
 mele-mcp's `live_set` tool writes a property of a live object through `MeleBridge.asi`, so you can try a value with the
-map open and see the effect at once. Both come from [mele-toolkit](https://github.com/Maxgoods62/mele-toolkit).
-`MeleBridge.asi` has no prebuilt download; the
-[mele-bridge README](https://github.com/Maxgoods62/mele-toolkit/blob/main/tools/mele-bridge/README.md) shows how to
-build and install it.
+map open and see the effect at once. Both come from
+[mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit). `MeleBridge.asi` has no prebuilt
+download; the
+[mele-bridge README](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/tools/mele-bridge/README.md)
+shows how to build and install it.
 
 The director is this object while a Normandy level is loaded:
 

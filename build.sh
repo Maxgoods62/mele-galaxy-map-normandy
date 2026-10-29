@@ -10,7 +10,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -f "$HERE/build.env" ]]; then . "$HERE/build.env"; fi
 
-TOOLKIT="${MELE_TOOLKIT:-$HERE/../../mele-toolkit}"
+TOOLKIT="${MELE_TOOLKIT:-$HERE/../../mele-maxgoods-toolkit}"
 DOTNET="${MELE_DOTNET:-dotnet.exe}"
 VGMSTREAM="${MELE_VGMSTREAM:-vgmstream-cli}"
 LE_DIR="${MELE_LE_DIR:?set MELE_LE_DIR to the Legendary Edition folder, as a Windows path}"
@@ -35,7 +35,7 @@ die() { echo "build.sh: $*" >&2; exit 1; }
 for t in python3 ffmpeg git; do command -v "$t" >/dev/null || die "$t not found"; done
 command -v "$DOTNET" >/dev/null || die "$DOTNET not found: set MELE_DOTNET to the Windows dotnet.exe (.NET SDK 10.0.402 or later, as the toolkit's global.json asks)"
 command -v "$VGMSTREAM" >/dev/null || die "$VGMSTREAM not found: set MELE_VGMSTREAM (Legendary Explorer ships exec/vgmstream/vgmstream.exe)"
-[[ -f "$TOOLKIT/tools/lectool/lectool.csproj" ]] || die "no toolkit at $TOOLKIT: set MELE_TOOLKIT to a mele-toolkit checkout"
+[[ -f "$TOOLKIT/tools/lectool/lectool.csproj" ]] || die "no toolkit at $TOOLKIT: set MELE_TOOLKIT to a mele-maxgoods-toolkit checkout"
 [[ -f "$TOOLKIT/tools/mele-mcp/external/LegendaryExplorer/LegendaryExplorer/LegendaryExplorerCore/LegendaryExplorerCore.csproj" ]] \
     || die "the toolkit's LEC submodule is missing: git -C '$TOOLKIT' submodule update --init"
 
