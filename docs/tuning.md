@@ -10,15 +10,19 @@ run `./build.sh` and apply the mod again with M3 ([building.md](building.md)).
 The Galaxy Map Normandy page of the LE1 Community Patch's Mod Settings Menu multiplies some of the defaults below. The
 director reads the multipliers each time the map opens (`ReadSettings`).
 
-| Setting (cluster / system) | Multiplies | Gamer profile key (cluster, system) |
+| Setting (cluster / system) | Multiplies | `IntStats` slot (cluster, system) |
 |---|---|---|
-| Flight speed | `ClusterFlightSpeed` / `SystemFlightSpeed`, which scale the galaxy camera's `m_fMovementScalar` (the game's own cursor speed, for the controller and the mouse alike; put back when the map closes or shows the galaxy level or a planet), `ClusterMaxSpeed` / `SystemMaxSpeed`, `FullSpeed`, `FlyClusterSpeed` / `FlySystemSpeed` | 8429, 8433 |
-| Turn rate | `TurnSpeed` / `SystemTurnSpeed` | 8430, 8434 |
-| Ship response | `ChaseSpeed` / `SystemChaseSpeed` | 8431, 8435 |
-| Ship size | `ShipScale` / `SystemShipScale` | 8432, 8436 |
+| Flight speed | `ClusterFlightSpeed` / `SystemFlightSpeed`, which scale the galaxy camera's `m_fMovementScalar` (the game's own cursor speed, for the controller and the mouse alike; put back when the map closes or shows the galaxy level or a planet), `ClusterMaxSpeed` / `SystemMaxSpeed`, `FullSpeed`, `FlyClusterSpeed` / `FlySystemSpeed` | 100, 104 |
+| Turn rate | `TurnSpeed` / `SystemTurnSpeed` | 101, 105 |
+| Ship response | `ChaseSpeed` / `SystemChaseSpeed` | 102, 106 |
+| Ship size | `ShipScale` / `SystemShipScale` | 103, 107 |
 
-A value is stored as a percent in the gamer profile's `IntVariables` list (`PMIndex` = the key, `Value` = the percent;
-0 or no entry = 100). `GalaxyMapNormandySettings` reads and writes it, and the menu saves the profile after each change.
+A value is stored as a percent in the gamer profile's `IntStats` list (0 or no slot = 100). The LE1 Community Patch keeps
+its FOV in slot 0 and nothing else in the game uses the list, so this mod takes slots 100 to 107, away from the low
+slots. `GalaxyMapNormandySettings` reads and writes the slots, and the menu writes the profile file after each change
+through the Options screen's save (`BioSFHandler_PCOptions.SaveProfile`), as LE1CP does for its FOV. The engine's own
+profile save command (`SFXEngine.QueueSaveGameCommand`) only fills an in-memory record, and the game writes the file
+on its own only now and then.
 
 ## Changing values in a running game
 

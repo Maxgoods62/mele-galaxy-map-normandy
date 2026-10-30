@@ -5,6 +5,13 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.18: each change in the menu writes the profile file at once, through the Options screen's own save
+  (`BioSFHandler_PCOptions.SaveProfile`), as the LE1 Community Patch's FOV slider does. v0.17 queued the engine's
+  profile save command, which only fills the save system's in-memory record; the game writes the file on its own only
+  now and then, so a change could be lost when the game quit. In game: a pick wrote the file at once and was still set
+  after a restart and another save.
+- v0.17: the settings are kept in the gamer profile's `IntStats` list, slots 100 to 107, where the LE1 Community Patch
+  keeps its FOV. The v0.15 and v0.16 builds kept them in its `IntVariables` list, and the profile file never held them.
 - v0.16: the values the player picked in the v0.15 menu are the new defaults, so 100 % in the menu is the old 75 %
   flight speed, 125 % ship response and 75 % ship size, at cluster level and in system view: `ClusterFlightSpeed` and
   `SystemFlightSpeed` 0.75 (new), `ChaseSpeed` and `SystemChaseSpeed` 10, `ShipScale` 0.06, `SystemShipScale` 0.0375.

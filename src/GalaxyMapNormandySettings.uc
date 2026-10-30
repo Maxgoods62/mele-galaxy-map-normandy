@@ -2,9 +2,9 @@ Class GalaxyMapNormandySettings extends Object
     abstract;
 
 // The player's choices from the Galaxy Map Normandy page of LE1CP's Mod Settings Menu (pause wheel, Mod Settings). They
-// live in the gamer profile (BioGamerProfile.IntVariables, saved in Save\ME1\PROFILE\GamerProfile.pcsav), so one choice
-// holds for every career and save. Each value is a percent of the director's default; 0 or no entry means 100. The keys
-// are plot int ids of this mod's block, so nothing else should use them, but this never writes the plot table.
+// live in the gamer profile's IntStats list (saved in Save\ME1\PROFILE\GamerProfile.pcsav), so one choice holds for
+// every career and save. LE1CP keeps its FOV there, in slot 0; this mod uses slots 100 to 107, far from the low slots
+// LE1CP would take next. Each value is a percent of the director's default; 0 or no slot means 100.
 // Compiled into the startup package for the director, and copied into the menu package for its pages.
 
 var int ClusterSpeedId;
@@ -33,25 +33,20 @@ public static function int GetPercent(int Id)
 {
     local BioGamerProfile Profile;
     local SFXEngine Engine;
-    local int I;
 
     Profile = GetProfile();
-    if (Profile != None)
+    if (Profile != None && Profile.IntStats.Length > 0)
     {
-        I = Profile.IntVariables.Find('PMIndex', Id);
-        if (I != -1)
+        if (Id < Profile.IntStats.Length)
         {
-            return Profile.IntVariables[I].Value;
+            return Profile.IntStats[Id];
         }
+        return 0;
     }
     Engine = Class'SFXEngine'.static.GetEngine();
-    if (Engine != None && Engine.CurrentSaveGame != None)
+    if (Engine != None && Engine.CurrentSaveGame != None && Id < Engine.CurrentSaveGame.ProfileRecord.IntStats.Length)
     {
-        I = Engine.CurrentSaveGame.ProfileRecord.IntVariables.Find('PMIndex', Id);
-        if (I != -1)
-        {
-            return Engine.CurrentSaveGame.ProfileRecord.IntVariables[I].Value;
-        }
+        return Engine.CurrentSaveGame.ProfileRecord.IntStats[Id];
     }
     return 0;
 }
@@ -68,10 +63,19 @@ public static function float GetMultiplier(int Id)
     return float(Percent) / 100.0;
 }
 
+// A profile not read from disk yet has an empty IntStats list (LE1CP's LoadIntStats always leaves one slot) or no careers
+// while the save system's record has some.
+public static function bool LooksUnread(BioGamerProfile Profile, SFXSaveGame Save)
+{
+    return (Profile.IntStats.Length == 0 && Save.ProfileRecord.IntStats.Length > 0)
+        || (Profile.lstCharacterProfiles.Length == 0 && Save.ProfileRecord.lstCharacterProfiles.Length > 0);
+}
+
 // Saving a profile that was never read from disk would replace the player's achievements, options and career list.
-// LE1CP reads it from the save system's record first when it looks unread (BioSFHandler_PCOptions_Persistent:
-// EnsureProfileInitialized). This reads it only when it lacks careers the record has, so a profile already read is
-// never replaced, and says no when the profile still has fewer careers than the record.
+// LE1CP reads it from the save system's record first when its IntStats list is empty (BioSFHandler_PCOptions_Persistent:
+// EnsureProfileInitialized). This does the same when the profile looks unread, so a profile already read is never
+// replaced, and says no when it still looks unread. Writing IntStats into an unread profile would also hide it from
+// LE1CP's check.
 public static function bool EnsureProfileLoaded()
 {
     local BioGamerProfile Profile;
@@ -83,48 +87,47 @@ public static function bool EnsureProfileLoaded()
     {
         return FALSE;
     }
-    if (Profile.lstCharacterProfiles.Length == 0 && Engine.CurrentSaveGame.ProfileRecord.lstCharacterProfiles.Length > 0)
+    if (LooksUnread(Profile, Engine.CurrentSaveGame))
     {
         Engine.CurrentSaveGame.LoadGamerProfile(Profile);
     }
-    return Profile.lstCharacterProfiles.Length >= Engine.CurrentSaveGame.ProfileRecord.lstCharacterProfiles.Length;
+    return !LooksUnread(Profile, Engine.CurrentSaveGame);
 }
 
 // Changes the profile in memory; SaveProfile writes it to disk.
 public static function bool SetPercent(int Id, int Percent)
 {
     local BioGamerProfile Profile;
-    local ProfileINT Entry;
-    local int I;
 
     if (!EnsureProfileLoaded())
     {
         return FALSE;
     }
     Profile = GetProfile();
-    I = Profile.IntVariables.Find('PMIndex', Id);
-    if (I == -1)
+    if (Profile.IntStats.Length <= Id)
     {
-        Entry.PMIndex = Id;
-        Entry.Value = Percent;
-        Profile.IntVariables.AddItem(Entry);
+        Profile.IntStats.Length = Id + 1;
     }
-    else
-    {
-        Profile.IntVariables[I].Value = Percent;
-    }
+    Profile.IntStats[Id] = Percent;
     return TRUE;
 }
 
+// Writes the profile file now, as the Options screen does when it applies a change (LE1CP's FOV slider too). A handler
+// made here works without the screen (tested live 2026-10-30). The game writes the file on its own only now and then,
+// not on every exit, and SFXEngine.QueueSaveGameCommand(SaveGame_SaveGamerProfile) only fills the save system's record.
 public static function SaveProfile()
 {
-    local SFXEngine Engine;
+    local BioSFHandler_PCOptions Handler;
+    local WorldInfo WI;
 
-    Engine = Class'SFXEngine'.static.GetEngine();
-    if (Engine != None)
+    WI = Class'WorldInfo'.static.GetWorldInfo();
+    if (WI == None)
     {
-        Engine.QueueSaveGameCommand(ESFXSaveGameAction.SaveGame_SaveGamerProfile);
+        return;
     }
+    Handler = new Class'BioSFHandler_PCOptions';
+    Handler.oWorldInfo = WI;
+    Handler.SaveProfile();
 }
 
 public static function ResetAll()
@@ -140,12 +143,12 @@ public static function ResetAll()
 
 defaultproperties
 {
-    ClusterSpeedId = 8429
-    ClusterTurnId = 8430
-    ClusterResponseId = 8431
-    ClusterSizeId = 8432
-    SystemSpeedId = 8433
-    SystemTurnId = 8434
-    SystemResponseId = 8435
-    SystemSizeId = 8436
+    ClusterSpeedId = 100
+    ClusterTurnId = 101
+    ClusterResponseId = 102
+    ClusterSizeId = 103
+    SystemSpeedId = 104
+    SystemTurnId = 105
+    SystemResponseId = 106
+    SystemSizeId = 107
 }
