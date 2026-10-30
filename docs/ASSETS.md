@@ -15,6 +15,7 @@ LE1 files are in `<LE folder>\Game\ME1\BioGame\CookedPCConsole`, LE3 files in
 | LE3 | `SFXGame.pcc` | export 53327, the Wwise bank `Wwise_Generic_Galaxy_Map`: its embedded sounds 256246750, 191335730 and 634254545 | the whoosh (256246750) and the two layers of the engine loop (191335730, 634254545) |
 | LE1 | `snd_gui.pcc` | the cues `c_snd_guiswish` (one mono wave) and `c_galaxymap_enter` (one stereo wave) | templates for the two new cues |
 | LE1 | `BIOA_ICE20_11_LAY.pcc` | export 31, the docked Normandy's static mesh `ice20_normandy`, with its materials and textures | the ship, as `SR1_Normandy` |
+| LE1 Community Patch | `ModSettingsMenu.pcc`, in `<LE folder>\Game\ME1\BioGame\DLC\DLC_MOD_LE1CP\CookedPCConsole` | the class `ModSettingsSubmenu`, decompiled to UnrealScript | compiled into `ModSettings_Submenus_GalaxyMapNormandy.pcc` as the base class of the settings pages; the game uses the Community Patch's own class in memory |
 
 The three LE3 sounds are what ME3's `Play_gui_galaxy_travel_start` event plays.
 

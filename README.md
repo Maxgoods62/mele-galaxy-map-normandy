@@ -51,9 +51,25 @@ At cluster and system level:
 While another panel has focus, such as the travel prompt, the arrow is hidden and the left button works as in vanilla.
 At galaxy level the mouse and the left button work as in vanilla.
 
+## Settings
+
+Pause the game, open **Mod Settings** (the LE1 Community Patch's Mod Settings Menu) and pick **Galaxy Map Normandy**.
+For cluster level and for system view, you can set:
+
+| Setting | What it changes |
+|---|---|
+| Flight speed | how fast the ship and the map cursor move, with the controller and with the mouse |
+| Turn rate | how fast the ship's nose turns toward where it flies |
+| Ship response | how closely the ship follows the cursor: lower glides behind it, higher stays on it |
+| Ship size | the ship's size |
+
+Each setting opens a list of steps from 50 % to 200 % of the default. **Restore defaults** puts all eight back to
+100 %. The choices are kept in the game's gamer profile (`Save\ME1\PROFILE\GamerProfile.pcsav` in your documents), so
+they are the same for every career and save. They apply the next time the galaxy map opens.
+
 ## How it works
 
-The mod replaces no file, handler or function of the game. Its startup package holds two UnrealScript classes. A small
+The mod replaces no file, handler or function of the game. Its startup package holds three UnrealScript classes. A small
 level, `GalaxyMapNormandy_NOR10`, holds one `GalaxyMapNormandyDirector` actor. The LE1 Community Patch's Sideloader
 loads that level whenever a level whose name starts with `BIOA_NOR10` loads, so the actor is there whenever the galaxy
 map can open.
@@ -81,7 +97,7 @@ the controller. The ship carries its own sky light, because nothing else lights 
 
 ## Tuning
 
-The ship's size, speed, turn rates, sound and mouse feel are plain properties of `GalaxyMapNormandyDirector`, with
+Beyond the in-game settings, the ship's size, speed, turn rates, sound and mouse feel are plain properties of `GalaxyMapNormandyDirector`, with
 their defaults at the end of [`src/GalaxyMapNormandyDirector.uc`](src/GalaxyMapNormandyDirector.uc).
 [docs/tuning.md](docs/tuning.md) lists them and shows how to change them in a running game.
 
@@ -91,12 +107,14 @@ their defaults at the end of [`src/GalaxyMapNormandyDirector.uc`](src/GalaxyMapN
 |---|---|
 | `src/GalaxyMapNormandyDirector.uc` | the actor that runs every frame while the map is open: ship, sound, mouse control, tuning fields |
 | `src/GalaxyMapNormandyShipLight.uc` | the ship's own sky light (lighting channel `Unnamed_6`) |
-| `mod/` | the M3 mod folder without its packages: `moddesc.ini`, `AutoLoad.ini`, the Sideloader config `ConfigDelta-GalaxyMapNormandy.m3cd` |
+| `src/GalaxyMapNormandySettings.uc` | reads and writes the player's settings in the gamer profile, for the director and the menu |
+| `src/ModSettingsSubmenu_GalaxyMapNormandy.uc`, `src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc` | the settings page and the step list in the LE1 Community Patch's Mod Settings Menu |
+| `mod/` | the M3 mod folder without its packages: `moddesc.ini`, `AutoLoad.ini`, `ConfigDelta-GalaxyMapNormandy.m3cd` (the Sideloader level and the Mod Settings Menu row) |
 | `build.sh`, `build.env.example` | the build ([docs/building.md](docs/building.md)) |
 | `package.sh` | zips the built mod folder for local tests ([Package](docs/building.md#package)) |
 | [`docs/ASSETS.md`](docs/ASSETS.md) | which game files the build reads and what it does with them |
 
-The three `.pcc` packages are build output, and `GalaxyMapNormandy_SFX.pcc` holds BioWare content, so none of them is
+The four `.pcc` packages are build output, and `GalaxyMapNormandy_SFX.pcc` holds BioWare content, so none of them is
 in git.
 
 ## Credits
@@ -105,7 +123,9 @@ in git.
   (the docked Normandy's static mesh in `BIOA_ICE20_11_LAY.pcc`), the ME3 galaxy map travel sound (LE3's
   `Wwise_Generic_Galaxy_Map` bank in `SFXGame.pcc`) and two LE1 interface sound cues, used as templates
   (`snd_gui.pcc`).
-- The LE1 Community Patch team, for the Sideloader that loads the mod's level.
+- The LE1 Community Patch team, for the Sideloader that loads the mod's level and the Mod Settings Menu. The build
+  copies the menu's page class (`ModSettingsSubmenu`) from your installed Community Patch into the mod's menu package,
+  as other mods' settings pages do.
 - ME3Tweaks: ME3Tweaks Mod Manager, and [Legendary Explorer](https://github.com/ME3Tweaks/LegendaryExplorer), whose
   LegendaryExplorerCore library the build tools use.
 - [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit): the build tools

@@ -9,6 +9,7 @@ Class GalaxyMapNormandyDirector extends Actor
 // vanilla galaxy map handler stays in place (a handler subclass broke zooming out of the planet view).
 // With the mouse it plays like ME2: an arrow pointer moves freely, and holding the left button flies the ship (the map
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
+// The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu (ReadSettings).
 
 var transient BioCameraBehaviorGalaxy GalaxyCam;
 var transient BioSFHandler_GalaxyMap Handler;
@@ -51,6 +52,18 @@ var transient string SavedLeftBind;
 var transient BioPlayerInput BindInput;
 var transient BioHUD PointerHUD;
 var transient bool bShowHUDForcedByUs;
+var transient bool bSettingsRead;
+var transient float ClusterSpeedScale;
+var transient float ClusterTurnScale;
+var transient float ClusterResponseScale;
+var transient float ClusterSizeScale;
+var transient float SystemSpeedScale;
+var transient float SystemTurnScale;
+var transient float SystemResponseScale;
+var transient float SystemSizeScale;
+var transient float SpeedScale;
+var transient bool bMovementScaled;
+var transient float VanillaMovementScalar;
 
 // Tuning; all can be changed live on this actor while the map is open.
 var float ShipScale;
@@ -61,6 +74,8 @@ var float SystemChaseSpeed;
 var float SystemTurnSpeed;
 var float ClusterMaxSpeed;
 var float SystemMaxSpeed;
+var float ClusterFlightSpeed;
+var float SystemFlightSpeed;
 var int YawOffset;
 var float MoveSpeedStart;
 var float MoveSpeedStop;
@@ -130,7 +145,15 @@ public event function Tick(float DeltaTime)
         Cleanup();
         return;
     }
+    if (GalaxyCam != Mode.GalaxyCam)
+    {
+        RestoreMovementScalar();
+    }
     GalaxyCam = Mode.GalaxyCam;
+    if (!bSettingsRead)
+    {
+        ReadSettings();
+    }
     NewRing = GalaxyCam.m_pCrossHairObject;
     if (NewRing != Ring)
     {
@@ -140,6 +163,7 @@ public event function Tick(float DeltaTime)
     // 1 galaxy, 2 cluster, 3 system, 4 planet; the ship only flies at cluster and system level.
     if (Ring == None || GalaxyCam.m_nCurrentState < 2 || GalaxyCam.m_nCurrentState > 3)
     {
+        RestoreMovementScalar();
         ShowRing();
         ReleasePointer();
         if (Ship != None)
@@ -155,6 +179,27 @@ public event function Tick(float DeltaTime)
         return;
     }
     HideRing();
+    // In system view the camera follows the cursor, so a slow turn shows as the ship swinging around the screen centre;
+    // the planets there are also smaller next to the cursor than the systems are at cluster level. The player's settings
+    // (ReadSettings) scale each value. Flight speed has no value of its own: ClusterFlightSpeed and SystemFlightSpeed are
+    // fractions of the game's cursor speed, and also scale the speed caps and the sound's pitch curve.
+    SpeedScale = ClusterFlightSpeed * ClusterSpeedScale;
+    Chase = ChaseSpeed * ClusterResponseScale;
+    Turn = TurnSpeed * ClusterTurnScale;
+    Scale = ShipScale * ClusterSizeScale;
+    if (GalaxyCam.m_nCurrentState == 3)
+    {
+        SpeedScale = SystemFlightSpeed * SystemSpeedScale;
+        Chase = SystemChaseSpeed * SystemResponseScale;
+        Turn = SystemTurnSpeed * SystemTurnScale;
+        Scale = SystemShipScale * SystemSizeScale;
+    }
+    ScaleMovementScalar(SpeedScale);
+    MaxSpeed = ClusterMaxSpeed * SpeedScale;
+    if (GalaxyCam.m_nCurrentState == 3)
+    {
+        MaxSpeed = SystemMaxSpeed * SpeedScale;
+    }
     if (bMousePointer)
     {
         UpdatePointer(DeltaTime);
@@ -162,19 +207,6 @@ public event function Tick(float DeltaTime)
     else
     {
         LimitMouse(DeltaTime);
-    }
-    // In system view the camera follows the cursor, so a slow turn shows as the ship swinging around the screen centre;
-    // the planets there are also smaller next to the cursor than the systems are at cluster level.
-    Chase = ChaseSpeed;
-    Turn = TurnSpeed;
-    Scale = ShipScale;
-    MaxSpeed = ClusterMaxSpeed;
-    if (GalaxyCam.m_nCurrentState == 3)
-    {
-        Chase = SystemChaseSpeed;
-        Turn = SystemTurnSpeed;
-        Scale = SystemShipScale;
-        MaxSpeed = SystemMaxSpeed;
     }
     Ship.SetDrawScale(Scale * Ring.DrawScale / 1.5);
     if (GalaxyCam.m_nCurrentState != LastState || Ship.bHidden || DeltaTime <= 0.0)
@@ -260,7 +292,7 @@ public function UpdateFlightSound(float DeltaTime)
     // Like ME3's speed RTPC: the engine loop gets a little higher and louder as the ship goes faster.
     if (LoopSound != None)
     {
-        Alpha = FClamp(LastSpeed / FullSpeed, 0.0, 1.0);
+        Alpha = FClamp(LastSpeed / (FullSpeed * SpeedScale), 0.0, 1.0);
         LoopSound.PitchMultiplier = Lerp(LoopPitchMin, LoopPitchMax, Alpha);
         LoopSound.VolumeMultiplier = Lerp(LoopVolumeMin, LoopVolumeMax, Alpha);
         LoopAge += DeltaTime * LoopSound.PitchMultiplier;
@@ -313,6 +345,45 @@ public function SFXGameModeGalaxy FindGalaxyMode()
         return None;
     }
     return SFXGameModeGalaxy(PC.GameModeManager.GameModes[9]);
+}
+
+// The player's settings from LE1CP's Mod Settings Menu (GalaxyMapNormandySettings), read once each time the map opens:
+// the menu cannot be open at the same time.
+public function ReadSettings()
+{
+    local Class<GalaxyMapNormandySettings> S;
+
+    S = Class'GalaxyMapNormandySettings';
+    ClusterSpeedScale = S.static.GetMultiplier(S.default.ClusterSpeedId);
+    ClusterTurnScale = S.static.GetMultiplier(S.default.ClusterTurnId);
+    ClusterResponseScale = S.static.GetMultiplier(S.default.ClusterResponseId);
+    ClusterSizeScale = S.static.GetMultiplier(S.default.ClusterSizeId);
+    SystemSpeedScale = S.static.GetMultiplier(S.default.SystemSpeedId);
+    SystemTurnScale = S.static.GetMultiplier(S.default.SystemTurnId);
+    SystemResponseScale = S.static.GetMultiplier(S.default.SystemResponseId);
+    SystemSizeScale = S.static.GetMultiplier(S.default.SystemSizeId);
+    bSettingsRead = TRUE;
+}
+
+// The native camera moves the cursor by stick + m_fCursorDelta times m_fMovementScalar, so scaling it speeds up the pad
+// and the mouse's virtual stick alike. Only at cluster and system level; the galaxy level keeps its own speed.
+public function ScaleMovementScalar(float Multiplier)
+{
+    if (!bMovementScaled)
+    {
+        VanillaMovementScalar = GalaxyCam.m_fMovementScalar;
+        bMovementScaled = TRUE;
+    }
+    GalaxyCam.m_fMovementScalar = VanillaMovementScalar * Multiplier;
+}
+
+public function RestoreMovementScalar()
+{
+    if (bMovementScaled && GalaxyCam != None)
+    {
+        GalaxyCam.m_fMovementScalar = VanillaMovementScalar;
+    }
+    bMovementScaled = FALSE;
 }
 
 // BioPlayerInput.PreProcessInput sends the mouse to the GUI as raw counts (no sensitivity, deadzone or limit), and the
@@ -471,10 +542,10 @@ public function UpdatePointer(float DeltaTime)
         }
         return;
     }
-    MaxSpeed = FlyClusterSpeed;
+    MaxSpeed = FlyClusterSpeed * SpeedScale;
     if (GalaxyCam.m_nCurrentState == 3)
     {
-        MaxSpeed = FlySystemSpeed;
+        MaxSpeed = FlySystemSpeed * SpeedScale;
     }
     PlaneAxes(X, Y, Z);
     if (!bHeadingSet)
@@ -878,6 +949,8 @@ public function Cleanup()
     {
         OldLoopSound.Stop();
     }
+    RestoreMovementScalar();
+    bSettingsRead = FALSE;
     Ring = None;
     GalaxyCam = None;
     Handler = None;
@@ -900,14 +973,16 @@ public event function Destroyed()
 
 defaultproperties
 {
-    ShipScale = 0.08
-    SystemShipScale = 0.05
-    ChaseSpeed = 8.0
+    ShipScale = 0.06
+    SystemShipScale = 0.0375
+    ChaseSpeed = 10.0
     TurnSpeed = 6.0
-    SystemChaseSpeed = 8.0
+    SystemChaseSpeed = 10.0
     SystemTurnSpeed = 12.0
     ClusterMaxSpeed = 1300.0
     SystemMaxSpeed = 250.0
+    ClusterFlightSpeed = 0.75
+    SystemFlightSpeed = 0.75
     YawOffset = -16384
     MoveSpeedStart = 20.0
     MoveSpeedStop = 10.0
@@ -949,5 +1024,6 @@ defaultproperties
     MouseStickCluster = 1.75
     MouseStickSystem = 0.85
     ClickTime = 0.25
+    SpeedScale = 1.0
     TickGroup = ETickingGroup.TG_PostAsyncWork
 }

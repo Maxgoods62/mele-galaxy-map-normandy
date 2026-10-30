@@ -68,23 +68,47 @@ lectool() {
     tr -d '\r' < "$OUT.raw" > "$OUT"
 }
 
-# 1. Startup_MOD_GalaxyMapNormandy.pcc: the two classes, loaded at startup through AutoLoad.ini.
+# mcp <tool> <json>: one call of the mele-mcp built above.
+mcp() {
+    MELE_DOTNET="$DOTNET" MELE_DLL="$(win "$BUILD/tools/mele-mcp/MeleMcp.dll")" MELE_LE_DIR="$LE_DIR" \
+        python3 -I "$TOOLKIT/tools/mele-mcp/scripts/mcp_call.py" "$@"
+}
+json() { python3 -I -c 'import json, sys; it = iter(sys.argv[1:]); print(json.dumps(dict(zip(it, it))))' "$@"; }
+
+# 1. Startup_MOD_GalaxyMapNormandy.pcc: the classes, loaded at startup through AutoLoad.ini.
 echo "== classes"
 lectool compileclass "$(win "$BUILD/Startup_MOD_GalaxyMapNormandy.pcc")" GalaxyMapNormandy \
-    "$(win "$HERE/src/GalaxyMapNormandyShipLight.uc")" "$(win "$HERE/src/GalaxyMapNormandyDirector.uc")"
+    "$(win "$HERE/src/GalaxyMapNormandySettings.uc")" "$(win "$HERE/src/GalaxyMapNormandyShipLight.uc")" \
+    "$(win "$HERE/src/GalaxyMapNormandyDirector.uc")"
 grep -E '^log:|\sClass\s' "$OUT" || true
 
-# 2. GalaxyMapNormandy_NOR10.pcc: an empty level with one director actor, sideloaded with the Normandy by LE1CP.
+# 2. ModSettings_Submenus_GalaxyMapNormandy.pcc: the settings pages in LE1CP's Mod Settings Menu, which loads them from
+# this file by path when the player opens them. Their base class is LE1CP's ModSettingsSubmenu: the file carries a copy,
+# as other mods' pages do, decompiled from the player's LE1CP so that its layout matches. The copy, and the copy of
+# GalaxyMapNormandySettings, are ForcedExports: the game uses the class already in memory.
+echo "== menu"
+MSM_PCC="$LE_DIR\\Game\\ME1\\BioGame\\DLC\\DLC_MOD_LE1CP\\CookedPCConsole\\ModSettingsMenu.pcc"
+mcp export_decompile "$(json package "$MSM_PCC" export ModSettingsSubmenu)" > "$BUILD/ModSettingsSubmenu.raw" \
+    || { cat "$BUILD/ModSettingsSubmenu.raw" >&2; die "could not read ModSettingsSubmenu from LE1CP's ModSettingsMenu.pcc"; }
+head -1 "$BUILD/ModSettingsSubmenu.raw" | grep -q ' Class ModSettingsSubmenu$' \
+    || { head -5 "$BUILD/ModSettingsSubmenu.raw" >&2; die "LE1CP's ModSettingsMenu.pcc has no class ModSettingsSubmenu"; }
+tail -n +2 "$BUILD/ModSettingsSubmenu.raw" > "$BUILD/ModSettingsSubmenu.uc"
+lectool compileclass "$(win "$BUILD/ModSettings_Submenus_GalaxyMapNormandy.pcc")" GalaxyMapNormandyMenu \
+    "$(win "$HERE/src/ModSettingsSubmenu_GalaxyMapNormandy.uc")" "$(win "$HERE/src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc")" \
+    --pkg=ModSettingsMenu "$(win "$BUILD/ModSettingsSubmenu.uc")" \
+    --pkg=GalaxyMapNormandy "$(win "$HERE/src/GalaxyMapNormandySettings.uc")" \
+    --unforce=GalaxyMapNormandyMenu --no-referencer
+grep -E '^log:|\sClass\s' "$OUT" || true
+
+# 3. GalaxyMapNormandy_NOR10.pcc: an empty level with one director actor, sideloaded with the Normandy by LE1CP.
 echo "== level"
 rm -f "$BUILD/GalaxyMapNormandy_NOR10.pcc"
-MELE_DOTNET="$DOTNET" MELE_DLL="$(win "$BUILD/tools/mele-mcp/MeleMcp.dll")" MELE_LE_DIR="$LE_DIR" \
-    python3 -I "$TOOLKIT/tools/mele-mcp/scripts/mcp_call.py" level_new \
-    "$(python3 -I -c 'import json, sys; print(json.dumps({"path": sys.argv[1]}))' "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")")" \
+mcp level_new "$(json path "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")")" \
     > "$BUILD/level_new.json" || { cat "$BUILD/level_new.json" >&2; die "level_new failed"; }
 lectool addactor "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")" GalaxyMapNormandy GalaxyMapNormandyDirector
 cat "$OUT"
 
-# 3. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix them (docs/ASSETS.md).
+# 4. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix them (docs/ASSETS.md).
 echo "== sound"
 S="$BUILD/sound"
 rm -f "$S"/*
@@ -133,7 +157,7 @@ EOF
 for f in travel_whoosh travel_loop; do ff -i "$S/$f.wav" -c:a libvorbis -q:a 8 "$S/$f.ogg"; done
 frames() { python3 -I -c 'import sys, wave; print(wave.open(sys.argv[1]).getnframes())' "$1"; }
 
-# 4. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues) and the SR-1 mesh.
+# 5. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues) and the SR-1 mesh.
 echo "== sfx"
 SFX="$(win "$BUILD/GalaxyMapNormandy_SFX.pcc")"
 rm -f "$BUILD/GalaxyMapNormandy_SFX.pcc"
@@ -146,11 +170,11 @@ grep -E '^wave' "$OUT" || true
 lectool portmesh "$LE1\\BIOA_ICE20_11_LAY.pcc" "$SR1_UINDEX" "$SFX" SR1_Normandy
 if grep -E 'BROKEN' "$OUT"; then die "broken material in the SR-1 port"; fi
 
-# 5. The M3 mod folder.
+# 6. The M3 mod folder.
 echo "== dist"
 rm -rf "$DIST"
 mkdir -p "$DIST"
 cp -r "$HERE/mod/." "$DIST/"
-cp "$BUILD"/{Startup_MOD_GalaxyMapNormandy,GalaxyMapNormandy_NOR10,GalaxyMapNormandy_SFX}.pcc "$COOKED/"
+cp "$BUILD"/{Startup_MOD_GalaxyMapNormandy,ModSettings_Submenus_GalaxyMapNormandy,GalaxyMapNormandy_NOR10,GalaxyMapNormandy_SFX}.pcc "$COOKED/"
 echo "built $(win "$DIST") (modver $(sed -n 's/^modver=//p' "$HERE/mod/moddesc.ini" | tr -d '\r'))"
 ls -l "$COOKED" | tail -n +2

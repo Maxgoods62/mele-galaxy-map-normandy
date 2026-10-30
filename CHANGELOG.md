@@ -5,6 +5,14 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.16: the values the player picked in the v0.15 menu are the new defaults, so 100 % in the menu is the old 75 %
+  flight speed, 125 % ship response and 75 % ship size, at cluster level and in system view: `ClusterFlightSpeed` and
+  `SystemFlightSpeed` 0.75 (new), `ChaseSpeed` and `SystemChaseSpeed` 10, `ShipScale` 0.06, `SystemShipScale` 0.0375.
+  Turn rates unchanged.
+- v0.15: a Galaxy Map Normandy page in the LE1 Community Patch's Mod Settings Menu. Flight speed, turn rate, ship
+  response and ship size, each for cluster level and system view, in steps from 50 % to 200 %, kept in the gamer
+  profile for every save. Flight speed scales the galaxy camera's `m_fMovementScalar`, so the controller and the mouse
+  speed up alike. In game: the menu works; the player tried several values.
 - `build.sh` builds the mod from this repository and the player's own game files. The mod itself does not change: a
   rebuild has the same exports and the same decoded sound as v0.14.
 - `moddesc.ini`: a description for players, the LE1 Community Patch 2.0 or later as the required DLC, and this

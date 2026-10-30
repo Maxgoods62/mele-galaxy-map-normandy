@@ -5,6 +5,21 @@ class. The defaults are in the `defaultproperties` block at the end of
 [`src/GalaxyMapNormandyDirector.uc`](../src/GalaxyMapNormandyDirector.uc). To change one for good, edit it there,
 run `./build.sh` and apply the mod again with M3 ([building.md](building.md)).
 
+## In-game settings
+
+The Galaxy Map Normandy page of the LE1 Community Patch's Mod Settings Menu multiplies some of the defaults below. The
+director reads the multipliers each time the map opens (`ReadSettings`).
+
+| Setting (cluster / system) | Multiplies | Gamer profile key (cluster, system) |
+|---|---|---|
+| Flight speed | `ClusterFlightSpeed` / `SystemFlightSpeed`, which scale the galaxy camera's `m_fMovementScalar` (the game's own cursor speed, for the controller and the mouse alike; put back when the map closes or shows the galaxy level or a planet), `ClusterMaxSpeed` / `SystemMaxSpeed`, `FullSpeed`, `FlyClusterSpeed` / `FlySystemSpeed` | 8429, 8433 |
+| Turn rate | `TurnSpeed` / `SystemTurnSpeed` | 8430, 8434 |
+| Ship response | `ChaseSpeed` / `SystemChaseSpeed` | 8431, 8435 |
+| Ship size | `ShipScale` / `SystemShipScale` | 8432, 8436 |
+
+A value is stored as a percent in the gamer profile's `IntVariables` list (`PMIndex` = the key, `Value` = the percent;
+0 or no entry = 100). `GalaxyMapNormandySettings` reads and writes it, and the menu saves the profile after each change.
+
 ## Changing values in a running game
 
 mele-mcp's `live_set` tool writes a property of a live object through `MeleBridge.asi`, so you can try a value with the
@@ -46,8 +61,8 @@ python3 -I <toolkit checkout>/tools/mele-mcp/scripts/mcp_call.py live_set \
 
 | Field | Default | What it does |
 |---|---|---|
-| `ShipScale` | 0.08 | Ship size at cluster level. The ship's draw scale is this value times the cursor ring's draw scale divided by 1.5 (the ring's draw scale at cluster and system level). |
-| `SystemShipScale` | 0.05 | The same in system view, where the planets are smaller next to the cursor than the systems are at cluster level. |
+| `ShipScale` | 0.06 | Ship size at cluster level. The ship's draw scale is this value times the cursor ring's draw scale divided by 1.5 (the ring's draw scale at cluster and system level). |
+| `SystemShipScale` | 0.0375 | The same in system view, where the planets are smaller next to the cursor than the systems are at cluster level. |
 | `YawOffset` | -16384 | Added to the ship's yaw (65536 is a full turn), because the mesh's long axis is Y. |
 | `bHideRing` | true | Hides the orange cursor ring's mesh while the ship shows. |
 | `ShipGlow` | (R 1.5, G 1.5, B 1.65, A 1.0) | Ambient glow of the ship's light environment. Read when the ship is created. |
@@ -60,12 +75,14 @@ it.
 
 | Field | Default | What it does |
 |---|---|---|
-| `ChaseSpeed` | 8.0 | How fast the ship closes in on the cursor at cluster level (the interpolation speed of `VInterpTo`). |
+| `ChaseSpeed` | 10.0 | How fast the ship closes in on the cursor at cluster level (the interpolation speed of `VInterpTo`). |
 | `TurnSpeed` | 6.0 | How fast the ship turns toward its motion at cluster level (`RInterpTo`). |
-| `SystemChaseSpeed` | 8.0 | `ChaseSpeed` in system view. |
+| `SystemChaseSpeed` | 10.0 | `ChaseSpeed` in system view. |
 | `SystemTurnSpeed` | 12.0 | `TurnSpeed` in system view. The camera follows the cursor there, so a slow turn shows as the ship swinging around the middle of the screen. |
 | `ClusterMaxSpeed` | 1300.0 | Top speed of the ship at cluster level, in units per second. A last guard: the ship never goes faster, whatever moves the cursor. |
 | `SystemMaxSpeed` | 250.0 | The same in system view. |
+| `ClusterFlightSpeed` | 0.75 | The game's own cursor speed at cluster level, as a fraction of vanilla: it scales the galaxy camera's `m_fMovementScalar` for the controller and the mouse alike, and also the speed caps above, `FullSpeed` and `FlyClusterSpeed`. The Flight speed setting multiplies it. |
+| `SystemFlightSpeed` | 0.75 | The same in system view (`SystemMaxSpeed`, `FullSpeed`, `FlySystemSpeed`). |
 
 ## Sound
 
