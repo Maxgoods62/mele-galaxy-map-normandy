@@ -713,7 +713,8 @@ public function DrawPointer(BioHUD H)
 // ME2's Enter Orbit button, for what the pad's A prompt offers. The test is the one native code runs before it obeys A:
 // m_pSelectedObject is the object the map cursor is in range of, bStatic or bTickIsDisabled mark one that cannot be
 // entered (an asteroid belt), and bHidden one still to be scanned, which a click scans instead (the pad's Y prompt). The
-// pad's prompts show while the panel is in gamepad mode, so the button stays away unless the mouse is in use.
+// pad's prompts show while the panel is in gamepad mode, so the button stays away then. A mouse move alone does not end
+// that mode: a click or a key does.
 public function UpdateEnterButton(float DeltaTime)
 {
     local Actor Selected;
@@ -721,7 +722,7 @@ public function UpdateEnterButton(float DeltaTime)
 
     Selected = GalaxyCam.m_pSelectedObject;
     EnterLabel = "";
-    if (bEnterButton && Selected != None && !Selected.bStatic && !Selected.bTickIsDisabled && GalaxyCam.m_fZoomTime == 0.0 && !GalaxyCam.m_bPaused && (bPointerActive || !Handler.oPanel.bUsingGamepad))
+    if (bEnterButton && Selected != None && !Selected.bStatic && !Selected.bTickIsDisabled && GalaxyCam.m_fZoomTime == 0.0 && !GalaxyCam.m_bPaused && !Handler.oPanel.bUsingGamepad)
     {
         EnterLabel = SystemLabel;
         if (GalaxyCam.m_nCurrentState == 3)

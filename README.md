@@ -52,8 +52,9 @@ At cluster and system level:
 
 The button shows with the mouse when the ship is on something the map can enter, where a controller gets its A prompt:
 Enter System on a system at cluster level, Enter Orbit on a planet in system view, and Scan on a planet still to be
-scanned. Its words are LE2's, in English, French, German, Italian, Spanish and Polish (without accents: the font drawing
-them has none). Russian and Japanese games get English for the same reason.
+scanned. A touch of the controller swaps it for the controller's prompts, and a click or a key brings it back. Its words
+are LE2's, in English, French, German, Italian, Spanish and Polish (without accents: the font drawing them has none).
+Russian and Japanese games get English for the same reason.
 
 While another panel has focus, such as the travel prompt, the arrow and the button are hidden and the left button works
 as in vanilla. At galaxy level the mouse and the left button work as in vanilla.

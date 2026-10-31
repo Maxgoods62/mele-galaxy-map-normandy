@@ -5,6 +5,8 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.23: the button no longer shows on top of the controller's prompts. A touch of the controller hides it; a click or
+  a key brings it back. In game: works.
 - v0.22: under the pointer the button is a solid brown panel with gold corners, as LE1's own buttons are, instead of an
   almost transparent amber. In game: works.
 - v0.21: a mouse player gets LE2's button at the bottom centre of the screen when the ship is on something the map can

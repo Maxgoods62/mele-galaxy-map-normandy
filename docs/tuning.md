@@ -132,7 +132,7 @@ to select. Sizes in pixels are for a 1080-pixel-high screen and scale with the s
 ### Enter Orbit button
 
 The button at the bottom centre of the screen. It shows where a controller gets its A or Y prompt, and only while the
-mouse is in use.
+game is not showing those prompts.
 
 | Field | Default | What it does |
 |---|---|---|
