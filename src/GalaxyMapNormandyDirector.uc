@@ -9,6 +9,7 @@ Class GalaxyMapNormandyDirector extends Actor
 // vanilla galaxy map handler stays in place (a handler subclass broke zooming out of the planet view).
 // With the mouse it plays like ME2: an arrow pointer moves freely, and holding the left button flies the ship (the map
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
+// A mouse player also gets ME2's Enter Orbit button when the ship is on something the map can enter (UpdateEnterButton).
 // The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu (ReadSettings).
 
 var transient BioCameraBehaviorGalaxy GalaxyCam;
@@ -64,6 +65,13 @@ var transient float SystemSizeScale;
 var transient float SpeedScale;
 var transient bool bMovementScaled;
 var transient float VanillaMovementScalar;
+var transient Texture2D ButtonNormal;
+var transient Texture2D ButtonHover;
+var transient Font ButtonFont;
+var transient string EnterLabel;
+var transient bool bPointerOnButton;
+var transient bool bButtonPressed;
+var transient float ButtonFade;
 
 // Tuning; all can be changed live on this actor while the map is open.
 var float ShipScale;
@@ -117,6 +125,18 @@ var float StickRadius;
 var float MouseStickCluster;
 var float MouseStickSystem;
 var float ClickTime;
+var bool bEnterButton;
+var float ButtonWidth;
+var float ButtonHeight;
+var float ButtonBottom;
+var float ButtonFadeTime;
+var float ButtonTextScale;
+var float ButtonTextOffset;
+var Color ButtonText;
+var Color ButtonTextHover;
+var string OrbitLabel;
+var string SystemLabel;
+var string ScanLabel;
 
 // After the player controller has read this frame's input, before the camera moves the cursor (LimitMouse).
 public event function PostBeginPlay()
@@ -453,6 +473,8 @@ public function UpdatePointer(float DeltaTime)
     local float MaxStick;
     local Vector Stick;
     local bool bHeld;
+    local bool bFly;
+    local bool bClick;
 
     PC = BioPlayerController(GetALocalPlayerController());
     if (PC == None || DeltaTime <= 0.0)
@@ -502,20 +524,33 @@ public function UpdatePointer(float DeltaTime)
     }
     Handler.m_fCursorDeltaX = 0.0;
     Handler.m_fCursorDeltaY = 0.0;
+    UpdateEnterButton(DeltaTime);
     bHeld = PC.PlayerInput.PressedKeys.Find('LeftMouseButton') != -1;
+    if (bHeld && !bLeftHeld)
+    {
+        bButtonPressed = bPointerOnButton;
+    }
     if (bHeld)
     {
         LeftHeldTime += DeltaTime;
     }
     else if (bLeftHeld)
     {
-        if (LeftHeldTime < ClickTime && bLeftBindTaken && Handler.oPanel != None)
+        // As on any button, a press on it only counts if it is also released on it, however long it took.
+        bClick = LeftHeldTime < ClickTime;
+        if (bButtonPressed)
+        {
+            bClick = bPointerOnButton;
+        }
+        if (bClick && bLeftBindTaken && Handler.oPanel != None)
         {
             Handler.oPanel.InvokeMethod("selectHighlightedGalaxy");
         }
         LeftHeldTime = 0.0;
+        bButtonPressed = FALSE;
     }
     bLeftHeld = bHeld;
+    bFly = bHeld && !bButtonPressed;
     if (!bPointerActive || !bPointerPlaced || GalaxyCam.m_bPaused || GalaxyCam.m_fZoomTime > 0.0)
     {
         return;
@@ -525,7 +560,7 @@ public function UpdatePointer(float DeltaTime)
     // through the same path: m_fCursorDelta is added to the stick before the native move.
     if (bVirtualStick)
     {
-        if (bHeld)
+        if (bFly)
         {
             Stick.X = VirtualStickX;
             Stick.Y = VirtualStickY;
@@ -561,7 +596,7 @@ public function UpdatePointer(float DeltaTime)
     ToTarget -= Z * (ToTarget Dot Z);
     Distance = VSize(ToTarget);
     TargetSpeed = 0.0;
-    if (bHeld && Distance > 1.0)
+    if (bFly && Distance > 1.0)
     {
         // ME2's ship: the nose turns toward the pointer at a limited rate and the ship thrusts along it, slower the
         // further off it points, so a reversal is a tight U-turn rather than a slide backwards through a stop.
@@ -623,6 +658,10 @@ public function DrawPointer(BioHUD H)
     local float Limit;
 
     C = H.Canvas;
+    if (C != None && EnterLabel != "")
+    {
+        DrawEnterButton(C);
+    }
     if (C == None || GalaxyCam == None || Ring == None || !bPointerActive || GalaxyCam.m_nCurrentState < 2 || GalaxyCam.m_nCurrentState > 3)
     {
         return;
@@ -668,6 +707,130 @@ public function DrawPointer(BioHUD H)
         {
             PointerWorld = GalaxyCam.m_pCenterObject.Location + Normal(Offset) * Limit;
         }
+    }
+}
+
+// ME2's Enter Orbit button, for what the pad's A prompt offers. The test is the one native code runs before it obeys A:
+// m_pSelectedObject is the object the map cursor is in range of, bStatic or bTickIsDisabled mark one that cannot be
+// entered (an asteroid belt), and bHidden one still to be scanned, which a click scans instead (the pad's Y prompt). The
+// pad's prompts show while the panel is in gamepad mode, so the button stays away unless the mouse is in use.
+public function UpdateEnterButton(float DeltaTime)
+{
+    local Actor Selected;
+    local float Step;
+
+    Selected = GalaxyCam.m_pSelectedObject;
+    EnterLabel = "";
+    if (bEnterButton && Selected != None && !Selected.bStatic && !Selected.bTickIsDisabled && GalaxyCam.m_fZoomTime == 0.0 && !GalaxyCam.m_bPaused && (bPointerActive || !Handler.oPanel.bUsingGamepad))
+    {
+        EnterLabel = SystemLabel;
+        if (GalaxyCam.m_nCurrentState == 3)
+        {
+            EnterLabel = OrbitLabel;
+        }
+        if (Selected.bHidden)
+        {
+            EnterLabel = ScanLabel;
+        }
+    }
+    if (EnterLabel == "")
+    {
+        bPointerOnButton = FALSE;
+    }
+    Step = DeltaTime / ButtonFadeTime;
+    if (bPointerOnButton)
+    {
+        ButtonFade = FMin(ButtonFade + Step, 1.0);
+    }
+    else
+    {
+        ButtonFade = FMax(ButtonFade - Step, 0.0);
+    }
+}
+
+// Drawn before the arrow, so the arrow stays on top; the arrow's own move this frame reaches the hover test next frame.
+// As in ME2 the button sits at the bottom centre. It fades from blue to amber under the pointer, as LE1's Back button does.
+public function DrawEnterButton(Canvas C)
+{
+    local Font OldFont;
+    local float Scale;
+    local float X;
+    local float Y;
+    local float Width;
+    local float Height;
+    local float PointerX;
+    local float PointerY;
+    local float TextWidth;
+    local float TextHeight;
+    local float TextScale;
+
+    Scale = float(C.SizeY) / 1080.0;
+    Width = ButtonWidth * Scale;
+    Height = ButtonHeight * Scale;
+    X = (float(C.SizeX) - Width) / 2.0;
+    Y = float(C.SizeY) - (ButtonHeight + ButtonBottom) * Scale;
+    PointerX = PointerScreenX * float(C.SizeX);
+    PointerY = PointerScreenY * float(C.SizeY);
+    bPointerOnButton = bPointerActive && bPointerPlaced && PointerX >= X && PointerX <= X + Width && PointerY >= Y && PointerY <= Y + Height;
+    if (ButtonFade < 1.0)
+    {
+        C.SetDrawColor(255, 255, 255, byte(255.0 * (1.0 - ButtonFade)));
+        C.SetPos(X, Y);
+        C.DrawTile(ButtonNormal, Width, Height, 0.0, 0.0, float(ButtonNormal.SizeX), float(ButtonNormal.SizeY));
+    }
+    if (ButtonFade > 0.0)
+    {
+        C.SetDrawColor(255, 255, 255, byte(255.0 * ButtonFade));
+        C.SetPos(X, Y);
+        C.DrawTile(ButtonHover, Width, Height, 0.0, 0.0, float(ButtonHover.SizeX), float(ButtonHover.SizeY));
+    }
+    OldFont = C.Font;
+    C.Font = ButtonFont;
+    TextScale = ButtonTextScale * Scale;
+    C.StrLen(EnterLabel, TextWidth, TextHeight);
+    C.DrawColor = ButtonText;
+    if (bPointerOnButton)
+    {
+        C.DrawColor = ButtonTextHover;
+    }
+    C.SetPos(X + (Width - TextWidth * TextScale) / 2.0 + ButtonTextOffset * Scale, Y + (Height - TextHeight * TextScale) / 2.0);
+    C.DrawText(EnterLabel, FALSE, TextScale, TextScale);
+    C.Font = OldFont;
+}
+
+// The button's words are ME2's own translations. No script call gives the game's language, so its word for the pad's A
+// prompt tells. The font behind DrawText has Latin-1 letters only: Polish goes without its accents, and Russian and
+// Japanese keep the English default. The compiler writes string literals as ASCII, hence the Chr calls.
+public function ReadLabels()
+{
+    switch (Left(string(stringref(136218)), 4))
+    {
+        case "Voya":
+            OrbitLabel = "Entrer dans l'orbite";
+            SystemLabel = "Entrer dans le syst" $ Chr(232) $ "me";
+            ScanLabel = "Scanner";
+            break;
+        case "Reis":
+            OrbitLabel = "Umlaufbahn anfliegen";
+            SystemLabel = "System anfliegen";
+            ScanLabel = "Scannen";
+            break;
+        case "Viag":
+            OrbitLabel = "Entra nell'orbita";
+            SystemLabel = "Entra nel sistema";
+            ScanLabel = "Scansione";
+            break;
+        case "Viaj":
+            OrbitLabel = "Entrar en " $ Chr(243) $ "rbita";
+            SystemLabel = "Entrar en el sistema";
+            ScanLabel = "Explorar";
+            break;
+        case "Podr":
+            OrbitLabel = "Wejdz na orbite";
+            SystemLabel = "Przejdz do ukladu";
+            ScanLabel = "Skanuj";
+            break;
+        default:
     }
 }
 
@@ -794,6 +957,10 @@ public function ReleasePointer()
     PendingMouseY = 0.0;
     bHeadingSet = FALSE;
     FlySpeed = 0.0;
+    EnterLabel = "";
+    bPointerOnButton = FALSE;
+    bButtonPressed = FALSE;
+    ButtonFade = 0.0;
 }
 
 // The movie's "you are here" marker (ship outline and ring, one clip) makes no sense next to a ship that flies. The movie
@@ -869,6 +1036,15 @@ public function bool SpawnShip()
     if (LoopCue == None)
     {
         LoopCue = SoundCue(DynamicLoadObject("GalaxyMapNormandy_SFX.c_travel_loop", Class'SoundCue'));
+    }
+    if (ButtonFont == None)
+    {
+        ButtonNormal = Texture2D(DynamicLoadObject("GalaxyMapNormandy_SFX.EnterButton_Normal", Class'Texture2D'));
+        ButtonHover = Texture2D(DynamicLoadObject("GalaxyMapNormandy_SFX.EnterButton_Hover", Class'Texture2D'));
+        // By name: Engine.GetLargeFont hands back the small font, as the game's ini sets it.
+        ButtonFont = Font(DynamicLoadObject("EngineFonts.LargeFont", Class'Font'));
+        bEnterButton = bEnterButton && ButtonNormal != None && ButtonHover != None && ButtonFont != None;
+        ReadLabels();
     }
     if (ShipMesh == None)
     {
@@ -1045,6 +1221,18 @@ defaultproperties
     MouseStickCluster = 1.75
     MouseStickSystem = 0.85
     ClickTime = 0.25
+    bEnterButton = TRUE
+    ButtonWidth = 307.0
+    ButtonHeight = 49.0
+    ButtonBottom = 54.0
+    ButtonFadeTime = 0.3
+    ButtonTextScale = 0.5
+    ButtonTextOffset = 8.0
+    ButtonText = {R = 102, G = 204, B = 255, A = 255}
+    ButtonTextHover = {R = 255, G = 255, B = 255, A = 255}
+    OrbitLabel = "Enter Orbit"
+    SystemLabel = "Enter System"
+    ScanLabel = "Scan"
     SpeedScale = 1.0
     TickGroup = ETickingGroup.TG_PostAsyncWork
 }

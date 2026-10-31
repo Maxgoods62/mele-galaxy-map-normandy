@@ -15,6 +15,7 @@ DOTNET="${MELE_DOTNET:-dotnet.exe}"
 VGMSTREAM="${MELE_VGMSTREAM:-vgmstream-cli}"
 LE_DIR="${MELE_LE_DIR:?set MELE_LE_DIR to the Legendary Edition folder, as a Windows path}"
 LE1="$LE_DIR\\Game\\ME1\\BioGame\\CookedPCConsole"
+LE2="$LE_DIR\\Game\\ME2\\BioGame\\CookedPCConsole"
 LE3="$LE_DIR\\Game\\ME3\\BioGame\\CookedPCConsole"
 BUILD="$HERE/build"
 DIST="$HERE/dist/Galaxy Map Normandy"
@@ -28,6 +29,11 @@ LOOP_A=191335730
 LOOP_B=634254545
 # The SR-1 static mesh in BIOA_ICE20_11_LAY.pcc (ice20_normandy).
 SR1_UINDEX=31
+# LE2's PC button in its Startup_INT.pcc, and two ffmpeg curves of its brightness that give it the colours of LE1's
+# Back button on the galaxy map: blue, and the amber it takes under the pointer (docs/ASSETS.md).
+BUTTON_ART=GUI_SF_PC_SharedAssets.PC_SharedAssets_I3
+BUTTON_BLUE="r='0/0.05 0.65/0.18 0.8/0.52':g='0/0.15 0.65/0.58 0.8/0.78':b='0/0.19 0.65/0.75 0.8/0.88'"
+BUTTON_AMBER="r='0/0.23 0.65/0.9 0.8/1':g='0/0.09 0.65/0.58 0.8/0.86':b='0/0 0.65/0.1 0.8/0.34'"
 
 win() { wslpath -w "$1"; }
 die() { echo "build.sh: $*" >&2; exit 1; }
@@ -39,7 +45,7 @@ command -v "$VGMSTREAM" >/dev/null || die "$VGMSTREAM not found: set MELE_VGMSTR
 [[ -f "$TOOLKIT/tools/mele-mcp/external/LegendaryExplorer/LegendaryExplorer/LegendaryExplorerCore/LegendaryExplorerCore.csproj" ]] \
     || die "the toolkit's LEC submodule is missing: git -C '$TOOLKIT' submodule update --init"
 
-mkdir -p "$BUILD/tools" "$BUILD/sound"
+mkdir -p "$BUILD/tools" "$BUILD/sound" "$BUILD/button"
 
 # Tools: rebuilt when the toolkit's commit or working tree changed since the last build.
 stamp="$(git -C "$TOOLKIT" rev-parse HEAD) $(git -C "$TOOLKIT" status --porcelain | md5sum | cut -c1-8)"
@@ -157,7 +163,7 @@ EOF
 for f in travel_whoosh travel_loop; do ff -i "$S/$f.wav" -c:a libvorbis -q:a 8 "$S/$f.ogg"; done
 frames() { python3 -I -c 'import sys, wave; print(wave.open(sys.argv[1]).getnframes())' "$1"; }
 
-# 5. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues) and the SR-1 mesh.
+# 5. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues), the SR-1 mesh and the button's two textures.
 echo "== sfx"
 SFX="$(win "$BUILD/GalaxyMapNormandy_SFX.pcc")"
 rm -f "$BUILD/GalaxyMapNormandy_SFX.pcc"
@@ -169,6 +175,19 @@ lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$S/travel_loop.
 grep -E '^wave' "$OUT" || true
 lectool portmesh "$LE1\\BIOA_ICE20_11_LAY.pcc" "$SR1_UINDEX" "$SFX" SR1_Normandy
 if grep -E 'BROKEN' "$OUT"; then die "broken material in the SR-1 port"; fi
+# The button: LE2 shows it mirrored, with the cut corner at the bottom left (docs/ASSETS.md).
+B="$BUILD/button"
+rm -f "$B"/*
+LECGAME=LE2 lectool texpng "$LE2\\Startup_INT.pcc" "$BUTTON_ART" "$(win "$B/le2.png")"
+button() {    # button <new name> <curves>
+    ff -i "$B/le2.png" -vf "hflip,format=rgba,colorchannelmixer=.299:.587:.114:0:.299:.587:.114:0:.299:.587:.114:0,curves=interp=pchip:$2" \
+        -pix_fmt rgba "$B/$1.png"
+    lectool addtexture "$SFX" "$1" "$(win "$B/$1.png")"
+    # lectool exits 0 on a command it does not know.
+    grep -F "$1" "$OUT" || die "lectool added no $1: the toolkit needs addtexture"
+}
+button EnterButton_Normal "$BUTTON_BLUE"
+button EnterButton_Hover "$BUTTON_AMBER"
 
 # 6. The M3 mod folder.
 echo "== dist"

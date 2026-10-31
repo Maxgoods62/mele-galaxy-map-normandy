@@ -12,8 +12,8 @@
 | `python3`, `ffmpeg` and `git` in WSL | | `build.sh` stops if one of them is not on `PATH`. `ffmpeg` needs the `libvorbis` encoder. |
 | The Windows .NET SDK 10.0.402 or a later 10.0 SDK, and the .NET 8 runtime | `MELE_DOTNET` | The toolkit's `global.json` files pin SDK 10.0.402 (`rollForward: latestFeature`). lectool and mele-mcp target `net8.0-windows` and run on .NET 8. The first build restores NuGet packages. |
 | vgmstream | `MELE_VGMSTREAM` | `vgmstream-cli` in WSL, or the Windows `vgmstream.exe` that Legendary Explorer ships in `exec/vgmstream/`. |
-| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version. |
-| LE1 and LE3 in one Legendary Edition folder | `MELE_LE_DIR` | The build reads LE1's `snd_gui.pcc` and `BIOA_ICE20_11_LAY.pcc` and LE3's `SFXGame.pcc` ([ASSETS.md](ASSETS.md)). |
+| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` (with its `addtexture` command) and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version; it stops if `addtexture` adds nothing. |
+| LE1, LE2 and LE3 in one Legendary Edition folder | `MELE_LE_DIR` | The build reads LE1's `snd_gui.pcc` and `BIOA_ICE20_11_LAY.pcc`, LE2's `Startup_INT.pcc` and LE3's `SFXGame.pcc` ([ASSETS.md](ASSETS.md)). |
 
 To get the toolkit:
 
@@ -44,7 +44,7 @@ from the environment.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `MELE_LE_DIR` | none: `build.sh` stops without it | The Legendary Edition folder (the one that holds `Game\ME1` and `Game\ME3`), as a Windows path |
+| `MELE_LE_DIR` | none: `build.sh` stops without it | The Legendary Edition folder (the one that holds `Game\ME1`, `Game\ME2` and `Game\ME3`), as a Windows path |
 | `MELE_DOTNET` | `dotnet.exe` on `PATH` | The Windows `dotnet.exe`, as a WSL path |
 | `MELE_VGMSTREAM` | `vgmstream-cli` | vgmstream. A path that ends in `.exe` gets Windows paths for its files. |
 | `MELE_TOOLKIT` | `../../mele-maxgoods-toolkit`, from this repository's folder | A mele-maxgoods-toolkit checkout. The default fits a layout with `<folder>/mele-maxgoods-toolkit` and `<folder>/mods/galaxy-map-normandy`. A relative path you set is read from the folder you run `build.sh` in, so an absolute path is safer. |
@@ -125,9 +125,15 @@ The cloned wave keeps the donor's name (`snd_gui:c_snd_guiswish`, `snd_gui:c_gal
 length and channel count change.
 
 `lectool portmesh` then ports the SR-1 static mesh (export 31 of LE1's `BIOA_ICE20_11_LAY.pcc`) with its materials and
-textures as `SR1_Normandy`. The build stops if LegendaryExplorerCore reports a broken material. The director loads
-these three objects by name at run time: `GalaxyMapNormandy_SFX.SR1_Normandy`, `GalaxyMapNormandy_SFX.c_travel_whoosh`
-and `GalaxyMapNormandy_SFX.c_travel_loop`.
+textures as `SR1_Normandy`. The build stops if LegendaryExplorerCore reports a broken material.
+
+For the button, `lectool texpng` (with `LECGAME=LE2`) writes LE2's button texture as PNG into `build/button/`, ffmpeg
+mirrors it and recolours it to LE1's blue and amber, and `lectool addtexture` adds the two as `EnterButton_Normal` and
+`EnterButton_Hover`.
+
+The director loads these five objects by name at run time: `GalaxyMapNormandy_SFX.SR1_Normandy`,
+`GalaxyMapNormandy_SFX.c_travel_whoosh`, `GalaxyMapNormandy_SFX.c_travel_loop`,
+`GalaxyMapNormandy_SFX.EnterButton_Normal` and `GalaxyMapNormandy_SFX.EnterButton_Hover`.
 
 ### 5. Mod folder: `dist/Galaxy Map Normandy/`
 
@@ -153,7 +159,8 @@ dist/Galaxy Map Normandy/
 | `build/Startup_MOD_GalaxyMapNormandy.pcc` | the compiled classes |
 | `build/GalaxyMapNormandy_NOR10.pcc`, `build/level_new.json` | the level, and mele-mcp's reply |
 | `build/sound/` | the extracted `.wem` files, the decoded and mixed `.wav` files, the two `.ogg` files |
-| `build/GalaxyMapNormandy_SFX.pcc` | the two cues and the SR-1 mesh |
+| `build/button/` | LE2's button texture as PNG (`le2.png`), and the two recoloured copies |
+| `build/GalaxyMapNormandy_SFX.pcc` | the two cues, the SR-1 mesh and the button's textures |
 | `build/lectool.out`, `build/lectool.out.raw`, `build/lectool.err` | the last lectool command's output, and LegendaryExplorerCore's log |
 | `dist/Galaxy Map Normandy/` | the M3 mod folder |
 | `dist/GalaxyMapNormandy-v<modver>.zip`, `dist/SHA256SUMS` | the zip that `package.sh` writes, and its checksum ([Package](#package)) |

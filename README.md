@@ -3,8 +3,9 @@
 A mod for Mass Effect 1 in the Legendary Edition. On the galaxy map, a lit SR-1 Normandy takes the place of the orange
 cursor ring at cluster and system level, as in ME2 and ME3. It follows the cursor, turns toward where it flies and
 plays the ME3 travel sound: a whoosh when it sets off, then an engine loop whose pitch and volume rise with its speed.
-The mouse works as in ME2, and the controller keeps LE1's own control. LE1's own 2D "you are here" marker is gone at
-every level of the map; the name labels stay. Apart from that, the galaxy level and the planet view stay vanilla.
+The mouse works as in ME2, with its Enter Orbit button, and the controller keeps LE1's own control. LE1's own 2D "you
+are here" marker is gone at every level of the map; the name labels stay. Apart from that, the galaxy level and the
+planet view stay vanilla.
 
 There is no release yet. You build the mod from this repository and your own game files, then install it with
 ME3Tweaks Mod Manager (M3). The version is `modver` in [`mod/moddesc.ini`](mod/moddesc.ini); the history is in
@@ -14,7 +15,7 @@ ME3Tweaks Mod Manager (M3). The version is `modver` in [`mod/moddesc.ini`](mod/m
 
 | Need | Why |
 |---|---|
-| Mass Effect Legendary Edition, with the LE1 and LE3 files in its folder | the mod is for LE1; the build takes the travel sound from LE3's `SFXGame.pcc` |
+| Mass Effect Legendary Edition, with the LE1, LE2 and LE3 files in its folder | the mod is for LE1; the build takes the button's art from LE2's `Startup_INT.pcc` and the travel sound from LE3's `SFXGame.pcc` |
 | LE1 Community Patch 2.0 or later | its Sideloader loads the mod's level with the Normandy; `moddesc.ini` requires `DLC_MOD_LE1CP` 2.0 or later |
 | [ME3Tweaks Mod Manager](https://github.com/ME3Tweaks/ME3TweaksModManager) | installs the mod; `moddesc.ini` targets moddesc version 9.2 |
 | Windows with WSL, and the build tools listed in [docs/building.md](docs/building.md) | the mod is built on your machine |
@@ -46,10 +47,16 @@ At cluster and system level:
 | Move the mouse | moves an arrow pointer, which starts on the ship |
 | Hold the left mouse button | the ship flies toward the arrow and slows down as it gets close |
 | Click the left mouse button (shorter than 0.25 s) | selects the highlighted object, as a vanilla click does |
+| Click the button at the bottom centre | the same, as LE2's Enter Orbit button does; a press on it does not fly the ship |
 | Controller | unchanged: the stick moves the cursor and the ship follows it; moving the stick hides the arrow until the mouse moves again |
 
-While another panel has focus, such as the travel prompt, the arrow is hidden and the left button works as in vanilla.
-At galaxy level the mouse and the left button work as in vanilla.
+The button shows with the mouse when the ship is on something the map can enter, where a controller gets its A prompt:
+Enter System on a system at cluster level, Enter Orbit on a planet in system view, and Scan on a planet still to be
+scanned. Its words are LE2's, in English, French, German, Italian, Spanish and Polish (without accents: the font drawing
+them has none). Russian and Japanese games get English for the same reason.
+
+While another panel has focus, such as the travel prompt, the arrow and the button are hidden and the left button works
+as in vanilla. At galaxy level the mouse and the left button work as in vanilla.
 
 ## Settings
 
@@ -75,10 +82,11 @@ loads that level whenever a level whose name starts with `BIOA_NOR10` loads, so 
 map can open.
 
 Every frame while the map is open, the director reads the cursor from the galaxy map camera, moves the ship after it
-and drives the sound from the ship's speed. With the mouse, it draws the arrow and, while the left button is held,
-feeds the game a virtual stick from the ship toward the arrow. The game then moves the cursor exactly as it does for
-the controller. The ship carries its own sky light, because nothing else lights it out in the map scene. The director
-also sets the map movie's `LocationShip` clip to zero alpha, which hides the 2D marker and leaves its labels alone.
+and drives the sound from the ship's speed. With the mouse, it draws the arrow and the Enter Orbit button and, while the
+left button is held, feeds the game a virtual stick from the ship toward the arrow. The game then moves the cursor
+exactly as it does for the controller. The ship carries its own sky light, because nothing else lights it out in the
+map scene. The director also sets the map movie's `LocationShip` clip to zero alpha, which hides the 2D marker and
+leaves its labels alone.
 
 ## Compatibility
 
@@ -119,9 +127,9 @@ in git.
 ## Credits
 
 - BioWare and Electronic Arts: Mass Effect Legendary Edition. From your own install, the build copies the SR-1 model
-  (the docked Normandy's static mesh in `BIOA_ICE20_11_LAY.pcc`), the ME3 galaxy map travel sound (LE3's
-  `Wwise_Generic_Galaxy_Map` bank in `SFXGame.pcc`) and two LE1 interface sound cues, used as templates
-  (`snd_gui.pcc`).
+  (the docked Normandy's static mesh in `BIOA_ICE20_11_LAY.pcc`), the ME2 PC button art (LE2's `Startup_INT.pcc`), the
+  ME3 galaxy map travel sound (LE3's `Wwise_Generic_Galaxy_Map` bank in `SFXGame.pcc`) and two LE1 interface sound cues,
+  used as templates (`snd_gui.pcc`).
 - The LE1 Community Patch team, for the Sideloader that loads the mod's level and the Mod Settings Menu. The build
   copies the menu's page class (`ModSettingsSubmenu`) from your installed Community Patch into the mod's menu package,
   as other mods' settings pages do.

@@ -129,6 +129,23 @@ to select. Sizes in pixels are for a 1080-pixel-high screen and scale with the s
 | `MouseStickCluster` | 1.75 | Largest virtual stick at cluster level; 1 is a full controller deflection. 1.75 is about 1,010 units per second, against about 579 for the full stick. |
 | `MouseStickSystem` | 0.85 | Largest virtual stick in system view. |
 
+### Enter Orbit button
+
+The button at the bottom centre of the screen. It shows where a controller gets its A or Y prompt, and only while the
+mouse is in use.
+
+| Field | Default | What it does |
+|---|---|---|
+| `bEnterButton` | true | Turns the button on. The director clears it if the button's textures or font do not load. |
+| `ButtonWidth`, `ButtonHeight` | 307.0, 49.0 | Size of the button, in pixels. LE2 shows it at this size. |
+| `ButtonBottom` | 54.0 | Distance from the bottom of the screen, in pixels. |
+| `ButtonFadeTime` | 0.3 | Seconds of the fade from blue to amber under the pointer. |
+| `ButtonTextScale` | 0.5 | Scale of the label on `EngineFonts.LargeFont`, whose letters are 52 pixels high. |
+| `ButtonTextOffset` | 8.0 | How far right of the panel's centre the label sits, in pixels, to clear the cut corner. |
+| `ButtonText` | (102, 204, 255, 255) | Label colour: `#66ccff`, that of LE1's Back button. |
+| `ButtonTextHover` | white (255, 255, 255, 255) | Label colour under the pointer, also as on that button. |
+| `OrbitLabel`, `SystemLabel`, `ScanLabel` | Enter Orbit, Enter System, Scan | The three labels. `ReadLabels` sets them for the game's language when the map first opens. |
+
 ### Heading model (`bVirtualStick` false)
 
 The nose turns toward the arrow at a limited rate and the ship thrusts along it, so a reversal is a tight U-turn.
