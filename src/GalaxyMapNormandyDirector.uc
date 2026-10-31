@@ -154,6 +154,7 @@ public event function Tick(float DeltaTime)
     {
         ReadSettings();
     }
+    HideLocationMarker();
     NewRing = GalaxyCam.m_pCrossHairObject;
     if (NewRing != Ring)
     {
@@ -793,6 +794,26 @@ public function ReleasePointer()
     PendingMouseY = 0.0;
     bHeadingSet = FALSE;
     FlySpeed = 0.0;
+}
+
+// The movie's "you are here" marker (ship outline and ring, one clip) makes no sense next to a ship that flies. The movie
+// keeps rewriting the clip's _visible and position but never touches its _alpha. The name label is another clip. Each
+// opening of the map loads a new movie, so this runs every frame. Keep the oPanel check: SetVariableFloat has no null
+// check of its own, and oPanel is what turns None when the game closes the movie.
+public function HideLocationMarker()
+{
+    if (Handler == None)
+    {
+        Handler = FindGalaxyHandler(BioPlayerController(GetALocalPlayerController()));
+        if (Handler == None)
+        {
+            return;
+        }
+    }
+    if (Handler.oPanel != None)
+    {
+        Handler.oPanel.SetVariableFloat("_root.LocationShip._alpha", 0.0);
+    }
 }
 
 // The galaxy map's handler is a script handler of one of the open Scaleform panels.

@@ -5,6 +5,9 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.20: LE1's own "you are here" marker (the 2D ship outline and the ring around it) no longer shows, at any level of
+  the map. The director sets the `LocationShip` clip of the map movie to zero alpha; the name labels stay.
+  In game: the marker stayed gone at every level, after reopening the map and after travel, with no flash on opening.
 - v0.18: each change in the menu writes the profile file at once, through the Options screen's own save
   (`BioSFHandler_PCOptions.SaveProfile`), as the LE1 Community Patch's FOV slider does. v0.17 queued the engine's
   profile save command, which only fills the save system's in-memory record; the game writes the file on its own only

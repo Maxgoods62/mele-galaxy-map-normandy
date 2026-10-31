@@ -3,8 +3,8 @@
 A mod for Mass Effect 1 in the Legendary Edition. On the galaxy map, a lit SR-1 Normandy takes the place of the orange
 cursor ring at cluster and system level, as in ME2 and ME3. It follows the cursor, turns toward where it flies and
 plays the ME3 travel sound: a whoosh when it sets off, then an engine loop whose pitch and volume rise with its speed.
-The mouse works as in ME2, and the controller keeps LE1's own control. The galaxy level and the planet view stay
-vanilla.
+The mouse works as in ME2, and the controller keeps LE1's own control. LE1's own 2D "you are here" marker is gone at
+every level of the map; the name labels stay. Apart from that, the galaxy level and the planet view stay vanilla.
 
 There is no release yet. You build the mod from this repository and your own game files, then install it with
 ME3Tweaks Mod Manager (M3). The version is `modver` in [`mod/moddesc.ini`](mod/moddesc.ini); the history is in
@@ -77,7 +77,8 @@ map can open.
 Every frame while the map is open, the director reads the cursor from the galaxy map camera, moves the ship after it
 and drives the sound from the ship's speed. With the mouse, it draws the arrow and, while the left button is held,
 feeds the game a virtual stick from the ship toward the arrow. The game then moves the cursor exactly as it does for
-the controller. The ship carries its own sky light, because nothing else lights it out in the map scene.
+the controller. The ship carries its own sky light, because nothing else lights it out in the map scene. The director
+also sets the map movie's `LocationShip` clip to zero alpha, which hides the 2D marker and leaves its labels alone.
 
 ## Compatibility
 
@@ -92,8 +93,6 @@ the controller. The ship carries its own sky light, because nothing else lights 
   system moves under it. ME2 keeps that view still.
 - The selection follows the hidden cursor, and the ship eases after it. On a fast move the highlight can change a
   moment before the ship gets there.
-- At cluster level LE1's own small 2D Normandy icon still marks the system you are in, while the 3D ship shows where
-  you point.
 
 ## Tuning
 
