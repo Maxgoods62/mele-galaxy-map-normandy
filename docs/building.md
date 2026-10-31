@@ -72,9 +72,9 @@ LegendaryExplorerCore submodule (`tools/mele-mcp/external/LegendaryExplorer`) is
 lectool (`tools/lectool/lectool.csproj`) and mele-mcp (`tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`) are built from the
 toolkit with `dotnet build -c Release` into `build/tools/lectool/` and `build/tools/mele-mcp/`. Only the compiler's
 error lines are shown. Each tool gets a stamp file, `build/tools/<name>.stamp`, with the toolkit's commit and a hash of
-the toolkit's `git status` listing. A tool is rebuilt only when the stamp changes, so a new commit or a newly changed
-file triggers it, but a further edit to a file that was already changed does not. Delete `build/tools/` to force a
-rebuild.
+the toolkit's `git status` listing and `git diff HEAD`. A tool is rebuilt only when the stamp changes, so a new commit or
+any edit to a tracked file triggers it, but a further edit to an untracked file does not. Delete `build/tools/` to force
+a rebuild.
 
 Every lectool command writes its output to `build/lectool.out` and LegendaryExplorerCore's log to `build/lectool.err`.
 `MELE_LE_DIR` is passed on to it, so LegendaryExplorerCore uses that game folder instead of the one it finds in the
@@ -137,7 +137,7 @@ The director loads these five objects by name at run time: `GalaxyMapNormandy_SF
 
 ### 5. Mod folder: `dist/Galaxy Map Normandy/`
 
-`build.sh` deletes the old folder, copies `mod/` and adds the three packages:
+`build.sh` deletes the old folder, copies `mod/` and adds the four packages:
 
 ```
 dist/Galaxy Map Normandy/
@@ -148,6 +148,7 @@ dist/Galaxy Map Normandy/
             ConfigDelta-GalaxyMapNormandy.m3cd
             GalaxyMapNormandy_NOR10.pcc
             GalaxyMapNormandy_SFX.pcc
+            ModSettings_Submenus_GalaxyMapNormandy.pcc
             Startup_MOD_GalaxyMapNormandy.pcc
 ```
 

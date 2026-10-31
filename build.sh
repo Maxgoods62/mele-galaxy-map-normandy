@@ -48,7 +48,7 @@ command -v "$VGMSTREAM" >/dev/null || die "$VGMSTREAM not found: set MELE_VGMSTR
 mkdir -p "$BUILD/tools" "$BUILD/sound" "$BUILD/button"
 
 # Tools: rebuilt when the toolkit's commit or working tree changed since the last build.
-stamp="$(git -C "$TOOLKIT" rev-parse HEAD) $(git -C "$TOOLKIT" status --porcelain | md5sum | cut -c1-8)"
+stamp="$(git -C "$TOOLKIT" rev-parse HEAD) $({ git -C "$TOOLKIT" status --porcelain; git -C "$TOOLKIT" diff HEAD --submodule=diff; } | md5sum | cut -c1-8)"
 build_tool() {    # build_tool <name> <project dir> <csproj> <output file>
     local out="$BUILD/tools/$1"
     if [[ -f "$out.stamp" && "$(cat "$out.stamp")" == "$stamp" ]]; then return; fi

@@ -11,7 +11,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NAME="Galaxy Map Normandy"
 DIST="$HERE/dist"
 MOD="$DIST/$NAME"
-PACKAGES=(Startup_MOD_GalaxyMapNormandy GalaxyMapNormandy_NOR10 GalaxyMapNormandy_SFX)
+PACKAGES=(Startup_MOD_GalaxyMapNormandy GalaxyMapNormandy_NOR10 GalaxyMapNormandy_SFX ModSettings_Submenus_GalaxyMapNormandy)
 
 die() { echo "package.sh: $*" >&2; exit 1; }
 
@@ -25,7 +25,7 @@ esac
 modver="$(sed -n 's/^modver=//p' "$HERE/mod/moddesc.ini" | tr -d '\r')"
 [[ "$modver" =~ ^[0-9A-Za-z._-]+$ ]] || die "no usable modver in mod/moddesc.ini: '$modver'"
 
-# With --no-build the folder may be an older build: each file of mod/ must be there unchanged, the three packages
+# With --no-build the folder may be an older build: each file of mod/ must be there unchanged, the packages
 # present, and nothing else.
 [[ -d "$MOD" ]] || die "no $MOD: run ./package.sh without --no-build"
 while IFS= read -r -d '' f; do
