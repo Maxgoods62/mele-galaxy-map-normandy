@@ -1,0 +1,23 @@
+# Galaxy Map Normandy strings, Spanish (Castilian).
+74220001	Cúmulo: velocidad de vuelo
+74220002	Velocidad a la que vuela la nave en el nivel del cúmulo, tanto con el mando como con el ratón. El cursor del mapa, y por tanto la selección, se mueve a la misma velocidad.
+74220003	Cúmulo: velocidad de giro
+74220004	Velocidad a la que gira la proa de la nave hacia donde vuela, en el nivel del cúmulo.
+74220005	Cúmulo: respuesta de la nave
+74220006	Precisión con la que la nave sigue al cursor del mapa en el nivel del cúmulo. Con valores bajos se desliza tras él; con valores altos se mantiene sobre el cursor.
+74220007	Cúmulo: tamaño de la nave
+74220008	Tamaño de la nave en el nivel del cúmulo.
+74220009	Sistema: velocidad de vuelo
+74220010	Velocidad a la que vuela la nave en el nivel del sistema, tanto con el mando como con el ratón. Aquí la cámara sigue a la nave, así que la vista también se mueve más rápido.
+74220011	Sistema: velocidad de giro
+74220012	Velocidad a la que gira la proa de la nave hacia donde vuela, en el nivel del sistema.
+74220013	Sistema: respuesta de la nave
+74220014	Precisión con la que la nave sigue al cursor del mapa en el nivel del sistema. Con valores bajos se desliza tras él; con valores altos se mantiene sobre el cursor.
+74220015	Sistema: tamaño de la nave
+74220016	Tamaño de la nave en el nivel del sistema.
+74220017	Valores predeterminados
+74220018	Todos los ajustes de esta página vuelven al 100 %.
+74220019	Verás los cambios al volver a abrir el mapa.
+74220020	(predeterminado)
+74220021	Actual
+74220022	Velocidad de vuelo y de giro, respuesta y tamaño de la nave en el mapa de la galaxia, en el nivel del cúmulo y en el del sistema. Para todas las partidas.

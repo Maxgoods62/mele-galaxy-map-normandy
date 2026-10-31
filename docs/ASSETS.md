@@ -76,5 +76,5 @@ The label is drawn with the game's own `EngineFonts.LargeFont`.
 
 `GalaxyMapNormandy_SFX.pcc` holds the two cues, the mesh and the button's textures. It is built on your machine, lands in
 `dist/Galaxy Map Normandy/DLC_MOD_GalaxyMapNormandy/CookedPCConsole/` and is for your own use with your own copy of
-the game ([NOTICE](../NOTICE)). The other two packages hold only this repository's compiled classes and an otherwise
-empty level with one actor.
+the game ([NOTICE](../NOTICE)). The other packages hold this repository's compiled classes and strings, a copy of the
+LE1 Community Patch's `ModSettingsSubmenu` class, and an otherwise empty level with one actor.

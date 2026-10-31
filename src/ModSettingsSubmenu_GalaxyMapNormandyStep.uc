@@ -5,7 +5,7 @@ Class ModSettingsSubmenu_GalaxyMapNormandyStep extends ModSettingsSubmenu
 // step in the gamer profile and saves it, then the menu refreshes the list. Back returns to the settings page.
 
 var transient int SettingId;
-var transient string SettingDescription;
+var transient stringref SettingDescription;
 var transient bool bOpened;
 var array<int> Steps;
 
@@ -40,14 +40,14 @@ public function bool OnRefreshMenu(Object outerMenu)
         Item.sLeftText = string(Steps[I]) @ "%";
         if (Steps[I] == 100)
         {
-            Item.sLeftText @= "(default)";
+            Item.sLeftText @= string($74220020);
         }
-        Item.sDescriptionTitleText = sTitle;
-        Item.sDescriptionText = SettingDescription;
+        Item.srDescriptionTitleText = srTitle;
+        Item.srDescriptionText = SettingDescription;
         if (Steps[I] == Current)
         {
             Item.greenHighlight = TRUE;
-            Item.sRightText = "Current";
+            Item.srRightText = $74220021;
             // Open the list on the current step.
             if (!bOpened)
             {

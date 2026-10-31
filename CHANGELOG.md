@@ -5,6 +5,12 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.24: the settings pages and their row on the Mod Settings Menu's first page are translated: French, German, Italian,
+  Spanish, Polish, Russian and Japanese, with the game's own words where it has them. The mod now has a GlobalTlk, one
+  package per language file name the game looks for, built from `src/tlk/<language>.tsv`. The row's title, the mod's
+  name, stays in English. The page's subtitle is one sentence shorter: two did not fit its one-line field in any
+  language. "The same for every save" stays in the row's description. In game: the page, a step list and the row
+  read correctly in French, Japanese and Russian.
 - v0.23: the button no longer shows on top of the controller's prompts. A touch of the controller hides it; a click or
   a key brings it back. In game: works.
 - v0.22: under the pointer the button is a solid brown panel with gold corners, as LE1's own buttons are, instead of an

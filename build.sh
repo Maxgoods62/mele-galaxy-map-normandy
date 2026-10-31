@@ -106,7 +106,28 @@ lectool compileclass "$(win "$BUILD/ModSettings_Submenus_GalaxyMapNormandy.pcc")
     --unforce=GalaxyMapNormandyMenu --no-referencer
 grep -E '^log:|\sClass\s' "$OUT" || true
 
-# 3. GalaxyMapNormandy_NOR10.pcc: an empty level with one director actor, sideloaded with the Normandy by LE1CP.
+# 3. DLC_MOD_GalaxyMapNormandy_GlobalTlk*.pcc: the menu's words, a package per file name the game looks for. Each text
+# language has its own src/tlk/<language>.tsv, and every one must have the ids of INT.tsv. The file without a suffix is
+# English. The game's FE, GE, IE, RA and PLPC show the text of FR, DE, IT, RU and PL: copies, as in LE1CP.
+echo "== strings"
+TLK="$BUILD/tlk"
+rm -rf "$TLK"
+mkdir -p "$TLK"
+tlk_file() { echo "$TLK/DLC_MOD_GalaxyMapNormandy_GlobalTlk$1.pcc"; }
+tlk() {    # tlk <file suffix> <language>
+    lectool tlkpackage "$(win "$(tlk_file "$1")")" "$(win "$HERE/src/tlk/$2.tsv")" --ids-from "$(win "$HERE/src/tlk/INT.tsv")"
+    # lectool exits 0 on a command it does not know.
+    grep -F 'strings' "$OUT" || die "lectool wrote no $2 strings: the toolkit needs tlkpackage"
+}
+tlk "" INT
+for lang in FR DE IT ES PL RU JA; do tlk "_$lang" "$lang"; done
+cp "$(tlk_file _FR)" "$(tlk_file _FE)"
+cp "$(tlk_file _DE)" "$(tlk_file _GE)"
+cp "$(tlk_file _IT)" "$(tlk_file _IE)"
+cp "$(tlk_file _RU)" "$(tlk_file _RA)"
+cp "$(tlk_file _PL)" "$(tlk_file _PLPC)"
+
+# 4. GalaxyMapNormandy_NOR10.pcc: an empty level with one director actor, sideloaded with the Normandy by LE1CP.
 echo "== level"
 rm -f "$BUILD/GalaxyMapNormandy_NOR10.pcc"
 mcp level_new "$(json path "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")")" \
@@ -114,7 +135,7 @@ mcp level_new "$(json path "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")")" \
 lectool addactor "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")" GalaxyMapNormandy GalaxyMapNormandyDirector
 cat "$OUT"
 
-# 4. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix them (docs/ASSETS.md).
+# 5. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix them (docs/ASSETS.md).
 echo "== sound"
 S="$BUILD/sound"
 rm -f "$S"/*
@@ -163,7 +184,7 @@ EOF
 for f in travel_whoosh travel_loop; do ff -i "$S/$f.wav" -c:a libvorbis -q:a 8 "$S/$f.ogg"; done
 frames() { python3 -I -c 'import sys, wave; print(wave.open(sys.argv[1]).getnframes())' "$1"; }
 
-# 5. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues), the SR-1 mesh and the button's two textures.
+# 6. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues), the SR-1 mesh and the button's two textures.
 echo "== sfx"
 SFX="$(win "$BUILD/GalaxyMapNormandy_SFX.pcc")"
 rm -f "$BUILD/GalaxyMapNormandy_SFX.pcc"
@@ -198,11 +219,11 @@ button() {    # button <new name> <filters> [addtexture option]
 button EnterButton_Normal "$GREY,curves=interp=pchip:$BUTTON_BLUE"
 button EnterButton_Hover "split[p][a];[p]$PANEL[p];[a]$GREY,curves=interp=pchip:$BUTTON_BROWN,lutrgb=a='min(255,val*2.5)'[a];[p][a]overlay=format=rgb,format=rgba,$CORNERS,$UNDO" --argb
 
-# 6. The M3 mod folder.
+# 7. The M3 mod folder.
 echo "== dist"
 rm -rf "$DIST"
 mkdir -p "$DIST"
 cp -r "$HERE/mod/." "$DIST/"
-cp "$BUILD"/{Startup_MOD_GalaxyMapNormandy,ModSettings_Submenus_GalaxyMapNormandy,GalaxyMapNormandy_NOR10,GalaxyMapNormandy_SFX}.pcc "$COOKED/"
+cp "$BUILD"/{Startup_MOD_GalaxyMapNormandy,ModSettings_Submenus_GalaxyMapNormandy,GalaxyMapNormandy_NOR10,GalaxyMapNormandy_SFX}.pcc "$TLK"/*.pcc "$COOKED/"
 echo "built $(win "$DIST") (modver $(sed -n 's/^modver=//p' "$HERE/mod/moddesc.ini" | tr -d '\r'))"
 ls -l "$COOKED" | tail -n +2

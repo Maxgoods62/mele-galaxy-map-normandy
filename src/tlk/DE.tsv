@@ -1,0 +1,23 @@
+# Galaxy Map Normandy strings, German.
+74220001	Cluster: Fluggeschwindigkeit
+74220002	Legt fest, wie schnell das Schiff auf Cluster-Ebene fliegt, mit Controller und Maus. Der Kartencursor und damit die Auswahl bewegen sich genauso schnell.
+74220003	Cluster: Drehgeschwindigkeit
+74220004	Legt fest, wie schnell sich der Bug des Schiffs auf Cluster-Ebene in die Flugrichtung dreht.
+74220005	Cluster: Schiffsreaktion
+74220006	Legt fest, wie eng das Schiff auf Cluster-Ebene dem Kartencursor folgt. Niedrige Werte lassen es hinterhergleiten, hohe Werte halten es am Cursor.
+74220007	Cluster: Schiffsgröße
+74220008	Größe des Schiffs auf Cluster-Ebene.
+74220009	System: Fluggeschwindigkeit
+74220010	Legt fest, wie schnell das Schiff auf System-Ebene fliegt, mit Controller und Maus. Die Kamera folgt dort dem Schiff, also bewegt sich auch die Ansicht schneller.
+74220011	System: Drehgeschwindigkeit
+74220012	Legt fest, wie schnell sich der Bug des Schiffs auf System-Ebene in die Flugrichtung dreht.
+74220013	System: Schiffsreaktion
+74220014	Legt fest, wie eng das Schiff auf System-Ebene dem Kartencursor folgt. Niedrige Werte lassen es hinterhergleiten, hohe Werte halten es am Cursor.
+74220015	System: Schiffsgröße
+74220016	Größe des Schiffs auf System-Ebene.
+74220017	Standard wiederherstellen
+74220018	Setzt alle Einstellungen dieser Seite auf 100 % zurück.
+74220019	Gilt ab dem nächsten Öffnen der Karte.
+74220020	(Standard)
+74220021	Aktuell
+74220022	Fluggeschwindigkeit, Drehgeschwindigkeit, Reaktion und Größe des Schiffs auf der Galaxie-Karte, auf Cluster- und System-Ebene. Gilt für alle Spielstände.

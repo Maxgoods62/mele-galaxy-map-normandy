@@ -1,0 +1,23 @@
+# Galaxy Map Normandy strings, Italian.
+74220001	Ammasso: velocità di volo
+74220002	Regola la velocità di volo della nave nella visuale ammasso, sia con il controller sia con il mouse. Il cursore sulla mappa, e con esso la selezione, si sposta alla stessa velocità.
+74220003	Ammasso: velocità di rotazione
+74220004	Regola la velocità con cui la prua della nave ruota verso la direzione di volo nella visuale ammasso.
+74220005	Ammasso: reattività nave
+74220006	Regola quanto la nave segue da vicino il cursore sulla mappa nella visuale ammasso. Con valori più bassi gli scivola dietro; con valori più alti gli resta attaccata.
+74220007	Ammasso: dimensioni nave
+74220008	Regola le dimensioni della nave nella visuale ammasso.
+74220009	Sistema: velocità di volo
+74220010	Regola la velocità di volo della nave nella visuale sistema, sia con il controller sia con il mouse. Qui la visuale segue i movimenti della nave, quindi si sposta anch'essa più rapidamente.
+74220011	Sistema: velocità di rotazione
+74220012	Regola la velocità con cui la prua della nave ruota verso la direzione di volo nella visuale sistema.
+74220013	Sistema: reattività nave
+74220014	Regola quanto la nave segue da vicino il cursore sulla mappa nella visuale sistema. Con valori più bassi gli scivola dietro; con valori più alti gli resta attaccata.
+74220015	Sistema: dimensioni nave
+74220016	Regola le dimensioni della nave nella visuale sistema.
+74220017	Ripristina predefiniti
+74220018	Riporta tutte le impostazioni di questa pagina al 100 %.
+74220019	Attive dalla prossima apertura della mappa.
+74220020	(predefinito)
+74220021	Attuale
+74220022	Velocità di volo e di rotazione, reattività e dimensioni della nave sulla mappa galattica, nella visuale ammasso e nella visuale sistema. Valide per tutti i salvataggi.

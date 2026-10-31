@@ -2,4 +2,4 @@
 +Levels=(LevelName="GalaxyMapNormandy_NOR10", LoadIfPrefix=("BIOA_NOR10"))
 
 [BioUI.ini ModSettings_Submenus_LE1CP.ModSettingsSubmenu_Root]
-+menuItems=(sCenterText="Galaxy Map Normandy", sDescriptionTitleText="Galaxy Map Normandy", sDescriptionText="Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view. The same for every save.", SubMenuClassName="ModSettings_Submenus_GalaxyMapNormandy.GalaxyMapNormandyMenu.ModSettingsSubmenu_GalaxyMapNormandy")
++menuItems=(sCenterText="Galaxy Map Normandy", sDescriptionTitleText="Galaxy Map Normandy", srDescriptionText=74220022, SubMenuClassName="ModSettings_Submenus_GalaxyMapNormandy.GalaxyMapNormandyMenu.ModSettingsSubmenu_GalaxyMapNormandy")

@@ -62,7 +62,8 @@ as in vanilla. At galaxy level the mouse and the left button work as in vanilla.
 ## Settings
 
 Pause the game, open **Mod Settings** (the LE1 Community Patch's Mod Settings Menu) and pick **Galaxy Map Normandy**.
-For cluster level and for system view, you can set:
+The pages follow the game's text language: English, French, German, Italian, Spanish, Polish, Russian or Japanese. No
+native speaker has reviewed the translations. For cluster level and for system view, you can set:
 
 | Setting | What it changes |
 |---|---|
@@ -117,12 +118,13 @@ their defaults at the end of [`src/GalaxyMapNormandyDirector.uc`](src/GalaxyMapN
 | `src/GalaxyMapNormandyShipLight.uc` | the ship's own sky light (lighting channel `Unnamed_6`) |
 | `src/GalaxyMapNormandySettings.uc` | reads and writes the player's settings in the gamer profile, for the director and the menu |
 | `src/ModSettingsSubmenu_GalaxyMapNormandy.uc`, `src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc` | the settings page and the step list in the LE1 Community Patch's Mod Settings Menu |
+| `src/tlk/<language>.tsv` | the settings pages' words in each language: a string id, a tab, the text |
 | `mod/` | the M3 mod folder without its packages: `moddesc.ini`, `AutoLoad.ini`, `ConfigDelta-GalaxyMapNormandy.m3cd` (the Sideloader level and the Mod Settings Menu row) |
 | `build.sh`, `build.env.example` | the build ([docs/building.md](docs/building.md)) |
 | `package.sh` | zips the built mod folder for local tests ([Package](docs/building.md#package)) |
 | [`docs/ASSETS.md`](docs/ASSETS.md) | which game files the build reads and what it does with them |
 
-The four `.pcc` packages are build output, and `GalaxyMapNormandy_SFX.pcc` holds BioWare content, so none of them is
+The `.pcc` packages are build output, and `GalaxyMapNormandy_SFX.pcc` holds BioWare content, so none of them is
 in git.
 
 ## Credits

@@ -1,0 +1,23 @@
+# Galaxy Map Normandy strings, French.
+74220001	Secteur : vitesse de vol
+74220002	Règle la vitesse de vol du vaisseau au niveau du secteur, à la manette et à la souris. Le pointeur de la carte, et donc la sélection, se déplace à la même vitesse.
+74220003	Secteur : vitesse de rotation
+74220004	Règle la vitesse à laquelle la proue du vaisseau s'aligne sur sa trajectoire au niveau du secteur.
+74220005	Secteur : réactivité
+74220006	Règle la précision avec laquelle le vaisseau suit le pointeur de la carte au niveau du secteur. Une valeur faible le laisse glisser derrière, une valeur élevée le maintient sur le pointeur.
+74220007	Secteur : taille du vaisseau
+74220008	Règle la taille du vaisseau au niveau du secteur.
+74220009	Système : vitesse de vol
+74220010	Règle la vitesse de vol du vaisseau au niveau du système, à la manette et à la souris. La caméra y suit le vaisseau, la vue se déplace donc plus vite elle aussi.
+74220011	Système : vitesse de rotation
+74220012	Règle la vitesse à laquelle la proue du vaisseau s'aligne sur sa trajectoire au niveau du système.
+74220013	Système : réactivité
+74220014	Règle la précision avec laquelle le vaisseau suit le pointeur de la carte au niveau du système. Une valeur faible le laisse glisser derrière, une valeur élevée le maintient sur le pointeur.
+74220015	Système : taille du vaisseau
+74220016	Règle la taille du vaisseau au niveau du système.
+74220017	Paramètres par défaut
+74220018	Rétablit tous les paramètres de cette page à 100 %.
+74220019	Effet à la prochaine ouverture de la carte.
+74220020	(par défaut)
+74220021	Actuel
+74220022	Vitesse de vol et de rotation, réactivité et taille du vaisseau sur la carte de la galaxie, au niveau du secteur et du système. Paramètres communs à toutes les sauvegardes.

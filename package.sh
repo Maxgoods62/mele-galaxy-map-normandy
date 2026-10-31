@@ -11,7 +11,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NAME="Galaxy Map Normandy"
 DIST="$HERE/dist"
 MOD="$DIST/$NAME"
-PACKAGES=(Startup_MOD_GalaxyMapNormandy GalaxyMapNormandy_NOR10 GalaxyMapNormandy_SFX ModSettings_Submenus_GalaxyMapNormandy)
+PACKAGES=(Startup_MOD_GalaxyMapNormandy GalaxyMapNormandy_NOR10 GalaxyMapNormandy_SFX ModSettings_Submenus_GalaxyMapNormandy
+    DLC_MOD_GalaxyMapNormandy_GlobalTlk DLC_MOD_GalaxyMapNormandy_GlobalTlk_{DE,ES,FE,FR,GE,IE,IT,JA,PL,PLPC,RA,RU})
 
 die() { echo "package.sh: $*" >&2; exit 1; }
 

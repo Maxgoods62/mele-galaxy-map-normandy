@@ -12,7 +12,8 @@
 | `python3`, `ffmpeg` and `git` in WSL | | `build.sh` stops if one of them is not on `PATH`. `ffmpeg` needs the `libvorbis` encoder. |
 | The Windows .NET SDK 10.0.402 or a later 10.0 SDK, and the .NET 8 runtime | `MELE_DOTNET` | The toolkit's `global.json` files pin SDK 10.0.402 (`rollForward: latestFeature`). lectool and mele-mcp target `net8.0-windows` and run on .NET 8. The first build restores NuGet packages. |
 | vgmstream | `MELE_VGMSTREAM` | `vgmstream-cli` in WSL, or the Windows `vgmstream.exe` that Legendary Explorer ships in `exec/vgmstream/`. |
-| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` (with its `addtexture` command) and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version; it stops if `addtexture` adds nothing. |
+| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` (with its `addtexture` and `tlkpackage` commands) and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version; it stops if `addtexture` adds nothing or `tlkpackage` writes nothing. |
+| The LE1 Community Patch 2.0 or later, installed in LE1 | | The build copies the menu's page class from its `ModSettingsMenu.pcc`. |
 | LE1, LE2 and LE3 in one Legendary Edition folder | `MELE_LE_DIR` | The build reads LE1's `snd_gui.pcc` and `BIOA_ICE20_11_LAY.pcc`, LE2's `Startup_INT.pcc` and LE3's `SFXGame.pcc` ([ASSETS.md](ASSETS.md)). |
 
 To get the toolkit:
@@ -55,7 +56,7 @@ from the environment.
 ./build.sh
 ```
 
-Each step starts with a header line (`== classes`, `== level`, `== sound`, `== sfx`, `== dist`, and `== building <tool>`
+Each step starts with a header line (`== classes`, `== menu`, `== strings`, `== level`, `== sound`, `== sfx`, `== dist`, and `== building <tool>`
 when a tool is rebuilt), followed by some of lectool's output. At the end it prints the Windows path of the mod
 folder with its `modver`, and the files in its `CookedPCConsole` folder.
 
@@ -82,13 +83,37 @@ registry.
 
 ### 1. Classes: `Startup_MOD_GalaxyMapNormandy.pcc`
 
-`lectool compileclass` compiles `src/GalaxyMapNormandyShipLight.uc` and `src/GalaxyMapNormandyDirector.uc` against the
-game's own script packages. The new file holds the two classes under a package export `GalaxyMapNormandy`, and an
+`lectool compileclass` compiles `src/GalaxyMapNormandySettings.uc`, `src/GalaxyMapNormandyShipLight.uc` and
+`src/GalaxyMapNormandyDirector.uc` against the game's own script packages. The new file holds the three classes under a
+package export `GalaxyMapNormandy`, and an
 `ObjectReferencer` named `CombinedStartupReferencer` that keeps them loaded (the layout of the LE1 Community Patch's own
 startup packages). `AutoLoad.ini` loads the file when the game starts (`GlobalPackage1=Startup_MOD_GalaxyMapNormandy`),
 so the classes are in memory before any level uses them.
 
-### 2. Level: `GalaxyMapNormandy_NOR10.pcc`
+### 2. Menu: `ModSettings_Submenus_GalaxyMapNormandy.pcc`
+
+The settings pages, in `src/ModSettingsSubmenu_GalaxyMapNormandy.uc` and `src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc`.
+Their base class is the LE1 Community Patch's `ModSettingsSubmenu`: mele-mcp's `export_decompile` reads it from your
+installed Community Patch into `build/ModSettingsSubmenu.uc`, and the package carries that copy, as other mods' pages do.
+The Mod Settings Menu loads the file by path when the player opens the page.
+
+### 3. Strings: `DLC_MOD_GalaxyMapNormandy_GlobalTlk*.pcc`
+
+The words of the settings pages, and the description of their row on the Mod Settings Menu's first page, are strings
+74220001 to 74220022 (7422 is the mod's `ModMount`). `src/tlk/<language>.tsv` holds them, one per line: the id, one tab,
+the text, in UTF-8. `lectool tlkpackage` writes one package per language with the exports `GlobalTlk_tlk` and
+`GlobalTlk_tlk_M`, and stops if a language lacks an id of `INT.tsv` or has one more.
+
+`AutoLoad.ini` names the English package (`GlobalTalkTable1=DLC_MOD_GalaxyMapNormandy_GlobalTlk.GlobalTlk_tlk`), and the
+game adds its language to the file name. `INT.tsv` makes the file without a suffix, the other seven the files `_FR`,
+`_DE`, `_IT`, `_ES`, `_PL`, `_RU` and `_JA`. The game also looks for `_FE`, `_GE`, `_IE`, `_RA` and `_PLPC`, which show
+the text of `_FR`, `_DE`, `_IT`, `_RU` and `_PL`: `build.sh` copies them, as the LE1 Community Patch's own files are.
+
+The page's subtitle (74220019) sits in a one-line field that clips at about 459 pixels at 14 px: about 40 characters.
+
+To add a string, give it the next id in every `.tsv` file and use it in the `.uc` file as `$<id>`.
+
+### 4. Level: `GalaxyMapNormandy_NOR10.pcc`
 
 mele-mcp's `level_new` tool, called through the toolkit's `tools/mele-mcp/scripts/mcp_call.py`, creates an empty level;
 its reply goes to `build/level_new.json`. `lectool addactor` then adds one `GalaxyMapNormandyDirector` actor at the
@@ -103,7 +128,7 @@ The Sideloader config in `mod/` makes the LE1 Community Patch load this level wh
 +Levels=(LevelName="GalaxyMapNormandy_NOR10", LoadIfPrefix=("BIOA_NOR10"))
 ```
 
-### 3. Sound: `build/sound/`
+### 5. Sound: `build/sound/`
 
 `lectool wwise` (with `LECGAME=LE3`) reads LE3's `SFXGame.pcc` export 53327 and writes the three embedded sounds that
 `WEMIDS` names as `.wem` files. `build.sh` checks from lectool's output that the export is the
@@ -111,7 +136,7 @@ The Sideloader config in `mod/` makes the LE1 Community Patch load this level wh
 from them, a short Python step crossfades the loop's seam, and ffmpeg encodes both as Ogg Vorbis: `travel_whoosh.ogg`
 and `travel_loop.ogg`. [ASSETS.md](ASSETS.md) has every gain, trim and length.
 
-### 4. SFX package: `GalaxyMapNormandy_SFX.pcc`
+### 6. SFX package: `GalaxyMapNormandy_SFX.pcc`
 
 `lectool buildsound` runs twice. Each run clones a cue from LE1's `snd_gui.pcc` and puts one of the Ogg files into its
 wave:
@@ -135,9 +160,9 @@ The director loads these five objects by name at run time: `GalaxyMapNormandy_SF
 `GalaxyMapNormandy_SFX.c_travel_whoosh`, `GalaxyMapNormandy_SFX.c_travel_loop`,
 `GalaxyMapNormandy_SFX.EnterButton_Normal` and `GalaxyMapNormandy_SFX.EnterButton_Hover`.
 
-### 5. Mod folder: `dist/Galaxy Map Normandy/`
+### 7. Mod folder: `dist/Galaxy Map Normandy/`
 
-`build.sh` deletes the old folder, copies `mod/` and adds the four packages:
+`build.sh` deletes the old folder, copies `mod/` and adds the packages:
 
 ```
 dist/Galaxy Map Normandy/
@@ -146,6 +171,8 @@ dist/Galaxy Map Normandy/
         AutoLoad.ini
         CookedPCConsole/
             ConfigDelta-GalaxyMapNormandy.m3cd
+            DLC_MOD_GalaxyMapNormandy_GlobalTlk.pcc
+            DLC_MOD_GalaxyMapNormandy_GlobalTlk_<language>.pcc (12 files)
             GalaxyMapNormandy_NOR10.pcc
             GalaxyMapNormandy_SFX.pcc
             ModSettings_Submenus_GalaxyMapNormandy.pcc
@@ -158,6 +185,8 @@ dist/Galaxy Map Normandy/
 |---|---|
 | `build/tools/lectool/`, `build/tools/mele-mcp/` | the two tools, and their `.stamp` files next to them |
 | `build/Startup_MOD_GalaxyMapNormandy.pcc` | the compiled classes |
+| `build/ModSettings_Submenus_GalaxyMapNormandy.pcc`, `build/ModSettingsSubmenu.raw`, `build/ModSettingsSubmenu.uc` | the menu package, and the Community Patch's class as read and as compiled |
+| `build/tlk/` | the 13 GlobalTlk packages |
 | `build/GalaxyMapNormandy_NOR10.pcc`, `build/level_new.json` | the level, and mele-mcp's reply |
 | `build/sound/` | the extracted `.wem` files, the decoded and mixed `.wav` files, the two `.ogg` files |
 | `build/button/` | LE2's button texture as PNG (`le2.png`), and the two recoloured copies |
@@ -194,12 +223,14 @@ set.
 |---|---|
 | `MELE_LE_DIR: set MELE_LE_DIR to the Legendary Edition folder, as a Windows path` | Set `MELE_LE_DIR` in `build.env` or the environment. |
 | `python3 not found`, `ffmpeg not found`, `git not found` | Install it in WSL. |
-| `dotnet.exe not found: set MELE_DOTNET to the Windows dotnet.exe (.NET 8 SDK or later)` | Set `MELE_DOTNET` to the WSL path of `dotnet.exe`. The SDK it runs must satisfy the toolkit's `global.json` (10.0.402 or a later 10.0 SDK), whatever the message says. |
+| `dotnet.exe not found: set MELE_DOTNET to the Windows dotnet.exe (.NET SDK 10.0.402 or later, as the toolkit's global.json asks)` | Set `MELE_DOTNET` to the WSL path of `dotnet.exe`. |
 | `vgmstream-cli not found: set MELE_VGMSTREAM (Legendary Explorer ships exec/vgmstream/vgmstream.exe)` | Install `vgmstream-cli` in WSL, or set `MELE_VGMSTREAM` to a `vgmstream.exe`. |
 | `no toolkit at <path>: set MELE_TOOLKIT to a mele-maxgoods-toolkit checkout` | Clone mele-maxgoods-toolkit and set `MELE_TOOLKIT` to it. |
 | `the toolkit's LEC submodule is missing: git -C '<path>' submodule update --init` | Run the command it shows. |
 | `lectool did not build`, `mele-mcp did not build` | The compiler's error lines are printed above it. Check the SDK version, network access for the NuGet restore, and the submodule. |
 | `lectool <command> failed` | lectool's output and the last 20 lines of LegendaryExplorerCore's log are printed above it; the full log is `build/lectool.err`. Check that `MELE_LE_DIR` is the right folder and that the game files are there. |
+| `could not read ModSettingsSubmenu from LE1CP's ModSettingsMenu.pcc`, `LE1CP's ModSettingsMenu.pcc has no class ModSettingsSubmenu` | Install the LE1 Community Patch 2.0 or later in the game the build reads. |
+| `lectool wrote no <language> strings: the toolkit needs tlkpackage` | The toolkit checkout is older than the mod: update it. |
 | `level_new failed` | mele-mcp's reply is printed above it (also in `build/level_new.json`). |
 | `SFXGame.pcc export 53327 is not the Wwise_Generic_Galaxy_Map bank` | The build finds the bank by export number in LE3's `SFXGame.pcc`. A different `SFXGame.pcc` (another game version, or one a mod has changed) can move it. |
 | `WEM <id> was not in the bank` | Same cause: the bank does not hold the sound the build expects. |

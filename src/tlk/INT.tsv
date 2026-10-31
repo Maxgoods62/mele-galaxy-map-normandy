@@ -1,0 +1,24 @@
+# Galaxy Map Normandy strings, English. One line per string: id, a tab, the text (UTF-8). build.sh makes the mod's
+# GlobalTlk packages from src/tlk/<language>.tsv; every language must have the same ids.
+74220001	Cluster: flight speed
+74220002	How fast the ship flies at cluster level, with the controller and with the mouse. The map cursor, and so what is selected, moves at the same speed.
+74220003	Cluster: turn rate
+74220004	How fast the ship's nose turns toward where it flies at cluster level.
+74220005	Cluster: ship response
+74220006	How closely the ship follows the map cursor at cluster level. Lower values let it glide behind; higher values keep it on the cursor.
+74220007	Cluster: ship size
+74220008	Size of the ship at cluster level.
+74220009	System: flight speed
+74220010	How fast the ship flies in system view, with the controller and with the mouse. The camera follows the ship there, so the view moves faster too.
+74220011	System: turn rate
+74220012	How fast the ship's nose turns toward where it flies in system view.
+74220013	System: ship response
+74220014	How closely the ship follows the map cursor in system view. Lower values let it glide behind; higher values keep it on the cursor.
+74220015	System: ship size
+74220016	Size of the ship in system view.
+74220017	Restore defaults
+74220018	Sets every setting on this page back to 100 %.
+74220019	Changes show the next time the map opens.
+74220020	(default)
+74220021	Current
+74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view. The same for every save.
