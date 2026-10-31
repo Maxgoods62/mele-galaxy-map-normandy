@@ -139,7 +139,7 @@ mouse is in use.
 | `bEnterButton` | true | Turns the button on. The director clears it if the button's textures or font do not load. |
 | `ButtonWidth`, `ButtonHeight` | 307.0, 49.0 | Size of the button, in pixels. LE2 shows it at this size. |
 | `ButtonBottom` | 54.0 | Distance from the bottom of the screen, in pixels. |
-| `ButtonFadeTime` | 0.3 | Seconds of the fade from blue to amber under the pointer. |
+| `ButtonFadeTime` | 0.3 | Seconds of the fade from blue to brown under the pointer. |
 | `ButtonTextScale` | 0.5 | Scale of the label on `EngineFonts.LargeFont`, whose letters are 52 pixels high. |
 | `ButtonTextOffset` | 8.0 | How far right of the panel's centre the label sits, in pixels, to clear the cut corner. |
 | `ButtonText` | (102, 204, 255, 255) | Label colour: `#66ccff`, that of LE1's Back button. |

@@ -5,11 +5,13 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.22: under the pointer the button is a solid brown panel with gold corners, as LE1's own buttons are, instead of an
+  almost transparent amber. In game: works.
 - v0.21: a mouse player gets LE2's button at the bottom centre of the screen when the ship is on something the map can
   enter: Enter System at cluster level, Enter Orbit in system view, Scan on a planet still to be scanned. It shows when
   the controller's A or Y prompt does, turns amber under the pointer and acts on a click, as a press of A does. A press
   on it does not fly the ship. Its art is LE2's PC button, read from the player's LE2 at build time and recoloured with
-  the blue and amber of LE1's Back button, and its words are LE2's own translations. In game: not tested yet.
+  the blue and amber of LE1's Back button, and its words are LE2's own translations. In game: works.
 - v0.20: LE1's own "you are here" marker (the 2D ship outline and the ring around it) no longer shows, at any level of
   the map. The director sets the `LocationShip` clip of the map movie to zero alpha; the name labels stay.
   In game: the marker stayed gone at every level, after reopening the map and after travel, with no flash on opening.

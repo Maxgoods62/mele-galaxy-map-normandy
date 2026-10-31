@@ -749,7 +749,8 @@ public function UpdateEnterButton(float DeltaTime)
 }
 
 // Drawn before the arrow, so the arrow stays on top; the arrow's own move this frame reaches the hover test next frame.
-// As in ME2 the button sits at the bottom centre. It fades from blue to amber under the pointer, as LE1's Back button does.
+// As in ME2 the button sits at the bottom centre. It fades from LE1's blue to the brown and gold of LE1's buttons under the
+// pointer.
 public function DrawEnterButton(Canvas C)
 {
     local Font OldFont;

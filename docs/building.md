@@ -128,8 +128,8 @@ length and channel count change.
 textures as `SR1_Normandy`. The build stops if LegendaryExplorerCore reports a broken material.
 
 For the button, `lectool texpng` (with `LECGAME=LE2`) writes LE2's button texture as PNG into `build/button/`, ffmpeg
-mirrors it and recolours it to LE1's blue and amber, and `lectool addtexture` adds the two as `EnterButton_Normal` and
-`EnterButton_Hover`.
+mirrors it and makes LE1's blue and brown versions of it, and `lectool addtexture` adds the two as `EnterButton_Normal`
+and `EnterButton_Hover`.
 
 The director loads these five objects by name at run time: `GalaxyMapNormandy_SFX.SR1_Normandy`,
 `GalaxyMapNormandy_SFX.c_travel_whoosh`, `GalaxyMapNormandy_SFX.c_travel_loop`,

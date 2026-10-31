@@ -60,11 +60,14 @@ lights it with its own sky light at run time.
 1. `lectool texpng` writes the LE2 texture as PNG (1024x128). The panel, its bevel, the cut corner and the hexagons are
    all in the image.
 2. ffmpeg mirrors it (`hflip`). The texture has the cut corner at the bottom right; LE2 shows it mirrored.
-3. ffmpeg makes two colours of it: `colorchannelmixer` turns the copper to grey, and `curves` maps that grey to the
-   colours of LE1's Back button in `GUI_SF_GalaxyMap.pcc`. Blue runs through `#2e95c0` to `#84c6e1`; the amber it takes
-   under the pointer runs through `#e6941a` to `#fedc56`. The alpha stays LE2's.
-4. `lectool addtexture` puts each PNG into `GalaxyMapNormandy_SFX.pcc` as a new DXT5 UI texture, with one mip and stored
-   in the package, as LE2's are.
+3. ffmpeg makes two images of it. In both, `colorchannelmixer` turns the copper to grey and `curves` maps that grey to a
+   colour. For `EnterButton_Normal` that colour is the blue of LE1's Back button in `GUI_SF_GalaxyMap.pcc`, from `#2e95c0`
+   to `#84c6e1`, with LE2's alpha. `EnterButton_Hover` is a solid panel in the colours of LE1's button under the pointer:
+   brown from `#543218` in the middle to `#7f5a25` at the ends, LE2's art over it, and gold corners. Canvas raises the
+   colours of a texture that is not sRGB to 1/2.2, so its last step undoes that.
+4. `lectool addtexture` puts each PNG into `GalaxyMapNormandy_SFX.pcc` as a new UI texture, with one mip and stored in the
+   package, as LE2's are. `EnterButton_Normal` is DXT5, as LE2's is. `EnterButton_Hover` is uncompressed: its colours are
+   so dark before Canvas lifts them that DXT5 bands them.
 
 The button's words are in the director: LE2's strings 260735 (Enter Orbit), 136218 (Enter System) and 136916 (Scan).
 The label is drawn with the game's own `EngineFonts.LargeFont`.
