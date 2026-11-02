@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Zip the M3 mod folder: dist/GalaxyMapNormandy-v<modver>.zip and its checksum in dist/SHA256SUMS. The zip holds the
-# folder "Galaxy Map Normandy" (moddesc.ini at its root, as ME3Tweaks Mod Manager imports it) with NOTICE and LICENSE.
+# folder "Galaxy Map Normandy" (moddesc.ini at its root, as ME3Tweaks Mod Manager imports it) and a LICENSE folder with
+# LICENSE and NOTICE. The mod is for LE1 only, so no folder is named after the game.
 #   ./package.sh              run ./build.sh first
 #   ./package.sh --no-build   zip the dist/Galaxy Map Normandy that is already there
 # The zip contains content derived from the player's own game files (NOTICE). It is for local testing: a public copy
@@ -43,7 +44,7 @@ for f in NOTICE LICENSE; do [[ -s "$HERE/$f" ]] || die "missing $f"; done
 
 ZIP="GalaxyMapNormandy-v$modver.zip"
 rm -f "$DIST/$ZIP" "$DIST/$ZIP.tmp" "$DIST/SHA256SUMS"
-python3 -I - "$DIST/$ZIP.tmp" "$DIST" "$NAME" "$HERE/NOTICE" "$HERE/LICENSE" <<'EOF'
+python3 -I - "$DIST/$ZIP.tmp" "$DIST" "$NAME" "$HERE/LICENSE" "$HERE/NOTICE" <<'EOF'
 import os, sys, zipfile
 out, dist, name, *extra = sys.argv[1:]
 files = []
@@ -54,7 +55,7 @@ with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
     for f in files:
         z.write(f, os.path.relpath(f, dist))
     for f in extra:
-        z.write(f, name + "/" + os.path.basename(f))
+        z.write(f, "LICENSE/" + os.path.basename(f))
 with zipfile.ZipFile(out) as z:
     bad = z.testzip()
     if bad:

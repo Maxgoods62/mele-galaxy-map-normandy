@@ -207,7 +207,8 @@ To try values before you rebuild, see [tuning.md](tuning.md).
 ## Package
 
 `./package.sh` runs `build.sh`, then writes `dist/GalaxyMapNormandy-v<modver>.zip` (the `Galaxy Map Normandy` folder,
-with `NOTICE` and `LICENSE` added to it) and its checksum in `dist/SHA256SUMS`. With `--no-build` it zips the folder
+and a `LICENSE` folder beside it with `LICENSE` and `NOTICE`) and its checksum in `dist/SHA256SUMS`. The mod is for LE1
+only, so the zip has no folder named after the game. With `--no-build` it zips the folder
 already in `dist/`, and stops if a file there is missing, added, or differs from `mod/`. M3 imports the zip if you drop
 it on its window, with a warning that the mod was not deployed through M3. The zip holds content derived from your game
 files ([NOTICE](../NOTICE)), so keep it for your own tests. The Nexus archive is the 7z that M3 makes: turn on Developer
