@@ -101,7 +101,7 @@ The ship "flies" when its speed goes above `MoveSpeedStart`, and stops flying af
 | `StopDelay` | 0.15 | Seconds below `MoveSpeedStop` before the flight stops: the loop fades out and the whoosh plays to its end. |
 | `RestBeforeSound` | 0.6 | Seconds the ship must rest before a start plays the whoosh again. The loop starts in any case. |
 | `LoopFadeIn` | 0.15 | Fade-in of the engine loop, in seconds. |
-| `LoopFadeOut` | 0.5 | Fade-out of the engine loop, in seconds. |
+| `LoopFadeOut` | 0.5 | Fade-out of the engine loop when the ship stops, and of the loops and the whoosh when the map closes, in seconds. |
 | `FullSpeed` | 550.0 | Speed at which the loop reaches `LoopPitchMax` and `LoopVolumeMax`. |
 | `LoopPitchMin`, `LoopPitchMax` | 0.95, 1.1 | Pitch of the loop from standstill to `FullSpeed`. |
 | `LoopVolumeMin`, `LoopVolumeMax` | 0.75, 1.0 | Volume of the loop from standstill to `FullSpeed`. |

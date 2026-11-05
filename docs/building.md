@@ -12,7 +12,7 @@
 | `python3`, `ffmpeg` and `git` in WSL | | `build.sh` stops if one of them is not on `PATH`. `ffmpeg` needs the `libvorbis` encoder. |
 | The Windows .NET SDK 10.0.402 or a later 10.0 SDK, and the .NET 8 runtime | `MELE_DOTNET` | The toolkit's `global.json` files pin SDK 10.0.402 (`rollForward: latestFeature`). lectool and mele-mcp target `net8.0-windows` and run on .NET 8. The first build restores NuGet packages. |
 | vgmstream | `MELE_VGMSTREAM` | `vgmstream-cli` in WSL, or the Windows `vgmstream.exe` that Legendary Explorer ships in `exec/vgmstream/`. |
-| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` (with its `addtexture` and `tlkpackage` commands) and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version; it stops if `addtexture` adds nothing or `tlkpackage` writes nothing. |
+| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` (with its `addtexture` and `tlkpackage` commands and `buildsound --unique-wave`) and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version; it stops if `addtexture` adds nothing, `tlkpackage` writes nothing or `buildsound` gives a flight sound cue no wave of its own. |
 | The LE1 Community Patch 2.0 or later, installed in LE1 | | The build copies the menu's page class from its `ModSettingsMenu.pcc`. |
 | LE1, LE2 and LE3 in one Legendary Edition folder | `MELE_LE_DIR` | The build reads LE1's `snd_gui.pcc` and `BIOA_ICE20_11_LAY.pcc`, LE2's `Startup_INT.pcc` and LE3's `SFXGame.pcc` ([ASSETS.md](ASSETS.md)). |
 
@@ -73,8 +73,8 @@ LegendaryExplorerCore submodule (`tools/mele-mcp/external/LegendaryExplorer`) is
 lectool (`tools/lectool/lectool.csproj`) and mele-mcp (`tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`) are built from the
 toolkit with `dotnet build -c Release` into `build/tools/lectool/` and `build/tools/mele-mcp/`. Only the compiler's
 error lines are shown. Each tool gets a stamp file, `build/tools/<name>.stamp`, with the toolkit's commit and a hash of
-the toolkit's `git status` listing and `git diff HEAD`. A tool is rebuilt only when the stamp changes, so a new commit or
-any edit to a tracked file triggers it, but a further edit to an untracked file does not. Delete `build/tools/` to force
+the toolkit's `git status` listing and `git diff HEAD`. A tool is rebuilt when the stamp changes or its built file is
+missing, so a new commit or any edit to a tracked file triggers it, but a further edit to an untracked file does not. Delete `build/tools/` to force
 a rebuild.
 
 Every lectool command writes its output to `build/lectool.out` and LegendaryExplorerCore's log to `build/lectool.err`.
@@ -136,18 +136,28 @@ The Sideloader config in `mod/` makes the LE1 Community Patch load this level wh
 from them, a short Python step crossfades the loop's seam, and ffmpeg encodes both as Ogg Vorbis: `travel_whoosh.ogg`
 and `travel_loop.ogg`. [ASSETS.md](ASSETS.md) has every gain, trim and length.
 
+`src/sound/flight_sounds.py` then makes, from the same three sounds, the waves of the flight sound variant that the
+director's `FlightSound` names (5, Bright thrusters). It writes them to `build/sound/variants/` with a `manifest.tsv`
+(cue name, wave, channels, frames, cue volume, loop or once), and ffmpeg encodes each wave as Ogg Vorbis. With
+`FlightSound = 0` it makes nothing, and the director plays the two travel cues
+([ASSETS.md](ASSETS.md#flight-sound-variants)).
+
 ### 6. SFX package: `GalaxyMapNormandy_SFX.pcc`
 
-`lectool buildsound` runs twice. Each run clones a cue from LE1's `snd_gui.pcc` and puts one of the Ogg files into its
-wave:
+`lectool buildsound` runs once per cue, in this order. Each run clones a cue from LE1's `snd_gui.pcc` and puts one of
+the Ogg files into its wave:
 
 | New cue | Donor cue | Channels | Notes |
 |---|---|---|---|
 | `c_travel_whoosh` | `c_snd_guiswish` | 1 | 44,100 Hz, volume 0.5 |
+| `c_flight<n>_engine`, `_drive`, `_drive_system`, `_whoosh`: one per row of `manifest.tsv` | `c_galaxymap_enter` | 2 | 44,100 Hz, the volume from `manifest.tsv`; `--loop` on the loops; `--unique-wave` |
 | `c_travel_loop` | `c_galaxymap_enter` | 2 | 44,100 Hz, volume 0.5; `--loop` adds a looping node |
 
-The cloned wave keeps the donor's name (`snd_gui:c_snd_guiswish`, `snd_gui:c_galaxymap_enter`); only its sound data,
-length and channel count change.
+The travel cues' waves keep the donor's name (`snd_gui:c_snd_guiswish`, `snd_gui:c_galaxymap_enter`); only their
+sound data, length and channel count change. `--unique-wave` names each flight cue's wave
+`<cue>:c_galaxymap_enter`, so that each cue gets a wave of its own: under the donor's name, the next cue built from the
+same donor would get the first one's wave back. That is why `c_travel_loop`, which keeps the donor's name, comes last.
+`build.sh` stops if a flight cue's wave line does not carry the cue's name.
 
 `lectool portmesh` then ports the SR-1 static mesh (export 31 of LE1's `BIOA_ICE20_11_LAY.pcc`) with its materials and
 textures as `SR1_Normandy`. The build stops if LegendaryExplorerCore reports a broken material.
@@ -156,8 +166,8 @@ For the button, `lectool texpng` (with `LECGAME=LE2`) writes LE2's button textur
 mirrors it and makes LE1's blue and brown versions of it, and `lectool addtexture` adds the two as `EnterButton_Normal`
 and `EnterButton_Hover`.
 
-The director loads these five objects by name at run time: `GalaxyMapNormandy_SFX.SR1_Normandy`,
-`GalaxyMapNormandy_SFX.c_travel_whoosh`, `GalaxyMapNormandy_SFX.c_travel_loop`,
+The director loads these objects by name at run time: `GalaxyMapNormandy_SFX.SR1_Normandy`, the flight sound's
+`GalaxyMapNormandy_SFX.c_flight<n>_*` cues (or `c_travel_whoosh` and `c_travel_loop` when they are missing),
 `GalaxyMapNormandy_SFX.EnterButton_Normal` and `GalaxyMapNormandy_SFX.EnterButton_Hover`.
 
 ### 7. Mod folder: `dist/Galaxy Map Normandy/`
@@ -188,9 +198,9 @@ dist/Galaxy Map Normandy/
 | `build/ModSettings_Submenus_GalaxyMapNormandy.pcc`, `build/ModSettingsSubmenu.raw`, `build/ModSettingsSubmenu.uc` | the menu package, and the Community Patch's class as read and as compiled |
 | `build/tlk/` | the 13 GlobalTlk packages |
 | `build/GalaxyMapNormandy_NOR10.pcc`, `build/level_new.json` | the level, and mele-mcp's reply |
-| `build/sound/` | the extracted `.wem` files, the decoded and mixed `.wav` files, the two `.ogg` files |
+| `build/sound/` | the extracted `.wem` files, the decoded and mixed `.wav` files, the two travel `.ogg` files, and `variants/` with the flight sound's waves, Ogg files and `manifest.tsv` |
 | `build/button/` | LE2's button texture as PNG (`le2.png`), and the two recoloured copies |
-| `build/GalaxyMapNormandy_SFX.pcc` | the two cues, the SR-1 mesh and the button's textures |
+| `build/GalaxyMapNormandy_SFX.pcc` | the two travel cues, the flight sound's cues, the SR-1 mesh and the button's textures |
 | `build/lectool.out`, `build/lectool.out.raw`, `build/lectool.err` | the last lectool command's output, and LegendaryExplorerCore's log |
 | `dist/Galaxy Map Normandy/` | the M3 mod folder |
 | `dist/GalaxyMapNormandy-v<modver>.zip`, `dist/SHA256SUMS` | the zip that `package.sh` writes, and its checksum ([Package](#package)) |
@@ -231,8 +241,10 @@ set.
 | `lectool did not build`, `mele-mcp did not build` | The compiler's error lines are printed above it. Check the SDK version, network access for the NuGet restore, and the submodule. |
 | `lectool <command> failed` | lectool's output and the last 20 lines of LegendaryExplorerCore's log are printed above it; the full log is `build/lectool.err`. Check that `MELE_LE_DIR` is the right folder and that the game files are there. |
 | `could not read ModSettingsSubmenu from LE1CP's ModSettingsMenu.pcc`, `LE1CP's ModSettingsMenu.pcc has no class ModSettingsSubmenu` | Install the LE1 Community Patch 2.0 or later in the game the build reads. |
-| `lectool wrote no <language> strings: the toolkit needs tlkpackage` | The toolkit checkout is older than the mod: update it. |
+| `lectool wrote no <language> strings: the toolkit needs tlkpackage`, `lectool added no <texture>: the toolkit needs addtexture`, `lectool gave <cue> no wave of its own: the toolkit needs buildsound --unique-wave` | The toolkit checkout is older than the mod: update it. |
 | `level_new failed` | mele-mcp's reply is printed above it (also in `build/level_new.json`). |
 | `SFXGame.pcc export 53327 is not the Wwise_Generic_Galaxy_Map bank` | The build finds the bank by export number in LE3's `SFXGame.pcc`. A different `SFXGame.pcc` (another game version, or one a mod has changed) can move it. |
 | `WEM <id> was not in the bank` | Same cause: the bank does not hold the sound the build expects. |
+| `no FlightSound in the director's defaultproperties` | `build.sh` reads the line `FlightSound = <n>` near the end of `src/GalaxyMapNormandyDirector.uc`. Put it back, with a number on its own. |
+| `flight_sounds.py: no flight sound variant <n>` | Set `FlightSound` in the director's defaultproperties to one of the numbers the message lists. |
 | `broken material in the SR-1 port` | The `BROKEN material` lines above it name the material LegendaryExplorerCore reports as broken. |

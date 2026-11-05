@@ -33,6 +33,7 @@ var transient AudioComponent OldLoop2Sound;
 var transient GalaxyMapNormandyShipLight ShipLight;
 var transient float LoopAge;
 var transient float Loop2Age;
+var transient bool bWhooshPlaying;
 // The flight sound: 0 the original sound (v0.24), 1 to 5 the variants of src/sound/flight_sounds.py. build.sh reads
 // this value from defaultproperties and builds only that variant's cues.
 var int FlightSound;
@@ -318,13 +319,13 @@ public function UpdateFlightSound(float DeltaTime)
             SlowTime = 0.0;
             if (RestTime >= RestBeforeSound)
             {
-                if (bSystem)
+                if (bSystem && PlayCue(WhooshSound, WhooshCue, WhooshSystemPitch, WhooshSystemVolume))
                 {
-                    PlayCue(WhooshSound, WhooshCue, WhooshSystemPitch, WhooshSystemVolume);
+                    bWhooshPlaying = TRUE;
                 }
-                else
+                else if (!bSystem && PlayCue(WhooshSound, WhooshCue, WhooshClusterPitch, WhooshClusterVolume))
                 {
-                    PlayCue(WhooshSound, WhooshCue, WhooshClusterPitch, WhooshClusterVolume);
+                    bWhooshPlaying = TRUE;
                 }
             }
             PlayingLoopCue = LoopCue;
@@ -1380,22 +1381,14 @@ public function Cleanup()
     ShowRing();
     ReleasePointer();
     UnregisterPointerDraw();
+    // The loops fade out as when the ship stops (StopFlying fades only what still flies, so it can run every tick). The
+    // whoosh fades too, once per play: Cleanup runs every tick while the map is closed, and a FadeOut called again
+    // starts over from full volume.
     StopFlying();
-    if (LoopSound != None)
+    if (bWhooshPlaying)
     {
-        LoopSound.Stop();
-    }
-    if (OldLoopSound != None)
-    {
-        OldLoopSound.Stop();
-    }
-    if (Loop2Sound != None)
-    {
-        Loop2Sound.Stop();
-    }
-    if (OldLoop2Sound != None)
-    {
-        OldLoop2Sound.Stop();
+        bWhooshPlaying = FALSE;
+        WhooshSound.FadeOut(LoopFadeOut, 0.0);
     }
     RestoreMovementScalar();
     bSettingsRead = FALSE;

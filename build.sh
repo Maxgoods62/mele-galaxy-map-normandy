@@ -51,9 +51,9 @@ mkdir -p "$BUILD/tools" "$BUILD/sound" "$BUILD/button"
 stamp="$(git -C "$TOOLKIT" rev-parse HEAD) $({ git -C "$TOOLKIT" status --porcelain; git -C "$TOOLKIT" diff HEAD --submodule=diff; } | md5sum | cut -c1-8)"
 build_tool() {    # build_tool <name> <project dir> <csproj> <output file>
     local out="$BUILD/tools/$1"
-    if [[ -f "$out.stamp" && "$(cat "$out.stamp")" == "$stamp" ]]; then return; fi
+    if [[ -f "$out/$4" && -f "$out.stamp" && "$(cat "$out.stamp")" == "$stamp" ]]; then return; fi
     echo "== building $1"
-    rm -rf "$out"
+    rm -rf "$out" "$out.stamp"
     (cd "$2" && "$DOTNET" build "$3" -c Release -nologo -v q -o "$(win "$out")" | tr -d '\r' | grep -E ' error ' | sort -u) || true
     [[ -f "$out/$4" ]] || die "$1 did not build"
     chmod +x "$out/$4"    # a file Windows writes on the WSL disk has no exec bit
@@ -207,7 +207,9 @@ grep -E '^wave' "$OUT" || true
 while IFS=$'\t' read -r name file ch n vol mode; do
     lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$V/$name.ogg")" "$n" "$ch" 44100 \
         "$SFX" "$name" "${name#c_}" "$vol" $([[ "$mode" == loop ]] && echo --loop) --unique-wave < /dev/null
-    grep -E '^wave' "$OUT" || true
+    # lectool exits 0 on an option it does not know: without --unique-wave, every cue here would play one shared wave.
+    grep -E '^wave' "$OUT" | grep -F "$name:" \
+        || die "lectool gave $name no wave of its own: the toolkit needs buildsound --unique-wave"
 done < "$V/manifest.tsv"
 lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$S/travel_loop.ogg")" "$(frames "$S/travel_loop.wav")" 2 44100 \
     "$SFX" c_travel_loop travel_loop 0.5 --loop

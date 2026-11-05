@@ -267,6 +267,11 @@ def main():
     wanted = set(VARIANTS)
     if '--variants' in sys.argv:
         wanted = {int(x) for x in sys.argv[sys.argv.index('--variants') + 1].split(',') if x.strip()}
+    # 0 is the original sound, which build.sh makes itself.
+    unknown = wanted - set(VARIANTS) - {0}
+    if unknown:
+        sys.exit('flight_sounds.py: no flight sound variant %s (there are 0 and %s)' % (
+            ', '.join(map(str, sorted(unknown))), ', '.join(map(str, sorted(VARIANTS)))))
     tmp = os.path.join(outdir, 'tmp')
     os.makedirs(tmp, exist_ok=True)
     body = int(RATE * LOOP_SECONDS)

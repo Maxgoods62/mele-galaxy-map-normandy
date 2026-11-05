@@ -1,12 +1,11 @@
 # Galaxy Map Normandy (LE1)
 
-A mod for Mass Effect 1 in the Legendary Edition. On the galaxy map, a lit SR-1 Normandy takes the place of the orange
-cursor ring at cluster and system level, as in ME2 and ME3. It follows the cursor, turns toward where it flies and
-plays a sound made from the ME3 travel sound: a whoosh when it sets off, then an engine and a drive whose pitch and
-volume rise with its speed.
-The mouse works as in ME2, with its Enter Orbit button, and the controller keeps LE1's own control. LE1's own 2D "you
-are here" marker is gone at every level of the map; the name labels stay. Apart from that, the galaxy level and the
-planet view stay vanilla.
+A mod for Mass Effect 1 in the Legendary Edition. On the galaxy map, a lit SR-1 Normandy replaces the orange cursor
+ring at cluster and system level, as in ME2 and ME3. It follows the cursor and turns toward where it flies. Its sound
+comes from the ME3 travel sound. A whoosh plays when the ship sets off, then an engine and a drive rise with its speed.
+The mouse works as in ME2, with its Enter Orbit button. The controller works as before. The game's 2D "you are here"
+marker is gone at every level of the map; the name labels stay. Apart from that, the galaxy level and the
+planet view are as in the normal game.
 
 There is no release yet. You build the mod from this repository and your own game files, then install it with
 ME3Tweaks Mod Manager (M3). The version is `modver` in [`mod/moddesc.ini`](mod/moddesc.ini); the history is in
@@ -23,14 +22,8 @@ ME3Tweaks Mod Manager (M3). The version is `modver` in [`mod/moddesc.ini`](mod/m
 
 ## Install
 
-1. Build the mod. [docs/building.md](docs/building.md) has the details; the short version, in WSL:
-
-   ```bash
-   cp build.env.example build.env    # once: your Legendary Edition folder, dotnet.exe, vgmstream
-   ./build.sh
-   ```
-
-   `build.sh` writes the M3 mod folder to `dist/Galaxy Map Normandy/`.
+1. Build the mod as [docs/building.md](docs/building.md) explains. The build writes the M3 mod folder to
+   `dist/Galaxy Map Normandy/`.
 2. Copy `dist/Galaxy Map Normandy` into the `LE1` folder of M3's mod library.
 3. Close the game. In M3, refresh the mod library, select Galaxy Map Normandy and click Apply Mod.
 
@@ -47,18 +40,18 @@ At cluster and system level:
 |---|---|
 | Move the mouse | moves an arrow pointer, which starts on the ship |
 | Hold the left mouse button | the ship flies toward the arrow and slows down as it gets close |
-| Click the left mouse button (shorter than 0.25 s) | selects the highlighted object, as a vanilla click does |
+| Click the left mouse button (shorter than 0.25 s) | selects the highlighted object, as a click does in the normal game |
 | Click the button at the bottom centre | the same, as LE2's Enter Orbit button does; a press on it does not fly the ship |
 | Controller | unchanged: the stick moves the cursor and the ship follows it; moving the stick hides the arrow until the mouse moves again |
 
-The button shows with the mouse when the ship is on something the map can enter, where a controller gets its A prompt:
+With the mouse, the button shows when the ship is on something the map can enter, as the A prompt does. It reads
 Enter System on a system at cluster level, Enter Orbit on a planet in system view, and Scan on a planet still to be
-scanned. A touch of the controller swaps it for the controller's prompts, and a click or a key brings it back. Its words
-are LE2's, in English, French, German, Italian, Spanish and Polish (without accents: the font drawing them has none).
-Russian and Japanese games get English for the same reason.
+scanned. A touch of the controller swaps it for the controller's prompts, and a click or a key brings it back. Its
+words are LE2's, in English, French, German, Italian, Spanish and Polish (without accents: the font drawing them has
+none). Russian and Japanese games get English for the same reason.
 
-While another panel has focus, such as the travel prompt, the arrow and the button are hidden and the left button works
-as in vanilla. At galaxy level the mouse and the left button work as in vanilla.
+While another panel is open, such as the travel prompt, the arrow and the button are hidden. The left button then works
+as in the normal game. At galaxy level the mouse and the left button work as in the normal game too.
 
 ## Settings
 
@@ -77,20 +70,6 @@ Each setting opens a list of steps from 50 % to 200 % of the default. **Restore 
 100 %. The choices are kept in the game's gamer profile (`Save\ME1\PROFILE\GamerProfile.pcsav` in your documents), so
 they are the same for every career and save. They apply the next time the galaxy map opens.
 
-## How it works
-
-The mod replaces no file, handler or function of the game. Its startup package holds three UnrealScript classes. A small
-level, `GalaxyMapNormandy_NOR10`, holds one `GalaxyMapNormandyDirector` actor. The LE1 Community Patch's Sideloader
-loads that level whenever a level whose name starts with `BIOA_NOR10` loads, so the actor is there whenever the galaxy
-map can open.
-
-Every frame while the map is open, the director reads the cursor from the galaxy map camera, moves the ship after it
-and drives the sound from the ship's speed. With the mouse, it draws the arrow and the Enter Orbit button and, while the
-left button is held, feeds the game a virtual stick from the ship toward the arrow. The game then moves the cursor
-exactly as it does for the controller. The ship carries its own sky light, because nothing else lights it out in the
-map scene. The director also sets the map movie's `LocationShip` clip to zero alpha, which hides the 2D marker and
-leaves its labels alone.
-
 ## Compatibility
 
 - The mod adds the DLC folder `DLC_MOD_GalaxyMapNormandy` (mount priority 7422). It does not touch the galaxy map files
@@ -100,41 +79,25 @@ leaves its labels alone.
 
 ## Known issues
 
-- In system view the vanilla camera follows the cursor, so the ship stays near the middle of the screen while the
-  system moves under it. ME2 keeps that view still.
+- In system view the game's camera follows the cursor. The ship stays near the middle of the screen while the system
+  moves under it. ME2 keeps that view still.
 - The selection follows the hidden cursor, and the ship eases after it. On a fast move the highlight can change a
   moment before the ship gets there.
 
-## Tuning
+## Docs
 
-Beyond the in-game settings, the ship's size, speed, turn rates, sound and mouse feel are plain properties of `GalaxyMapNormandyDirector`, with
-their defaults at the end of [`src/GalaxyMapNormandyDirector.uc`](src/GalaxyMapNormandyDirector.uc).
-[docs/tuning.md](docs/tuning.md) lists them and shows how to change them in a running game.
-
-## Files
-
-| Path | What |
+| Doc | What it holds |
 |---|---|
-| `src/GalaxyMapNormandyDirector.uc` | the actor that runs every frame while the map is open: ship, sound, mouse control, tuning fields |
-| `src/GalaxyMapNormandyShipLight.uc` | the ship's own sky light (lighting channel `Unnamed_6`) |
-| `src/GalaxyMapNormandySettings.uc` | reads and writes the player's settings in the gamer profile, for the director and the menu |
-| `src/ModSettingsSubmenu_GalaxyMapNormandy.uc`, `src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc` | the settings page and the step list in the LE1 Community Patch's Mod Settings Menu |
-| `src/sound/flight_sounds.py` | builds the waves of the flight sound, one of five variants ([docs/ASSETS.md](docs/ASSETS.md#flight-sound-variants)) |
-| `src/tlk/<language>.tsv` | the settings pages' words in each language: a string id, a tab, the text |
-| `mod/` | the M3 mod folder without its packages: `moddesc.ini`, `AutoLoad.ini`, `ConfigDelta-GalaxyMapNormandy.m3cd` (the Sideloader level and the Mod Settings Menu row) |
-| `build.sh`, `build.env.example` | the build ([docs/building.md](docs/building.md)) |
-| `package.sh` | zips the built mod folder for local tests ([Package](docs/building.md#package)) |
-| [`docs/ASSETS.md`](docs/ASSETS.md) | which game files the build reads and what it does with them |
-
-The `.pcc` packages are build output, and `GalaxyMapNormandy_SFX.pcc` holds BioWare content, so none of them is
-in git.
+| [docs/building.md](docs/building.md) | how to build the mod, and what to do when the build stops |
+| [docs/how-it-works.md](docs/how-it-works.md) | how the mod works, and what each file in this repository holds |
+| [docs/tuning.md](docs/tuning.md) | the ship, sound and mouse values beyond the in-game settings, and how to try them in a running game |
+| [docs/ASSETS.md](docs/ASSETS.md) | which game files the build reads and what it does with them |
 
 ## Credits
 
-- BioWare and Electronic Arts: Mass Effect Legendary Edition. From your own install, the build copies the SR-1 model
-  (the docked Normandy's static mesh in `BIOA_ICE20_11_LAY.pcc`), the ME2 PC button art (LE2's `Startup_INT.pcc`), the
-  ME3 galaxy map travel sound (LE3's `Wwise_Generic_Galaxy_Map` bank in `SFXGame.pcc`) and two LE1 interface sound cues,
-  used as templates (`snd_gui.pcc`).
+- BioWare and Electronic Arts: Mass Effect Legendary Edition. The build copies these from your own install: the SR-1
+  model (LE1's `BIOA_ICE20_11_LAY.pcc`), the ME2 PC button art (LE2's `Startup_INT.pcc`), the ME3 galaxy map travel
+  sound (LE3's `SFXGame.pcc`), and two LE1 interface sounds used as templates (`snd_gui.pcc`).
 - The LE1 Community Patch team, for the Sideloader that loads the mod's level and the Mod Settings Menu. The build
   copies the menu's page class (`ModSettingsSubmenu`) from your installed Community Patch into the mod's menu package,
   as other mods' settings pages do.
