@@ -101,6 +101,7 @@ head -1 "$BUILD/ModSettingsSubmenu.raw" | grep -q ' Class ModSettingsSubmenu$' \
 tail -n +2 "$BUILD/ModSettingsSubmenu.raw" > "$BUILD/ModSettingsSubmenu.uc"
 lectool compileclass "$(win "$BUILD/ModSettings_Submenus_GalaxyMapNormandy.pcc")" GalaxyMapNormandyMenu \
     "$(win "$HERE/src/ModSettingsSubmenu_GalaxyMapNormandy.uc")" "$(win "$HERE/src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc")" \
+    "$(win "$HERE/src/ModSettingsSubmenu_GalaxyMapNormandySound.uc")" \
     --pkg=ModSettingsMenu "$(win "$BUILD/ModSettingsSubmenu.uc")" \
     --pkg=GalaxyMapNormandy "$(win "$HERE/src/GalaxyMapNormandySettings.uc")" \
     --unforce=GalaxyMapNormandyMenu --no-referencer
@@ -138,7 +139,8 @@ cat "$OUT"
 # 5. The travel sound, from the player's LE3: extract the three WEMs, decode them, mix them (docs/ASSETS.md).
 echo "== sound"
 S="$BUILD/sound"
-rm -f "$S"/*
+rm -rf "$S"
+mkdir -p "$S"
 LECGAME=LE3 WEMDIR="$(win "$S")" WEMIDS="$WHOOSH,$LOOP_A,$LOOP_B" lectool wwise "$LE3\\SFXGame.pcc" "$BANK_UINDEX"
 grep -E '^bank .*Wwise_Generic_Galaxy_Map' "$OUT" \
     || die "SFXGame.pcc export $BANK_UINDEX is not the Wwise_Generic_Galaxy_Map bank"
@@ -183,14 +185,29 @@ with wave.open(dst, 'wb') as w:
 EOF
 for f in travel_whoosh travel_loop; do ff -i "$S/$f.wav" -c:a libvorbis -q:a 8 "$S/$f.ogg"; done
 frames() { python3 -I -c 'import sys, wave; print(wave.open(sys.argv[1]).getnframes())' "$1"; }
+# The flight sound variants of the menu's Flight sound page, from the same three WEMs (docs/ASSETS.md): their waves and
+# manifest.tsv (cue name, wave, channels, frames, cue volume, loop or once).
+V="$S/variants"
+python3 -I "$HERE/src/sound/flight_sounds.py" "$S" "$V"
+while IFS=$'\t' read -r name file ch n vol mode; do
+    ff -i "$V/$file" -c:a libvorbis -q:a 6 "$V/$name.ogg" < /dev/null
+done < "$V/manifest.tsv"
 
-# 6. GalaxyMapNormandy_SFX.pcc: the two cues (on cloned LE1 donor cues), the SR-1 mesh and the button's two textures.
+# 6. GalaxyMapNormandy_SFX.pcc: the cues (on cloned LE1 donor cues), the SR-1 mesh and the button's two textures.
 echo "== sfx"
 SFX="$(win "$BUILD/GalaxyMapNormandy_SFX.pcc")"
 rm -f "$BUILD/GalaxyMapNormandy_SFX.pcc"
 lectool buildsound "$LE1\\snd_gui.pcc" c_snd_guiswish "$(win "$S/travel_whoosh.ogg")" "$(frames "$S/travel_whoosh.wav")" 1 44100 \
     "$SFX" c_travel_whoosh travel_whoosh 0.5
 grep -E '^wave' "$OUT" || true
+# The variants' cues, all stereo, on the same template as c_travel_loop: each wave gets its cue's name before the colon
+# of its <bank>:<title> name (--unique-wave), so each cue has a wave of its own. c_travel_loop comes last and keeps the
+# template's wave name, as in v0.24.
+while IFS=$'\t' read -r name file ch n vol mode; do
+    lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$V/$name.ogg")" "$n" "$ch" 44100 \
+        "$SFX" "$name" "${name#c_}" "$vol" $([[ "$mode" == loop ]] && echo --loop) --unique-wave < /dev/null
+    grep -E '^wave' "$OUT" || true
+done < "$V/manifest.tsv"
 lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$S/travel_loop.ogg")" "$(frames "$S/travel_loop.wav")" 2 44100 \
     "$SFX" c_travel_loop travel_loop 0.5 --loop
 grep -E '^wave' "$OUT" || true

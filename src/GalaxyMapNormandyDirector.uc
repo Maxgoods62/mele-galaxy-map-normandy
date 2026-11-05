@@ -10,7 +10,8 @@ Class GalaxyMapNormandyDirector extends Actor
 // With the mouse it plays like ME2: an arrow pointer moves freely, and holding the left button flies the ship (the map
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
 // A mouse player also gets ME2's Enter Orbit button when the ship is on something the map can enter (UpdateEnterButton).
-// The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu (ReadSettings).
+// The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu, and pick one of
+// six flight sounds (ReadSettings, SetupFlightSound).
 
 var transient BioCameraBehaviorGalaxy GalaxyCam;
 var transient BioSFHandler_GalaxyMap Handler;
@@ -19,11 +20,21 @@ var transient DynamicSMActor_Spawnable Ship;
 var transient StaticMesh ShipMesh;
 var transient SoundCue WhooshCue;
 var transient SoundCue LoopCue;
+var transient SoundCue LoopSystemCue;
+var transient SoundCue Loop2Cue;
+var transient SoundCue Loop2SystemCue;
+var transient SoundCue PlayingLoopCue;
+var transient SoundCue PlayingLoop2Cue;
 var transient AudioComponent WhooshSound;
 var transient AudioComponent LoopSound;
 var transient AudioComponent OldLoopSound;
+var transient AudioComponent Loop2Sound;
+var transient AudioComponent OldLoop2Sound;
 var transient GalaxyMapNormandyShipLight ShipLight;
 var transient float LoopAge;
+var transient float Loop2Age;
+var transient int FlightSound;
+var transient int LoadedFlightSound;
 var transient bool bFlying;
 var transient float SlowTime;
 var transient float PeakSpeed;
@@ -99,6 +110,18 @@ var float LoopVolumeMax;
 var bool bLoopRestart;
 var float LoopRestartTime;
 var float LoopCrossfade;
+var int LoopCurve;
+var float SystemFullSpeed;
+var float Loop2PitchMin;
+var float Loop2PitchMax;
+var float Loop2VolumeMin;
+var float Loop2VolumeMax;
+var int Loop2Curve;
+var float WhooshClusterPitch;
+var float WhooshSystemPitch;
+var float WhooshClusterVolume;
+var float WhooshSystemVolume;
+var float FlightSystemFullSpeed;
 var bool bHideRing;
 var LinearColor ShipGlow;
 var float ShipLightBrightness;
@@ -276,10 +299,14 @@ public event function Tick(float DeltaTime)
 }
 
 // Starts above MoveSpeedStart, stops after StopDelay below MoveSpeedStop: a short wobble neither restarts nor cuts it.
+// Up to two loops play while the ship flies (the engine, and for the variants also the drive), each with its own
+// cue per map level and its own pitch and volume curve on speed (SetupFlightSound).
 public function UpdateFlightSound(float DeltaTime)
 {
     local float Alpha;
+    local bool bSystem;
 
+    bSystem = GalaxyCam != None && GalaxyCam.m_nCurrentState == 3;
     if (!bFlying)
     {
         RestTime += DeltaTime;
@@ -289,13 +316,38 @@ public function UpdateFlightSound(float DeltaTime)
             SlowTime = 0.0;
             if (RestTime >= RestBeforeSound)
             {
-                PlayCue(WhooshSound, WhooshCue);
+                if (bSystem)
+                {
+                    PlayCue(WhooshSound, WhooshCue, WhooshSystemPitch, WhooshSystemVolume);
+                }
+                else
+                {
+                    PlayCue(WhooshSound, WhooshCue, WhooshClusterPitch, WhooshClusterVolume);
+                }
             }
-            if (PlayCue(LoopSound, LoopCue))
+            PlayingLoopCue = LoopCue;
+            if (bSystem && LoopSystemCue != None)
             {
+                PlayingLoopCue = LoopSystemCue;
+            }
+            PlayingLoop2Cue = Loop2Cue;
+            if (bSystem && Loop2SystemCue != None)
+            {
+                PlayingLoop2Cue = Loop2SystemCue;
+            }
+            Alpha = SpeedAlpha(bSystem);
+            if (PlayCue(LoopSound, PlayingLoopCue, 1.0, 1.0))
+            {
+                ShapeLoop(LoopSound, LoopCurve, Alpha, LoopPitchMin, LoopPitchMax, LoopVolumeMin, LoopVolumeMax);
                 LoopSound.FadeIn(LoopFadeIn, 1.0);
             }
+            if (PlayCue(Loop2Sound, PlayingLoop2Cue, 1.0, 1.0))
+            {
+                ShapeLoop(Loop2Sound, Loop2Curve, Alpha, Loop2PitchMin, Loop2PitchMax, Loop2VolumeMin, Loop2VolumeMax);
+                Loop2Sound.FadeIn(LoopFadeIn, 1.0);
+            }
             LoopAge = 0.0;
+            Loop2Age = 0.0;
         }
         return;
     }
@@ -310,49 +362,239 @@ public function UpdateFlightSound(float DeltaTime)
         return;
     }
     SlowTime = 0.0;
-    // Like ME3's speed RTPC: the engine loop gets a little higher and louder as the ship goes faster.
-    if (LoopSound != None)
+    // Like ME3's thrust RTPC: the loops get higher and louder as the ship goes faster.
+    Alpha = SpeedAlpha(bSystem);
+    if (LoopSound != None && PlayingLoopCue != None)
     {
-        Alpha = FClamp(LastSpeed / (FullSpeed * SpeedScale), 0.0, 1.0);
-        LoopSound.PitchMultiplier = Lerp(LoopPitchMin, LoopPitchMax, Alpha);
-        LoopSound.VolumeMultiplier = Lerp(LoopVolumeMin, LoopVolumeMax, Alpha);
+        ShapeLoop(LoopSound, LoopCurve, Alpha, LoopPitchMin, LoopPitchMax, LoopVolumeMin, LoopVolumeMax);
         LoopAge += DeltaTime * LoopSound.PitchMultiplier;
         if (bLoopRestart && LoopAge >= LoopRestartTime)
         {
-            RestartLoop();
+            RestartLoop(LoopSound, OldLoopSound, PlayingLoopCue);
+            LoopAge = 0.0;
+        }
+    }
+    if (Loop2Sound != None && PlayingLoop2Cue != None)
+    {
+        ShapeLoop(Loop2Sound, Loop2Curve, Alpha, Loop2PitchMin, Loop2PitchMax, Loop2VolumeMin, Loop2VolumeMax);
+        Loop2Age += DeltaTime * Loop2Sound.PitchMultiplier;
+        if (bLoopRestart && Loop2Age >= LoopRestartTime)
+        {
+            RestartLoop(Loop2Sound, OldLoop2Sound, PlayingLoop2Cue);
+            Loop2Age = 0.0;
         }
     }
 }
 
-// ISACT plays the loop wave once (neither the cue's SoundNodeLooping nor the loop flag of the wave's sound event makes
+// The ship's speed as a fraction of full speed at this level of the map: what ME2 and ME3 feed their thrust RTPC.
+public function float SpeedAlpha(bool bSystem)
+{
+    local float Full;
+
+    Full = FullSpeed;
+    if (bSystem && SystemFullSpeed > 0.0)
+    {
+        Full = SystemFullSpeed;
+    }
+    return FClamp(LastSpeed / FMax(Full * SpeedScale, 1.0), 0.0, 1.0);
+}
+
+// Curve 0 is a straight line between the multipliers (the original sound). Curves 1 and 2 are Wwise's Log3 and Sine
+// curves, run on the pitch in cents and the volume in dB, as Wwise runs an RTPC curve.
+public function ShapeLoop(AudioComponent Sound, int Curve, float Alpha, float PitchMin, float PitchMax, float VolumeMin,
+    float VolumeMax)
+{
+    local float T;
+
+    if (Curve == 0)
+    {
+        Sound.PitchMultiplier = Lerp(PitchMin, PitchMax, Alpha);
+        Sound.VolumeMultiplier = Lerp(VolumeMin, VolumeMax, Alpha);
+        return;
+    }
+    T = Alpha;
+    if (Curve == 1)
+    {
+        T = 1.0 - (1.0 - Alpha) * (1.0 - Alpha) * (1.0 - Alpha);
+    }
+    else if (Curve == 2)
+    {
+        T = Sin(Alpha * 1.5707964);
+    }
+    Sound.PitchMultiplier = PitchMin * Exp(T * Loge(PitchMax / PitchMin));
+    Sound.VolumeMultiplier = VolumeMin * Exp(T * Loge(VolumeMax / VolumeMin));
+}
+
+// ISACT plays a loop wave once (neither the cue's SoundNodeLooping nor the loop flag of the wave's sound event makes
 // it repeat), so start it again on a second component and crossfade.
-public function RestartLoop()
+public function RestartLoop(out AudioComponent Current, out AudioComponent Old, SoundCue Cue)
 {
     local AudioComponent Ending;
 
-    Ending = LoopSound;
-    LoopSound = OldLoopSound;
-    OldLoopSound = Ending;
-    if (OldLoopSound != None)
+    Ending = Current;
+    Current = Old;
+    Old = Ending;
+    if (Old != None)
     {
-        OldLoopSound.FadeOut(LoopCrossfade, 0.0);
+        Old.FadeOut(LoopCrossfade, 0.0);
     }
-    if (PlayCue(LoopSound, LoopCue))
+    if (PlayCue(Current, Cue, Ending.PitchMultiplier, Ending.VolumeMultiplier))
     {
-        LoopSound.FadeIn(LoopCrossfade, 1.0);
+        Current.FadeIn(LoopCrossfade, 1.0);
     }
-    LoopAge = 0.0;
 }
 
-// The engine loop fades out; the whoosh plays out, as with ME3's travel_stop.
+// The loops fade out; the whoosh plays out, as with ME3's travel_stop.
 public function StopFlying()
 {
-    if (bFlying && LoopSound != None)
+    if (bFlying)
     {
-        LoopSound.FadeOut(LoopFadeOut, 0.0);
+        if (LoopSound != None)
+        {
+            LoopSound.FadeOut(LoopFadeOut, 0.0);
+        }
+        if (Loop2Sound != None && PlayingLoop2Cue != None)
+        {
+            Loop2Sound.FadeOut(LoopFadeOut, 0.0);
+        }
     }
     bFlying = FALSE;
     SlowTime = 0.0;
+}
+
+// The flight sound the player picked (menu row Flight sound): 0 is the original sound, the other five are built from
+// ME2's and ME3's travel sound by src/sound/flight_sounds.py, whose waves bake in what this cannot do live (pitch,
+// filters, reverb). The values here are the live part. Variant 0 takes this class's defaults.
+public function SetupFlightSound(int Variant)
+{
+    WhooshClusterPitch = 1.0;
+    WhooshSystemPitch = 1.0;
+    WhooshClusterVolume = 1.0;
+    WhooshSystemVolume = 1.0;
+    LoopPitchMin = default.LoopPitchMin;
+    LoopPitchMax = default.LoopPitchMax;
+    LoopVolumeMin = default.LoopVolumeMin;
+    LoopVolumeMax = default.LoopVolumeMax;
+    LoopCurve = default.LoopCurve;
+    Loop2PitchMin = 1.0;
+    Loop2PitchMax = 1.0;
+    Loop2VolumeMin = 1.0;
+    Loop2VolumeMax = 1.0;
+    Loop2Curve = 0;
+    LoopFadeIn = default.LoopFadeIn;
+    LoopFadeOut = default.LoopFadeOut;
+    LoopRestartTime = default.LoopRestartTime;
+    LoopCrossfade = default.LoopCrossfade;
+    SystemFullSpeed = default.SystemFullSpeed;
+    if (Variant <= 0)
+    {
+        return;
+    }
+    // The variants' loop waves are 16 s long.
+    LoopRestartTime = 15.5;
+    LoopCrossfade = 0.4;
+    SystemFullSpeed = FlightSystemFullSpeed;
+    if (Variant <= 2)
+    {
+        // ME3 (1) and ME2 (2): the whoosh's pitch and volume per level (SystemOrCluster RTPC), the engine's pitch
+        // -869 to -328 cents and volume -3.4 to +0.1 dB on a Log3 curve, the drive's volume -7.2 to -1.3 dB on a Sine
+        // curve (Thrust RTPC). The waves are at full thrust.
+        WhooshClusterPitch = 1.2109;
+        WhooshSystemPitch = 0.8916;
+        WhooshClusterVolume = 0.734;
+        WhooshSystemVolume = 0.693;
+        LoopPitchMin = 0.7317;
+        LoopPitchMax = 1.0;
+        LoopVolumeMin = 0.67;
+        LoopVolumeMax = 1.0;
+        LoopCurve = 1;
+        Loop2VolumeMin = 0.511;
+        Loop2Curve = 2;
+    }
+    else if (Variant == 3)
+    {
+        // Deep rumble: slow to swell and to die away.
+        LoopPitchMin = 0.84;
+        LoopPitchMax = 1.0;
+        LoopVolumeMin = 0.6;
+        LoopVolumeMax = 1.0;
+        LoopCurve = 1;
+        Loop2PitchMin = 0.94;
+        Loop2VolumeMin = 0.55;
+        Loop2Curve = 2;
+        LoopFadeIn = 0.4;
+        LoopFadeOut = 1.2;
+        LoopCrossfade = 0.5;
+    }
+    else if (Variant == 4)
+    {
+        // Soft hum: little change with speed, long fades.
+        LoopPitchMin = 0.9;
+        LoopPitchMax = 1.0;
+        LoopVolumeMin = 0.6;
+        LoopVolumeMax = 1.0;
+        LoopCurve = 1;
+        Loop2VolumeMin = 0.6;
+        Loop2Curve = 2;
+        LoopFadeIn = 0.7;
+        LoopFadeOut = 1.6;
+        LoopCrossfade = 0.6;
+    }
+    else
+    {
+        // Bright thrusters: a wide sweep with speed, quick fades.
+        WhooshSystemPitch = 0.94;
+        LoopPitchMin = 0.75;
+        LoopPitchMax = 1.04;
+        LoopVolumeMin = 0.55;
+        LoopVolumeMax = 1.0;
+        LoopCurve = 2;
+        Loop2PitchMin = 0.9;
+        Loop2PitchMax = 1.02;
+        Loop2VolumeMin = 0.5;
+        Loop2Curve = 2;
+        LoopFadeIn = 0.08;
+        LoopFadeOut = 0.4;
+    }
+}
+
+// The cues of the picked variant, loaded once and held here (a cue nobody references is collected about a minute after
+// DynamicLoadObject). A variant that does not load falls back to the original sound.
+public function LoadFlightSound()
+{
+    local string Prefix;
+
+    if (LoadedFlightSound == FlightSound && WhooshCue != None && LoopCue != None)
+    {
+        return;
+    }
+    LoopSystemCue = None;
+    Loop2Cue = None;
+    Loop2SystemCue = None;
+    if (FlightSound > 0)
+    {
+        Prefix = "GalaxyMapNormandy_SFX.c_flight" $ string(FlightSound) $ "_";
+        WhooshCue = SoundCue(DynamicLoadObject(Prefix $ "whoosh", Class'SoundCue'));
+        LoopCue = SoundCue(DynamicLoadObject(Prefix $ "engine", Class'SoundCue'));
+        Loop2Cue = SoundCue(DynamicLoadObject(Prefix $ "drive", Class'SoundCue'));
+        if (FlightSound != 3 && FlightSound != 4)
+        {
+            Loop2SystemCue = SoundCue(DynamicLoadObject(Prefix $ "drive_system", Class'SoundCue'));
+        }
+        if (WhooshCue == None || LoopCue == None || Loop2Cue == None)
+        {
+            FlightSound = 0;
+            SetupFlightSound(0);
+            Loop2Cue = None;
+            Loop2SystemCue = None;
+        }
+    }
+    if (FlightSound == 0)
+    {
+        WhooshCue = SoundCue(DynamicLoadObject("GalaxyMapNormandy_SFX.c_travel_whoosh", Class'SoundCue'));
+        LoopCue = SoundCue(DynamicLoadObject("GalaxyMapNormandy_SFX.c_travel_loop", Class'SoundCue'));
+    }
+    LoadedFlightSound = FlightSound;
 }
 
 // The galaxy game mode holds the map camera, and the camera holds the cursor actor (m_pCrossHairObject).
@@ -383,6 +625,8 @@ public function ReadSettings()
     SystemTurnScale = S.static.GetMultiplier(S.default.SystemTurnId);
     SystemResponseScale = S.static.GetMultiplier(S.default.SystemResponseId);
     SystemSizeScale = S.static.GetMultiplier(S.default.SystemSizeId);
+    FlightSound = Clamp(S.static.GetPercent(S.default.SoundId), 0, S.default.SoundCount - 1);
+    SetupFlightSound(FlightSound);
     bSettingsRead = TRUE;
 }
 
@@ -1031,14 +1275,7 @@ public function bool SpawnShip()
     {
         ShipMesh = StaticMesh(DynamicLoadObject("GalaxyMapNormandy_SFX.SR1_Normandy", Class'StaticMesh'));
     }
-    if (WhooshCue == None)
-    {
-        WhooshCue = SoundCue(DynamicLoadObject("GalaxyMapNormandy_SFX.c_travel_whoosh", Class'SoundCue'));
-    }
-    if (LoopCue == None)
-    {
-        LoopCue = SoundCue(DynamicLoadObject("GalaxyMapNormandy_SFX.c_travel_loop", Class'SoundCue'));
-    }
+    LoadFlightSound();
     if (ButtonFont == None)
     {
         ButtonNormal = Texture2D(DynamicLoadObject("GalaxyMapNormandy_SFX.EnterButton_Normal", Class'Texture2D'));
@@ -1084,7 +1321,7 @@ public function AttachShipLight()
 }
 
 // Plays a cue from the start on its own component (made once and kept: the game reuses AudioComponent names).
-public function bool PlayCue(out AudioComponent Sound, SoundCue Cue)
+public function bool PlayCue(out AudioComponent Sound, SoundCue Cue, float Pitch, float Volume)
 {
     if (Cue == None)
     {
@@ -1099,6 +1336,9 @@ public function bool PlayCue(out AudioComponent Sound, SoundCue Cue)
         }
     }
     Sound.Stop();
+    Sound.SoundCue = Cue;
+    Sound.PitchMultiplier = Pitch;
+    Sound.VolumeMultiplier = Volume;
     Sound.Play();
     return TRUE;
 }
@@ -1147,6 +1387,14 @@ public function Cleanup()
     if (OldLoopSound != None)
     {
         OldLoopSound.Stop();
+    }
+    if (Loop2Sound != None)
+    {
+        Loop2Sound.Stop();
+    }
+    if (OldLoop2Sound != None)
+    {
+        OldLoop2Sound.Stop();
     }
     RestoreMovementScalar();
     bSettingsRead = FALSE;
@@ -1197,6 +1445,18 @@ defaultproperties
     bLoopRestart = TRUE
     LoopRestartTime = 2.2
     LoopCrossfade = 0.3
+    LoopCurve = 0
+    SystemFullSpeed = 0.0
+    FlightSystemFullSpeed = 120.0
+    WhooshClusterPitch = 1.0
+    WhooshSystemPitch = 1.0
+    WhooshClusterVolume = 1.0
+    WhooshSystemVolume = 1.0
+    Loop2PitchMin = 1.0
+    Loop2PitchMax = 1.0
+    Loop2VolumeMin = 1.0
+    Loop2VolumeMax = 1.0
+    LoadedFlightSound = -1
     bHideRing = TRUE
     ShipGlow = {R = 1.5, G = 1.5, B = 1.65, A = 1.0}
     ShipLightBrightness = 1.0

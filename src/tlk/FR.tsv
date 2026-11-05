@@ -16,8 +16,22 @@
 74220015	Système : taille du vaisseau
 74220016	Règle la taille du vaisseau au niveau du système.
 74220017	Paramètres par défaut
-74220018	Rétablit tous les paramètres de cette page à 100 %.
+74220018	Rétablit tous les paramètres de cette page à leur valeur par défaut.
 74220019	Effet à la prochaine ouverture de la carte.
 74220020	(par défaut)
 74220021	Actuel
-74220022	Vitesse de vol et de rotation, réactivité et taille du vaisseau sur la carte de la galaxie, au niveau du secteur et du système. Paramètres communs à toutes les sauvegardes.
+74220022	Vitesse de vol et de rotation, réactivité et taille du vaisseau sur la carte de la galaxie, au niveau du secteur et du système, et son de vol. Paramètres communs à toutes les sauvegardes.
+74220023	Son de vol
+74220024	Le son du vaisseau quand il vole sur la carte de la galaxie. Choisir un son en joue un court extrait.
+74220025	Original
+74220026	Le son des versions précédentes du mod : le son de voyage de Mass Effect 3 tel quel, le même aux deux niveaux.
+74220027	Mass Effect 3
+74220028	Le mixage de Mass Effect 3 : plus grave et étouffé, avec un moteur qui monte avec la vitesse et une propulsion plus grave au niveau du système.
+74220029	Mass Effect 2
+74220030	Le mixage de Mass Effect 2 : celui de Mass Effect 3, avec un moteur plus discret et le court écho de sa carte de la galaxie.
+74220031	Grondement grave
+74220032	Un moteur plus grave et plus sombre sur une propulsion profonde, avec un écho plus long.
+74220033	Ronronnement doux
+74220034	Discret et étouffé : un léger souffle et un ronronnement grave et régulier.
+74220035	Propulseurs clairs
+74220036	Un moteur plus clair et plus aigu, qui varie davantage avec la vitesse, et une propulsion large.

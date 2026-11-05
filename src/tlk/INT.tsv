@@ -17,8 +17,22 @@
 74220015	System: ship size
 74220016	Size of the ship in system view.
 74220017	Restore defaults
-74220018	Sets every setting on this page back to 100 %.
+74220018	Sets every setting on this page back to its default.
 74220019	Changes show the next time the map opens.
 74220020	(default)
 74220021	Current
-74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view. The same for every save.
+74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, and its flight sound. The same for every save.
+74220023	Flight sound
+74220024	The sound of the ship while it flies on the galaxy map. Picking one plays a short sample of it.
+74220025	Original
+74220026	The sound of earlier versions of this mod: Mass Effect 3's travel sound as it is, the same at both levels.
+74220027	Mass Effect 3
+74220028	Mass Effect 3's own mix: lower and muffled, with an engine note that rises with speed and a deeper drive in system view.
+74220029	Mass Effect 2
+74220030	Mass Effect 2's mix: the same as Mass Effect 3's, with a quieter engine and the short echo of its galaxy map.
+74220031	Deep rumble
+74220032	A lower, darker engine over a deep drive, with a longer echo.
+74220033	Soft hum
+74220034	Quiet and muffled: a faint whoosh and a low, steady hum.
+74220035	Bright thrusters
+74220036	A clearer, higher engine note that changes more with speed, and a wide drive.

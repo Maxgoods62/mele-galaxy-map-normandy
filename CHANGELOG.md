@@ -5,6 +5,21 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.25: a Flight sound row on the settings page picks one of six ship sounds: the original one (the default) or five
+  new ones built from the same three LE3 sounds by `src/sound/flight_sounds.py`. Mass Effect 3 and Mass Effect 2 follow
+  those games' own mix, read from their Wwise banks: everything pitched down and filtered, an engine note that rises
+  with speed on Wwise's curve, a second loop (the drive) two octaves lower in system view, and for ME2 its short
+  reverb. Deep rumble, Soft hum and Bright thrusters are variations on them. LE1 cannot pitch, filter or loop these
+  live as Wwise does, so the pitch, filter and reverb are baked into 16 s loop waves and the director plays two loops
+  at once with their own pitch and volume curves. Picking a sound plays a 3 to 4 s sample of it. The choice is kept in
+  gamer profile slot 108. Every variant cue is built on the same template cue, so `lectool buildsound --unique-wave` gives
+  each its own wave, named `<cue>:<template title>`: an LE1 wave is named `<bank>:<title>`, and the game plays the
+  sound whose title, in the wave's ISACT content index, is the part after the colon. The first build renamed the waves
+  without the colon and every cue was silent, the original sound's too (user, 2026-11-05); the original cues keep the
+  template's wave names, as in v0.24. In game, first build (career save, galaxy map in system view):
+  the row and the list show, a pick writes the profile file, the map loads the picked sound's cues with its values,
+  and a flight starts the whoosh and both loops, all silent. The fixed build is not tested yet: the sound of each
+  variant, and whether the sample plays while the menu pauses the game.
 - v0.24: the settings pages and their row on the Mod Settings Menu's first page are translated: French, German, Italian,
   Spanish, Polish, Russian and Japanese, with the game's own words where it has them. The mod now has a GlobalTlk, one
   package per language file name the game looks for, built from `src/tlk/<language>.tsv`. The row's title, the mod's

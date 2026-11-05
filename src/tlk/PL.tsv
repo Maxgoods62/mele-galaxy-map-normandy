@@ -16,8 +16,22 @@
 74220015	System: rozmiar statku
 74220016	Dostosowuje rozmiar statku w widoku systemu.
 74220017	Przywróć ustawienia domyślne
-74220018	Przywraca wszystkie ustawienia na tej stronie do 100 %.
+74220018	Przywraca wszystkie ustawienia na tej stronie do wartości domyślnych.
 74220019	Zmiany widać po ponownym otwarciu mapy.
 74220020	(domyślne)
 74220021	Aktualne
-74220022	Prędkość lotu, szybkość obrotu, reakcja i rozmiar statku na mapie galaktyki, na poziomie gromady i w widoku systemu. Wspólne dla wszystkich zapisów.
+74220022	Prędkość lotu, szybkość obrotu, reakcja i rozmiar statku na mapie galaktyki, na poziomie gromady i w widoku systemu, oraz dźwięk lotu. Wspólne dla wszystkich zapisów.
+74220023	Dźwięk lotu
+74220024	Dźwięk statku lecącego po mapie galaktyki. Wybranie dźwięku odtwarza jego krótką próbkę.
+74220025	Oryginalny
+74220026	Dźwięk wcześniejszych wersji moda: dźwięk podróży z Mass Effect 3 bez zmian, taki sam na obu poziomach.
+74220027	Mass Effect 3
+74220028	Miks z Mass Effect 3: niższy i stłumiony, z dźwiękiem silnika rosnącym wraz z prędkością i głębszym napędem w widoku systemu.
+74220029	Mass Effect 2
+74220030	Miks z Mass Effect 2: taki jak w Mass Effect 3, z cichszym silnikiem i krótkim pogłosem mapy galaktyki.
+74220031	Głęboki pomruk
+74220032	Niższy, ciemniejszy silnik nad głębokim napędem, z dłuższym pogłosem.
+74220033	Łagodny szum
+74220034	Cichy i stłumiony: lekki świst i niski, równy szum.
+74220035	Jasne silniki
+74220036	Jaśniejszy, wyższy dźwięk silnika, który bardziej zmienia się z prędkością, i szeroki napęd.

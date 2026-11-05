@@ -16,8 +16,22 @@
 74220015	Sistema: dimensioni nave
 74220016	Regola le dimensioni della nave nella visuale sistema.
 74220017	Ripristina predefiniti
-74220018	Riporta tutte le impostazioni di questa pagina al 100 %.
+74220018	Riporta tutte le impostazioni di questa pagina ai valori predefiniti.
 74220019	Attive dalla prossima apertura della mappa.
 74220020	(predefinito)
 74220021	Attuale
-74220022	Velocità di volo e di rotazione, reattività e dimensioni della nave sulla mappa galattica, nella visuale ammasso e nella visuale sistema. Valide per tutti i salvataggi.
+74220022	Velocità di volo e di rotazione, reattività e dimensioni della nave sulla mappa galattica, nella visuale ammasso e nella visuale sistema, e suono di volo. Valide per tutti i salvataggi.
+74220023	Suono di volo
+74220024	Il suono della nave in volo sulla mappa galattica. Quando ne scegli uno, ne viene riprodotto un breve campione.
+74220025	Originale
+74220026	Il suono delle versioni precedenti della mod: il suono di viaggio di Mass Effect 3 così com'è, uguale in entrambe le visuali.
+74220027	Mass Effect 3
+74220028	Il missaggio di Mass Effect 3: più grave e ovattato, con un motore che sale con la velocità e una propulsione più profonda nella visuale sistema.
+74220029	Mass Effect 2
+74220030	Il missaggio di Mass Effect 2: come quello di Mass Effect 3, con un motore più discreto e la breve eco della sua mappa galattica.
+74220031	Rombo profondo
+74220032	Un motore più grave e cupo su una propulsione profonda, con un'eco più lunga.
+74220033	Ronzio leggero
+74220034	Discreto e ovattato: un fruscio leggero e un ronzio basso e costante.
+74220035	Propulsori brillanti
+74220036	Un motore più chiaro e acuto, che varia di più con la velocità, e una propulsione ampia.

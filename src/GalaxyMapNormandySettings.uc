@@ -3,8 +3,9 @@ Class GalaxyMapNormandySettings extends Object
 
 // The player's choices from the Galaxy Map Normandy page of LE1CP's Mod Settings Menu (pause wheel, Mod Settings). They
 // live in the gamer profile's IntStats list (saved in Save\ME1\PROFILE\GamerProfile.pcsav), so one choice holds for
-// every career and save. LE1CP keeps its FOV there, in slot 0; this mod uses slots 100 to 107, far from the low slots
-// LE1CP would take next. Each value is a percent of the director's default; 0 or no slot means 100.
+// every career and save. LE1CP keeps its FOV there, in slot 0; this mod uses slots 100 to 108, far from the low slots
+// LE1CP would take next. Each value is a percent of the director's default; 0 or no slot means 100. Slot 108 holds the
+// flight sound instead: 0 (or no slot) is the original sound, 1 to 5 the variants (SoundCount in all).
 // Compiled into the startup package for the director, and copied into the menu package for its pages.
 
 var int ClusterSpeedId;
@@ -15,6 +16,8 @@ var int SystemSpeedId;
 var int SystemTurnId;
 var int SystemResponseId;
 var int SystemSizeId;
+var int SoundId;
+var int SoundCount;
 
 public static function BioGamerProfile GetProfile()
 {
@@ -135,7 +138,8 @@ public static function ResetAll()
     if (SetPercent(default.ClusterSpeedId, 0) && SetPercent(default.ClusterTurnId, 0)
         && SetPercent(default.ClusterResponseId, 0) && SetPercent(default.ClusterSizeId, 0)
         && SetPercent(default.SystemSpeedId, 0) && SetPercent(default.SystemTurnId, 0)
-        && SetPercent(default.SystemResponseId, 0) && SetPercent(default.SystemSizeId, 0))
+        && SetPercent(default.SystemResponseId, 0) && SetPercent(default.SystemSizeId, 0)
+        && SetPercent(default.SoundId, 0))
     {
         SaveProfile();
     }
@@ -151,4 +155,6 @@ defaultproperties
     SystemTurnId = 105
     SystemResponseId = 106
     SystemSizeId = 107
+    SoundId = 108
+    SoundCount = 6
 }
