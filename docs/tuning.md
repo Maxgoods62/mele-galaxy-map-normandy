@@ -18,13 +18,9 @@ director reads the multipliers each time the map opens (`ReadSettings`).
 | Ship size | `ShipScale` / `SystemShipScale` | 103, 107 |
 
 A value is stored as a percent in the gamer profile's `IntStats` list (0 or no slot = 100). The LE1 Community Patch keeps
-its FOV in slot 0 and nothing else in the game uses the list, so this mod takes slots 100 to 108, away from the low
-slots.
-
-The Flight sound row picks one of six sounds instead, stored as its number in slot 108: 0 (or no slot) is the original
-sound, 1 to 5 the variants of [ASSETS.md](ASSETS.md#flight-sound-variants). Each time the map opens,
-`SetupFlightSound` sets the sound fields below for that number (number 0 takes the class defaults), so a value changed
-with `live_set` lasts until the map closes. Picking a sound in the menu also plays its `c_flight<n>_preview` cue. `GalaxyMapNormandySettings` reads and writes the slots, and the menu writes the profile file after each change
+its FOV in slot 0 and nothing else in the game uses the list, so this mod takes slots 100 to 107, away from the low
+slots. v0.25 also kept a choice of flight sound in slot 108; nothing reads it any more. `GalaxyMapNormandySettings`
+reads and writes the slots, and the menu writes the profile file after each change
 through the Options screen's save (`BioSFHandler_PCOptions.SaveProfile`), as LE1CP does for its FOV. The engine's own
 profile save command (`SFXEngine.QueueSaveGameCommand`) only fills an in-memory record, and the game writes the file
 on its own only now and then.
@@ -113,6 +109,7 @@ The ship "flies" when its speed goes above `MoveSpeedStart`, and stops flying af
 | `LoopRestartTime` | 2.2 | Seconds of playback before the restart, counted at the loop's current pitch. |
 | `LoopCrossfade` | 0.3 | Length of the restart's crossfade, in seconds. |
 | `LoopCurve` | 0 | Shape of the pitch and volume change from standstill to full speed: 0 a straight line between the multipliers, 1 Wwise's Log3 curve, 2 its Sine curve (both run on the pitch in cents and the volume in dB, as Wwise does). |
+| `FlightSound` | 5 | The flight sound: 0 the original sound (`c_travel_whoosh`, `c_travel_loop`), 1 to 5 the variants of [ASSETS.md](ASSETS.md#flight-sound-variants) (5 is Bright thrusters). `build.sh` builds only this variant's cues, so a change needs a rebuild. Each time the map opens, `SetupFlightSound` sets the sound fields of this table for it (0 takes the class defaults), so a value changed with `live_set` lasts until the map closes. If a variant's cue does not load, the director plays the original sound. |
 | `SystemFullSpeed` | 0.0 | Full speed in system view; 0 uses `FullSpeed`. The variants set it to `FlightSystemFullSpeed`. |
 | `FlightSystemFullSpeed` | 120.0 | The variants' full speed in system view, where the ship flies far slower than at cluster level. |
 

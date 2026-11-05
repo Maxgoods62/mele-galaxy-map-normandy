@@ -2,7 +2,8 @@
 
 A mod for Mass Effect 1 in the Legendary Edition. On the galaxy map, a lit SR-1 Normandy takes the place of the orange
 cursor ring at cluster and system level, as in ME2 and ME3. It follows the cursor, turns toward where it flies and
-plays the ME3 travel sound: a whoosh when it sets off, then an engine loop whose pitch and volume rise with its speed.
+plays a sound made from the ME3 travel sound: a whoosh when it sets off, then an engine and a drive whose pitch and
+volume rise with its speed.
 The mouse works as in ME2, with its Enter Orbit button, and the controller keeps LE1's own control. LE1's own 2D "you
 are here" marker is gone at every level of the map; the name labels stay. Apart from that, the galaxy level and the
 planet view stay vanilla.
@@ -72,10 +73,8 @@ native speaker has reviewed the translations. For cluster level and for system v
 | Ship response | how closely the ship follows the cursor: lower glides behind it, higher stays on it |
 | Ship size | the ship's size |
 
-Each setting opens a list of steps from 50 % to 200 % of the default. **Flight sound** picks the ship's sound: the
-original one, or five made from the ME2 and ME3 travel sound (Mass Effect 3, Mass Effect 2, Deep rumble, Soft hum,
-Bright thrusters); picking one plays a short sample. **Restore defaults** puts every setting back to 100 % and the
-original sound. The choices are kept in the game's gamer profile (`Save\ME1\PROFILE\GamerProfile.pcsav` in your documents), so
+Each setting opens a list of steps from 50 % to 200 % of the default. **Restore defaults** puts all eight back to
+100 %. The choices are kept in the game's gamer profile (`Save\ME1\PROFILE\GamerProfile.pcsav` in your documents), so
 they are the same for every career and save. They apply the next time the galaxy map opens.
 
 ## How it works
@@ -119,8 +118,8 @@ their defaults at the end of [`src/GalaxyMapNormandyDirector.uc`](src/GalaxyMapN
 | `src/GalaxyMapNormandyDirector.uc` | the actor that runs every frame while the map is open: ship, sound, mouse control, tuning fields |
 | `src/GalaxyMapNormandyShipLight.uc` | the ship's own sky light (lighting channel `Unnamed_6`) |
 | `src/GalaxyMapNormandySettings.uc` | reads and writes the player's settings in the gamer profile, for the director and the menu |
-| `src/ModSettingsSubmenu_GalaxyMapNormandy*.uc` | the settings page, the step list and the flight sound list in the LE1 Community Patch's Mod Settings Menu |
-| `src/sound/flight_sounds.py` | builds the waves of the five flight sound variants ([docs/ASSETS.md](docs/ASSETS.md#flight-sound-variants)) |
+| `src/ModSettingsSubmenu_GalaxyMapNormandy.uc`, `src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc` | the settings page and the step list in the LE1 Community Patch's Mod Settings Menu |
+| `src/sound/flight_sounds.py` | builds the waves of the flight sound, one of five variants ([docs/ASSETS.md](docs/ASSETS.md#flight-sound-variants)) |
 | `src/tlk/<language>.tsv` | the settings pages' words in each language: a string id, a tab, the text |
 | `mod/` | the M3 mod folder without its packages: `moddesc.ini`, `AutoLoad.ini`, `ConfigDelta-GalaxyMapNormandy.m3cd` (the Sideloader level and the Mod Settings Menu row) |
 | `build.sh`, `build.env.example` | the build ([docs/building.md](docs/building.md)) |

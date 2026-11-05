@@ -5,6 +5,10 @@ No version has been released yet. Every version below was a development build, m
 
 ## Unreleased
 
+- v0.26: the ship plays Bright thrusters, the variant the player liked best, and the Flight sound row, its page and
+  its strings are gone. The director's `FlightSound` (5) picks the sound, and `build.sh` builds only that variant's
+  cues, so the sound package is about 2.8 MB smaller. `flight_sounds.py` still defines all five variants, and the
+  original sound is still built as the fallback. In game: not tested yet.
 - v0.25: a Flight sound row on the settings page picks one of six ship sounds: the original one (the default) or five
   new ones built from the same three LE3 sounds by `src/sound/flight_sounds.py`. Mass Effect 3 and Mass Effect 2 follow
   those games' own mix, read from their Wwise banks: everything pitched down and filtered, an engine note that rises
@@ -18,8 +22,8 @@ No version has been released yet. Every version below was a development build, m
   without the colon and every cue was silent, the original sound's too (user, 2026-11-05); the original cues keep the
   template's wave names, as in v0.24. In game, first build (career save, galaxy map in system view):
   the row and the list show, a pick writes the profile file, the map loads the picked sound's cues with its values,
-  and a flight starts the whoosh and both loops, all silent. The fixed build is not tested yet: the sound of each
-  variant, and whether the sample plays while the menu pauses the game.
+  and a flight starts the whoosh and both loops, all silent. The fixed build works: the player heard the original
+  sound and the variants (2026-11-05).
 - v0.24: the settings pages and their row on the Mod Settings Menu's first page are translated: French, German, Italian,
   Spanish, Polish, Russian and Japanese, with the game's own words where it has them. The mod now has a GlobalTlk, one
   package per language file name the game looks for, built from `src/tlk/<language>.tsv`. The row's title, the mod's

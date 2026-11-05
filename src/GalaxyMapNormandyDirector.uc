@@ -10,8 +10,8 @@ Class GalaxyMapNormandyDirector extends Actor
 // With the mouse it plays like ME2: an arrow pointer moves freely, and holding the left button flies the ship (the map
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
 // A mouse player also gets ME2's Enter Orbit button when the ship is on something the map can enter (UpdateEnterButton).
-// The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu, and pick one of
-// six flight sounds (ReadSettings, SetupFlightSound).
+// The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu (ReadSettings).
+// The flight sound is one of six built into the mod, set by FlightSound (SetupFlightSound).
 
 var transient BioCameraBehaviorGalaxy GalaxyCam;
 var transient BioSFHandler_GalaxyMap Handler;
@@ -33,7 +33,9 @@ var transient AudioComponent OldLoop2Sound;
 var transient GalaxyMapNormandyShipLight ShipLight;
 var transient float LoopAge;
 var transient float Loop2Age;
-var transient int FlightSound;
+// The flight sound: 0 the original sound (v0.24), 1 to 5 the variants of src/sound/flight_sounds.py. build.sh reads
+// this value from defaultproperties and builds only that variant's cues.
+var int FlightSound;
 var transient int LoadedFlightSound;
 var transient bool bFlying;
 var transient float SlowTime;
@@ -462,9 +464,9 @@ public function StopFlying()
     SlowTime = 0.0;
 }
 
-// The flight sound the player picked (menu row Flight sound): 0 is the original sound, the other five are built from
-// ME2's and ME3's travel sound by src/sound/flight_sounds.py, whose waves bake in what this cannot do live (pitch,
-// filters, reverb). The values here are the live part. Variant 0 takes this class's defaults.
+// The values of flight sound Variant (FlightSound): 0 is the original sound, the other five are built from ME2's and
+// ME3's travel sound by src/sound/flight_sounds.py, whose waves bake in what this cannot do live (pitch, filters,
+// reverb). The values here are the live part. Variant 0 takes this class's defaults.
 public function SetupFlightSound(int Variant)
 {
     WhooshClusterPitch = 1.0;
@@ -558,7 +560,7 @@ public function SetupFlightSound(int Variant)
     }
 }
 
-// The cues of the picked variant, loaded once and held here (a cue nobody references is collected about a minute after
+// The cues of FlightSound, loaded once and held here (a cue nobody references is collected about a minute after
 // DynamicLoadObject). A variant that does not load falls back to the original sound.
 public function LoadFlightSound()
 {
@@ -625,7 +627,6 @@ public function ReadSettings()
     SystemTurnScale = S.static.GetMultiplier(S.default.SystemTurnId);
     SystemResponseScale = S.static.GetMultiplier(S.default.SystemResponseId);
     SystemSizeScale = S.static.GetMultiplier(S.default.SystemSizeId);
-    FlightSound = Clamp(S.static.GetPercent(S.default.SoundId), 0, S.default.SoundCount - 1);
     SetupFlightSound(FlightSound);
     bSettingsRead = TRUE;
 }
@@ -1456,6 +1457,7 @@ defaultproperties
     Loop2PitchMax = 1.0
     Loop2VolumeMin = 1.0
     Loop2VolumeMax = 1.0
+    FlightSound = 5
     LoadedFlightSound = -1
     bHideRing = TRUE
     ShipGlow = {R = 1.5, G = 1.5, B = 1.65, A = 1.0}

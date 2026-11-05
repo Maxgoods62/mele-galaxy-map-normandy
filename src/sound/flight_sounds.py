@@ -1,10 +1,11 @@
 # Builds the waves of the flight sound variants (docs/ASSETS.md, "Flight sound variants") from the three LE3 travel
 # sounds that build.sh decoded: the whoosh 256246750, the engine loop 191335730 and the drive loop 634254545.
-#   python3 -I flight_sounds.py <folder with the decoded WAVs> <output folder> [--previews <folder>]
+#   python3 -I flight_sounds.py <folder with the decoded WAVs> <output folder> [--variants 5] [--previews <folder>]
 # Writes one 16-bit WAV per cue into the output folder and manifest.tsv (cue name, file, channels, frames, cue
-# volume, loop or once), which build.sh reads to make the cues; c_flight<n>_preview is the sample the menu plays.
-# --previews also writes, per variant, a WAV of one flight at cluster level and one in system view, to listen to
-# outside the game.
+# volume, loop or once), which build.sh reads to make the cues. --variants takes a comma-separated list of variant
+# numbers (default: all five); build.sh passes the director's FlightSound. --previews also writes, per variant, a WAV
+# of one flight at cluster level and one in system view, to listen to outside the game (flight0.wav is the original
+# sound).
 #
 # ME2 and ME3 play these sounds through Wwise (the event Play_gui_galaxy_travel_start), which pitches, filters and
 # loops each one live. LE1's ISACT cannot, so the pitch and the low-pass filter are baked into the waves here, and the
@@ -30,8 +31,8 @@ CUE_VOLUME = 0.5        # the original sound's cue volume
 
 # A component: (source, pitch in cents, Wwise LPF value, gain in dB, Haas delay of the right channel in ms).
 # A cue is the sum of its components, then the variant's reverb if it has one: (reverb time in s, ratio of the low
-# reverb time to the high one, wet level in dB against the dry sound). The variant numbers match the menu and
-# SetupFlightSound.
+# reverb time to the high one, wet level in dB against the dry sound). The variant numbers match the director's
+# FlightSound and SetupFlightSound.
 VARIANTS = {
     # 1: Mass Effect 3's own mix. Whoosh and engine sit under a mixer with LPF 38. The engine is pitched -328 cents at
     # full thrust (the director lowers it to -869 cents at rest); the drive is pitched -404 + 63 cents (fuel full) at
@@ -263,6 +264,9 @@ def build_cue(wavdir, tmp, comps, frames, key):
 def main():
     wavdir, outdir = sys.argv[1], sys.argv[2]
     previews = sys.argv[sys.argv.index('--previews') + 1] if '--previews' in sys.argv else None
+    wanted = set(VARIANTS)
+    if '--variants' in sys.argv:
+        wanted = {int(x) for x in sys.argv[sys.argv.index('--variants') + 1].split(',') if x.strip()}
     tmp = os.path.join(outdir, 'tmp')
     os.makedirs(tmp, exist_ok=True)
     body = int(RATE * LOOP_SECONDS)
@@ -270,6 +274,8 @@ def main():
     manifest = []
     report = []
     for n, v in sorted(VARIANTS.items()):
+        if n not in wanted:
+            continue
         cues = {}
         volumes = {}
         rev = v.get('reverb')
@@ -305,10 +311,8 @@ def main():
             volumes[part] = volume
         report.append('v%d: gain %+.1f dB; cue volumes %s' % (
             n, 20 * math.log10(g), ', '.join('%s %.2f' % kv for kv in sorted(volumes.items()))))
-        manifest.append(menu_sample(n, outdir, tmp, volumes))
         if previews:
             write_preview(n, outdir, previews, tmp, volumes)
-    manifest.append(original_menu_sample(wavdir, outdir))
     if previews:
         write_original_preview(wavdir, previews)
     with open(os.path.join(outdir, 'manifest.tsv'), 'w') as f:
@@ -356,44 +360,6 @@ def write_preview(n, outdir, previews, tmp, volumes):
         d = drive_sys if view == 1 and drive_sys else drive
         total = append_flight(total, read_float(wfile), [[e + x for e, x in zip(engine[c], d[c])] for c in range(2)])
     write_pcm16(os.path.join(previews, 'flight%d.wav' % n), total)
-
-
-def menu_sample(n, outdir, tmp, volumes):
-    """The cue the Flight sound page plays when the player picks a sound: one short flight at cluster level, at the
-    game's level (see write_sample)."""
-    def load(part):
-        return scale(read_float(os.path.join(outdir, 'c_flight%d_%s.wav' % (n, part))), volumes[part])
-    pitch, vol = PREVIEW_WHOOSH[n][0]
-    wfile = os.path.join(tmp, 'v%d_menu_whoosh.wav' % n)
-    ffmpeg('-i', os.path.join(outdir, 'c_flight%d_whoosh.wav' % n), '-af',
-           'asetrate=%.3f,aresample=%d,volume=%.4f' % (RATE * pitch, RATE, vol * volumes['whoosh']),
-           '-c:a', 'pcm_f32le', wfile)
-    return write_sample(outdir, 'c_flight%d_preview' % n, read_float(wfile), mix([load('engine'), load('drive')]))
-
-
-def original_menu_sample(wavdir, outdir):
-    w = read_float(os.path.join(wavdir, 'travel_whoosh.wav'))
-    loop = read_float(os.path.join(wavdir, 'travel_loop.wav'))
-    return write_sample(outdir, 'c_flight0_preview', scale(w, CUE_VOLUME), scale([c * 4 for c in loop], CUE_VOLUME))
-
-
-def write_sample(outdir, name, whoosh_wave, engine):
-    """Whoosh and 2.5 s of engine, then a 0.5 s fade. The wave holds the game's level divided by its cue volume: 0.5,
-    or more when the peak needs it (up to 1.0, past which the sample plays a little quieter than the flight)."""
-    flight, fade_in, fade_out = int(RATE * 2.5), int(RATE * 0.15), int(RATE * 0.5)
-    n = max(len(whoosh_wave[0]), flight + fade_out)
-    out = [[0.0] * n for _ in range(2)]
-    for c in range(2):
-        for i in range(flight + fade_out):
-            g = min(1.0, i / fade_in) if i < flight else max(0.0, 1.0 - (i - flight) / fade_out)
-            out[c][i] = engine[c][i % len(engine[c])] * g
-        for i, x in enumerate(whoosh_wave[c]):
-            out[c][i] += x
-    limit = math.pow(10.0, -1.0 / 20.0)
-    volume = min(1.0, max(CUE_VOLUME, peak(out) / limit))
-    path = os.path.join(outdir, name + '.wav')
-    write_pcm16(path, scale(out, 1.0 / volume))
-    return (name, path, 2, n, volume, False)
 
 
 def write_original_preview(wavdir, previews):

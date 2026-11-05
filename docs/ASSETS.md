@@ -14,7 +14,7 @@ LE1 files are in `<LE folder>\Game\ME1\BioGame\CookedPCConsole`, LE2 files in
 |---|---|---|---|
 | LE3 | `SFXGame.pcc` | export 53327, the Wwise bank `Wwise_Generic_Galaxy_Map`: its embedded sounds 256246750, 191335730 and 634254545 | the whoosh (256246750) and the two layers of the engine loop (191335730, 634254545), in the original sound and in the five variants |
 | LE2 | `Startup_INT.pcc` | the texture `GUI_SF_PC_SharedAssets.PC_SharedAssets_I3` | the Enter Orbit button, recoloured as `EnterButton_Normal` and `EnterButton_Hover` |
-| LE1 | `snd_gui.pcc` | the cues `c_snd_guiswish` (one mono wave) and `c_galaxymap_enter` (one stereo wave) | templates for the new cues (`c_galaxymap_enter` for every flight sound variant) |
+| LE1 | `snd_gui.pcc` | the cues `c_snd_guiswish` (one mono wave) and `c_galaxymap_enter` (one stereo wave) | templates for the new cues (`c_galaxymap_enter` for the flight sound variant's) |
 | LE1 | `BIOA_ICE20_11_LAY.pcc` | export 31, the docked Normandy's static mesh `ice20_normandy`, with its materials and textures | the ship, as `SR1_Normandy` |
 | LE1 Community Patch | `ModSettingsMenu.pcc`, in `<LE folder>\Game\ME1\BioGame\DLC\DLC_MOD_LE1CP\CookedPCConsole` | the class `ModSettingsSubmenu`, decompiled to UnrealScript | compiled into `ModSettings_Submenus_GalaxyMapNormandy.pcc` as the base class of the settings pages; the game uses the Community Patch's own class in memory |
 
@@ -50,9 +50,12 @@ crossfade (`bLoopRestart` in [tuning.md](tuning.md)).
 
 ## Flight sound variants
 
-The menu's Flight sound page offers the original sound above (`c_travel_whoosh`, `c_travel_loop`) and five variants,
-1 to 5, built from the same three decoded LE3 sounds by
-[`src/sound/flight_sounds.py`](../src/sound/flight_sounds.py) (Python standard library and ffmpeg).
+The ship plays variant 5, Bright thrusters. [`src/sound/flight_sounds.py`](../src/sound/flight_sounds.py) (Python
+standard library and ffmpeg) defines five variants, 1 to 5, built from the same three decoded LE3 sounds; the director's
+`FlightSound` picks one, or 0 for the original sound above (`c_travel_whoosh`, `c_travel_loop`), which is always built:
+the director falls back to it if a variant's cue does not load. `build.sh` reads `FlightSound` and builds only that
+variant's cues. To switch, change `FlightSound` in the director's `defaultproperties` and rebuild
+([tuning.md](tuning.md)). v0.25 had all six in the package and a Mod Settings page to pick one.
 
 ME2 and ME3 play these sounds through Wwise, which pitches, filters and loops each one live. The bank's settings for
 `Play_gui_galaxy_travel_start`, read from LE3's `SFXGame.pcc` and LE2's `SFXGame.pcc` (bank `Wwise_Generic_Galaxy_Map`):
@@ -69,7 +72,7 @@ and the reverb into the waves, and the director does the rest (`SetupFlightSound
 cents changes speed too, as in Wwise. The Wwise low-pass value is turned into a one-pole filter frequency by an
 approximation (`WwiseLpfHz`): Wwise's own table is not public.
 
-| Variant | Name in the menu | What it is |
+| Variant | Name | What it is |
 |---|---|---|
 | 1 | Mass Effect 3 | ME3's settings above |
 | 2 | Mass Effect 2 | the same, with the engine at -7 dB and ME2's 0.5 s reverb |
@@ -77,14 +80,12 @@ approximation (`WwiseLpfHz`): Wwise's own table is not public.
 | 4 | Soft hum | quieter (-15 LUFS), more filtered, engine -700 cents, the drive at -2400 and -1200 cents, 1.2 s reverb |
 | 5 | Bright thrusters | less filtered, engine -150 cents, the drive at -341 and 0 cents (-1200 and -341 in system view), wide in stereo |
 
-For each variant the script writes:
+For each variant it builds, the script writes:
 
 - `c_flight<n>_engine` and `c_flight<n>_drive`: two loops, 16 s each, whose last 0.3 s are crossfaded into their
   start. The director plays both while the ship flies.
 - `c_flight<n>_drive_system` (variants 1, 2 and 5): the drive for system view.
 - `c_flight<n>_whoosh`: the start of a flight, played once.
-- `c_flight<n>_preview`: 3 to 4 s of one flight (whoosh, engine, fade-out) for the menu to play when the player picks
-  the sound. `c_flight0_preview` is the same for the original sound.
 
 Every loop pair is set to the loudness of the original loop at full speed (-11.6 LUFS, Soft hum -15 LUFS). No wave
 peaks above -1 dBFS: the gain this holds back goes into the cue's volume instead (0.5, as the original cues, up to
@@ -96,8 +97,8 @@ wave's ISACT content index, is the part after the colon, so that part must stay 
 wave: a second cue built from the template under the template's wave name would get the first one's wave back.
 `c_travel_loop` is built last and keeps `snd_gui:c_galaxymap_enter`. The waves are stereo throughout.
 
-To listen outside the game: `python3 -I src/sound/flight_sounds.py build/sound <folder> --previews <folder>` writes
-`flight0.wav` to `flight5.wav`, each a flight at cluster level then one in system view, at the game's levels.
+To listen to all six outside the game: `python3 -I src/sound/flight_sounds.py build/sound <folder> --previews <folder>`
+writes `flight0.wav` to `flight5.wav`, each a flight at cluster level then one in system view, at the game's levels.
 
 ## The ship: `SR1_Normandy`
 

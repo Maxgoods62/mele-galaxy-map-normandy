@@ -16,22 +16,8 @@
 74220015	System: Schiffsgröße
 74220016	Größe des Schiffs auf System-Ebene.
 74220017	Standard wiederherstellen
-74220018	Setzt alle Einstellungen dieser Seite auf ihren Standardwert zurück.
+74220018	Setzt alle Einstellungen dieser Seite auf 100 % zurück.
 74220019	Gilt ab dem nächsten Öffnen der Karte.
 74220020	(Standard)
 74220021	Aktuell
-74220022	Fluggeschwindigkeit, Drehgeschwindigkeit, Reaktion und Größe des Schiffs auf der Galaxie-Karte, auf Cluster- und System-Ebene, und sein Fluggeräusch. Gilt für alle Spielstände.
-74220023	Fluggeräusch
-74220024	Das Geräusch des Schiffs beim Flug auf der Galaxie-Karte. Bei der Auswahl wird eine kurze Hörprobe abgespielt.
-74220025	Original
-74220026	Das Geräusch früherer Versionen der Mod: das Reisegeräusch von Mass Effect 3 unverändert, auf beiden Ebenen gleich.
-74220027	Mass Effect 3
-74220028	Die Abmischung von Mass Effect 3: tiefer und gedämpft, mit einem Triebwerkston, der mit der Geschwindigkeit steigt, und einem tieferen Antrieb auf System-Ebene.
-74220029	Mass Effect 2
-74220030	Die Abmischung von Mass Effect 2: wie die von Mass Effect 3, mit leiserem Triebwerk und dem kurzen Hall seiner Galaxie-Karte.
-74220031	Tiefes Grollen
-74220032	Ein tieferes, dunkleres Triebwerk über einem tiefen Antrieb, mit längerem Hall.
-74220033	Sanftes Summen
-74220034	Leise und gedämpft: ein schwaches Rauschen und ein tiefes, gleichmäßiges Summen.
-74220035	Helle Triebwerke
-74220036	Ein klarerer, höherer Triebwerkston, der sich stärker mit der Geschwindigkeit ändert, und ein breiter Antrieb.
+74220022	Fluggeschwindigkeit, Drehgeschwindigkeit, Reaktion und Größe des Schiffs auf der Galaxie-Karte, auf Cluster- und System-Ebene. Gilt für alle Spielstände.

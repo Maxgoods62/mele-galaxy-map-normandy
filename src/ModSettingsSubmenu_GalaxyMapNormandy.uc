@@ -25,7 +25,6 @@ public function bool OnRefreshMenu(Object outerMenu)
     AddSetting(S.default.SystemTurnId, $74220011, $74220012);
     AddSetting(S.default.SystemResponseId, $74220013, $74220014);
     AddSetting(S.default.SystemSizeId, $74220015, $74220016);
-    AddSoundRow();
     RestoreRow = menuItems.Length;
     Item.srLeftText = $74220017;
     Item.srDescriptionTitleText = $74220017;
@@ -48,23 +47,6 @@ public function AddSetting(int Id, stringref Label, stringref Description)
     Item.sRightText = Class'ModSettingsSubmenu_GalaxyMapNormandyStep'.static.PercentText(Id);
     Item.srDescriptionTitleText = Label;
     Item.srDescriptionText = Description;
-    Item.submenuInstance = Page;
-    menuItems.AddItem(Item);
-}
-
-// The Flight sound row: the current sound's name; its action opens the list of sounds.
-public function AddSoundRow()
-{
-    local ModSettingItemData Item;
-    local ModSettingsSubmenu_GalaxyMapNormandySound Page;
-
-    Page = new (Self) Class'ModSettingsSubmenu_GalaxyMapNormandySound';
-    Page.srTitle = $74220023;
-    Page.sSubtitle = sTitle;
-    Item.srLeftText = $74220023;
-    Item.srRightText = Class'ModSettingsSubmenu_GalaxyMapNormandySound'.static.CurrentName();
-    Item.srDescriptionTitleText = $74220023;
-    Item.srDescriptionText = $74220024;
     Item.submenuInstance = Page;
     menuItems.AddItem(Item);
 }
