@@ -9,7 +9,7 @@ between 2026-10-28 and 2026-11-05. The version number is `modver` in `mod/moddes
   thrusters). Before, the loops stopped at once and the whoosh played on into the close. `build.sh` stops when lectool
   gives a flight sound cue no wave of its own (a toolkit without `buildsound --unique-wave`) and when `FlightSound`
   names no variant, and it rebuilds a tool whose built file is missing. The README is shorter: how the mod works and
-  its files moved to `docs/how-it-works.md`. In game: not tested yet.
+  its files moved to `docs/how-it-works.md`. In game: the close fade works (user, 2026-11-05).
 - v0.26: the ship plays Bright thrusters, the variant the player liked best, and the Flight sound row, its page and
   its strings are gone. The director's `FlightSound` (5) picks the sound, and `build.sh` builds only that variant's
   cues, so the sound package is about 2.8 MB smaller. `flight_sounds.py` still defines all five variants, and the
