@@ -40,19 +40,21 @@ The director is this object while a Normandy level is loaded:
 GalaxyMapNormandy_NOR10.TheWorld.PersistentLevel.GalaxyMapNormandyDirector_0
 ```
 
-From an MCP client connected to mele-mcp, call `live_set` with `objectPath` set to that path, `property` to the field
-name and `value` to the new value as JSON. From WSL, the toolkit's `mcp_call.py` does the same with the mele-mcp that
-`build.sh` built. Run it from this repository's folder (`MELE_DOTNET` can be left out when `dotnet.exe` is on `PATH`):
+From an MCP client connected to mele-mcp, call `live_set` with `game` set to `LE1`, `objectPath` to that path,
+`property` to the field name and `value` to the new value as JSON. From WSL, the toolkit's `mcp_call.py` does the same
+with the mele-mcp that `build.sh` built. Run it from this repository's folder (`MELE_DOTNET` can be left out when
+`dotnet.exe` is on `PATH`):
 
 ```bash
 MELE_DOTNET='/mnt/c/Program Files/dotnet/dotnet.exe' \
 MELE_DLL="$(wslpath -w build/tools/mele-mcp/MeleMcp.dll)" \
 python3 -I <toolkit checkout>/tools/mele-mcp/scripts/mcp_call.py live_set \
-  '{"objectPath": "GalaxyMapNormandy_NOR10.TheWorld.PersistentLevel.GalaxyMapNormandyDirector_0",
+  '{"game": "LE1",
+    "objectPath": "GalaxyMapNormandy_NOR10.TheWorld.PersistentLevel.GalaxyMapNormandyDirector_0",
     "property": "MouseStickCluster", "value": 1.5}'
 ```
 
-`live_get` with the same `objectPath` reads the values back. A struct member takes a property path, such as
+`live_get` with the same `game` and `objectPath` reads the values back. A struct member takes a property path, such as
 `ShipGlow.B`. Booleans are `true` or `false`.
 
 - A live change is lost when the level loads again. The director in the level package has no values of its own, so

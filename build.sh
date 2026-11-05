@@ -146,7 +146,7 @@ grep -E '^log:|\sClass\s' "$OUT" || true
 # GalaxyMapNormandySettings, are ForcedExports: the game uses the class already in memory.
 echo "== menu"
 MSM_PCC="$LE_DIR\\Game\\ME1\\BioGame\\DLC\\DLC_MOD_LE1CP\\CookedPCConsole\\ModSettingsMenu.pcc"
-mcp export_decompile "$(json package "$MSM_PCC" export ModSettingsSubmenu)" > "$BUILD/ModSettingsSubmenu.raw" \
+mcp export_decompile "$(json game LE1 package "$MSM_PCC" export ModSettingsSubmenu)" > "$BUILD/ModSettingsSubmenu.raw" \
     || { cat "$BUILD/ModSettingsSubmenu.raw" >&2; die "could not read ModSettingsSubmenu from LE1CP's ModSettingsMenu.pcc"; }
 head -1 "$BUILD/ModSettingsSubmenu.raw" | grep -q ' Class ModSettingsSubmenu$' \
     || { head -5 "$BUILD/ModSettingsSubmenu.raw" >&2; die "LE1CP's ModSettingsMenu.pcc has no class ModSettingsSubmenu"; }
@@ -182,7 +182,7 @@ cp "$(tlk_file _PL)" "$(tlk_file _PLPC)"
 # 4. GalaxyMapNormandy_NOR10.pcc: an empty level with one director actor, sideloaded with the Normandy by LE1CP.
 echo "== level"
 rm -f "$BUILD/GalaxyMapNormandy_NOR10.pcc"
-mcp level_new "$(json path "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")")" \
+mcp level_new "$(json game LE1 path "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")")" \
     > "$BUILD/level_new.json" || { cat "$BUILD/level_new.json" >&2; die "level_new failed"; }
 lectool addactor "$(win "$BUILD/GalaxyMapNormandy_NOR10.pcc")" GalaxyMapNormandy GalaxyMapNormandyDirector
 cat "$OUT"
