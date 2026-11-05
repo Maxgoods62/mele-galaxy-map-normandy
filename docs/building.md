@@ -12,7 +12,7 @@
 | `python3`, `ffmpeg` and `git` in WSL | | `build.sh` stops if one of them is not on `PATH`. `ffmpeg` needs the `libvorbis` encoder. |
 | The Windows .NET SDK 10.0.402 or a later 10.0 SDK, and the .NET 8 runtime | `MELE_DOTNET` | The toolkit's `global.json` files pin SDK 10.0.402 (`rollForward: latestFeature`). lectool and mele-mcp target `net8.0-windows` and run on .NET 8. The first build restores NuGet packages. |
 | vgmstream | `MELE_VGMSTREAM` | `vgmstream-cli` in WSL, or the Windows `vgmstream.exe` that Legendary Explorer ships in `exec/vgmstream/`. |
-| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` (with its `addtexture` and `tlkpackage` commands and `buildsound --unique-wave`) and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version; it stops if `addtexture` adds nothing, `tlkpackage` writes nothing or `buildsound` gives a flight sound cue no wave of its own. |
+| A [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit) checkout with its LegendaryExplorerCore submodule | `MELE_TOOLKIT` | A checkout with `tools/lectool` (with its `addtexture` and `tlkpackage` commands and `buildsound --unique-wave`) and mele-mcp 0.1.0 or later (`<Version>` in `tools/mele-mcp/src/MeleMcp/MeleMcp.csproj`). `build.sh` does not check the version (but see `TOOLKIT_COMMIT` below); it stops if `addtexture` adds nothing, `tlkpackage` writes nothing or `buildsound` gives a flight sound cue no wave of its own. |
 | The LE1 Community Patch 2.0 or later, installed in LE1 | | The build copies the menu's page class from its `ModSettingsMenu.pcc`. |
 | LE1, LE2 and LE3 in one Legendary Edition folder | `MELE_LE_DIR` | The build reads LE1's `snd_gui.pcc` and `BIOA_ICE20_11_LAY.pcc`, LE2's `Startup_INT.pcc` and LE3's `SFXGame.pcc` ([ASSETS.md](ASSETS.md)). |
 
@@ -22,6 +22,10 @@ To get the toolkit:
 git clone https://github.com/Maxgoods62/mele-maxgoods-toolkit.git
 git -C mele-maxgoods-toolkit submodule update --init
 ```
+
+`TOOLKIT_COMMIT` in `build.sh` is the toolkit commit that a release is built with. A build at another commit only
+prints a note, so a test build works with any recent checkout. `scripts/release.sh` refuses a build that was not made
+at that commit, with no uncommitted changes in the toolkit ([releasing.md](releasing.md)).
 
 ## Settings
 
@@ -58,7 +62,8 @@ from the environment.
 
 Each step starts with a header line (`== classes`, `== menu`, `== strings`, `== level`, `== sound`, `== sfx`, `== dist`, and `== building <tool>`
 when a tool is rebuilt), followed by some of lectool's output. At the end it prints the Windows path of the mod
-folder with its `modver`, and the files in its `CookedPCConsole` folder.
+folder with its `modver`, the files in its `CookedPCConsole` folder, and the build stamp. Before that, a `note:` line
+says when the toolkit is not at `TOOLKIT_COMMIT` or when the LE1 Community Patch's version can't be read.
 
 ## What each step does
 
@@ -172,11 +177,18 @@ The director loads these objects by name at run time: `GalaxyMapNormandy_SFX.SR1
 
 ### 7. Mod folder: `dist/Galaxy Map Normandy/`
 
-`build.sh` deletes the old folder, copies `mod/` and adds the packages:
+`build.sh` deletes the old folder, copies the files of `mod/` that git sees, adds the packages, and copies `LICENSE` and
+`NOTICE` into a `LICENSE` folder. A file in `mod/` that git ignores, such as a stray `.pcc`, is left out with a `note:`
+line. The `[UPDATES]` section of `moddesc.ini` makes M3's deployment put that folder and `README.txt` in the 7z, next
+to the mod. M3 never installs them in the game, and it refuses to load the mod if one of them is missing.
 
 ```
 dist/Galaxy Map Normandy/
     moddesc.ini
+    README.txt
+    LICENSE/
+        LICENSE
+        NOTICE
     DLC_MOD_GalaxyMapNormandy/
         AutoLoad.ini
         CookedPCConsole/
@@ -188,6 +200,22 @@ dist/Galaxy Map Normandy/
             ModSettings_Submenus_GalaxyMapNormandy.pcc
             Startup_MOD_GalaxyMapNormandy.pcc
 ```
+
+### 8. Build stamp: `dist/build.stamp`
+
+The last step writes what the build was made from, one `key=value` per line:
+
+| Key | Value |
+|---|---|
+| `modver` | `modver` from `mod/moddesc.ini` |
+| `mod_commit`, `mod_dirty` | this repository's commit, and its number of uncommitted changes: the lines of its `git status`, plus the files whose edits git hides (`git update-index --skip-worktree` or `--assume-unchanged`); `none` when the folder is not a git checkout |
+| `toolkit_commit`, `toolkit_dirty` | the same for the toolkit, submodules included |
+| `le1cp` | the version of the installed LE1 Community Patch, line 2 of its `_metacmm.txt`, or `unknown` |
+| `files` | the SHA-256 of a sorted list of every file in `dist/Galaxy Map Normandy/` with its own SHA-256 |
+
+`build.sh` reads the two repositories at the start and again at the end. If one changed during the build, its count
+is `changed`. A build that stops leaves no stamp: the old one is deleted after the checks, and the new one is written
+last.
 
 ## Output files
 
@@ -203,7 +231,9 @@ dist/Galaxy Map Normandy/
 | `build/GalaxyMapNormandy_SFX.pcc` | the two travel cues, the flight sound's cues, the SR-1 mesh and the button's textures |
 | `build/lectool.out`, `build/lectool.out.raw`, `build/lectool.err` | the last lectool command's output, and LegendaryExplorerCore's log |
 | `dist/Galaxy Map Normandy/` | the M3 mod folder |
+| `dist/build.stamp` | what the last build was made from ([step 8](#8-build-stamp-distbuildstamp)) |
 | `dist/GalaxyMapNormandy-v<modver>.zip`, `dist/SHA256SUMS` | the zip that `package.sh` writes, and its checksum ([Package](#package)) |
+| `dist/release/` | `SHA256SUMS` and `notes.md`, which `scripts/release.sh publish` writes for the GitHub release ([releasing.md](releasing.md)) |
 
 The startup package rebuilds byte for byte from the same sources. The level and the SFX package come out with
 different bytes on every run (the package GUID, the Ogg stream serial) and the same content. A comment-only change in a
@@ -211,19 +241,25 @@ different bytes on every run (the package GUID, the Ogg stream serial) and the s
 
 ## Changing the mod
 
-Edit `src/*.uc` or `mod/`, run `./build.sh` again and apply the new `dist/Galaxy Map Normandy` with M3, game closed.
+Edit `src/*.uc` or `mod/`, run `./build.sh` again and install the new `dist/Galaxy Map Normandy` as below.
 To try values before you rebuild, see [tuning.md](tuning.md).
+
+## Install your build
+
+1. Delete the old `Galaxy Map Normandy` folder from the `LE1` folder of M3's mod library, if there is one. A copy on top
+   of it can leave old files behind.
+2. Copy `dist/Galaxy Map Normandy` into the `LE1` folder of M3's mod library.
+3. Close the game. In M3, refresh the mod library, select Galaxy Map Normandy and click Apply Mod.
 
 ## Package
 
-`./package.sh` runs `build.sh`, then writes `dist/GalaxyMapNormandy-v<modver>.zip` (the `Galaxy Map Normandy` folder,
-and a `LICENSE` folder beside it with `LICENSE` and `NOTICE`) and its checksum in `dist/SHA256SUMS`. The mod is for LE1
-only, so the zip has no folder named after the game. With `--no-build` it zips the folder
-already in `dist/`, and stops if a file there is missing, added, or differs from `mod/`. M3 imports the zip if you drop
-it on its window, with a warning that the mod was not deployed through M3. The zip holds content derived from your game
-files ([NOTICE](../NOTICE)), so keep it for your own tests. The Nexus archive is the 7z that M3 makes: turn on Developer
-mode in M3's settings, then use Mod Utils > Deploy mod to 7z file for distribution, which checks the mod first and needs
-M3's backup of LE1.
+`./package.sh` runs `build.sh`, then writes `dist/GalaxyMapNormandy-v<modver>.zip` and its checksum in
+`dist/SHA256SUMS`. The zip holds the `Galaxy Map Normandy` folder alone, with its `LICENSE` folder and `README.txt`
+inside it. The mod is for LE1 only, so the zip has no folder named after the game. With `--no-build` it zips the folder
+already in `dist/`, and stops if a file there is missing, added, or differs from `mod/`, `LICENSE` or `NOTICE`. M3
+imports the zip if you drop it on its window, with a warning that the mod was not deployed through M3. The zip holds
+content derived from your game files ([NOTICE](../NOTICE)), so keep it for your own tests. The archive for players is
+the 7z that M3's deployment makes: [releasing.md](releasing.md) has the steps.
 
 ## Troubleshooting
 

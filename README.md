@@ -7,25 +7,28 @@ The mouse works as in ME2, with its Enter Orbit button. The controller works as 
 marker is gone at every level of the map; the name labels stay. Apart from that, the galaxy level and the
 planet view are as in the normal game.
 
-There is no release yet. You build the mod from this repository and your own game files, then install it with
-ME3Tweaks Mod Manager (M3). The version is `modver` in [`mod/moddesc.ini`](mod/moddesc.ini); the history is in
-[CHANGELOG.md](CHANGELOG.md).
+Download the 7z file from the [Nexus Mods page](NEXUS_PAGE_URL) and install it with ME3Tweaks Mod Manager (M3).
+You can also build the mod from this repository and your own game files ([docs/building.md](docs/building.md)). The
+version is `modver` in [`mod/moddesc.ini`](mod/moddesc.ini); the history is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Requirements
 
 | Need | Why |
 |---|---|
-| Mass Effect Legendary Edition, with the LE1, LE2 and LE3 files in its folder | the mod is for LE1; the build takes the button's art from LE2's `Startup_INT.pcc` and the travel sound from LE3's `SFXGame.pcc` |
-| LE1 Community Patch 2.0 or later | its Sideloader loads the mod's level with the Normandy; `moddesc.ini` requires `DLC_MOD_LE1CP` 2.0 or later |
-| [ME3Tweaks Mod Manager](https://github.com/ME3Tweaks/ME3TweaksModManager) | installs the mod; `moddesc.ini` targets moddesc version 9.2 |
-| Windows with WSL, and the build tools listed in [docs/building.md](docs/building.md) | the mod is built on your machine |
+| Mass Effect Legendary Edition | the mod changes its first game, LE1 |
+| LE1 Community Patch 2.0 or later | its Sideloader loads the mod's level with the Normandy, and its Mod Settings Menu holds the mod's settings |
+| [ME3Tweaks Mod Manager](https://github.com/ME3Tweaks/ME3TweaksModManager) | installs the mod |
+
+Building the mod needs more: the LE2 and LE3 files, WSL and the build tools ([docs/building.md](docs/building.md)).
 
 ## Install
 
-1. Build the mod as [docs/building.md](docs/building.md) explains. The build writes the M3 mod folder to
-   `dist/Galaxy Map Normandy/`.
-2. Copy `dist/Galaxy Map Normandy` into the `LE1` folder of M3's mod library.
-3. Close the game. In M3, refresh the mod library, select Galaxy Map Normandy and click Apply Mod.
+1. Close the game.
+2. Drop the 7z file on the M3 window. Or use Mod Management > Import Mod > Import mod from .7z/.rar/.zip/.exe/.me2mod
+   and pick the file. Click Import mods.
+3. Select Galaxy Map Normandy in the mod library and click Apply Mod.
+
+To install a build of your own, see [docs/building.md](docs/building.md#install-your-build).
 
 ## Uninstall
 
@@ -92,15 +95,17 @@ they are the same for every career and save. They apply the next time the galaxy
 | [docs/how-it-works.md](docs/how-it-works.md) | how the mod works, and what each file in this repository holds |
 | [docs/tuning.md](docs/tuning.md) | the ship, sound and mouse values beyond the in-game settings, and how to try them in a running game |
 | [docs/ASSETS.md](docs/ASSETS.md) | which game files the build reads and what it does with them |
+| [docs/releasing.md](docs/releasing.md) | how a version is published, and how to check a download |
 
 ## Credits
 
-- BioWare and Electronic Arts: Mass Effect Legendary Edition. The build copies these from your own install: the SR-1
+- BioWare and Electronic Arts: Mass Effect Legendary Edition. The mod holds content taken from the games: the SR-1
   model (LE1's `BIOA_ICE20_11_LAY.pcc`), the ME2 PC button art (LE2's `Startup_INT.pcc`), the ME3 galaxy map travel
-  sound (LE3's `SFXGame.pcc`), and two LE1 interface sounds used as templates (`snd_gui.pcc`).
-- The LE1 Community Patch team, for the Sideloader that loads the mod's level and the Mod Settings Menu. The build
-  copies the menu's page class (`ModSettingsSubmenu`) from your installed Community Patch into the mod's menu package,
-  as other mods' settings pages do.
+  sound (LE3's `SFXGame.pcc`), and two LE1 interface sounds used as templates (`snd_gui.pcc`). The build reads them
+  from an installed copy of the games.
+- The LE1 Community Patch team, for the Sideloader that loads the mod's level and the Mod Settings Menu. The mod's menu
+  package holds a copy of the menu's page class (`ModSettingsSubmenu`), as other mods' settings pages do. The build
+  takes it from an installed Community Patch.
 - ME3Tweaks: ME3Tweaks Mod Manager, and [Legendary Explorer](https://github.com/ME3Tweaks/LegendaryExplorer), whose
   LegendaryExplorerCore library the build tools use.
 - [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit): the build tools
@@ -110,5 +115,5 @@ they are the same for every career and save. They apply the next time the galaxy
 
 ## License
 
-The files in this repository are under the GNU General Public License v3.0 ([LICENSE](LICENSE)). The game content the
-build reads, and the content `GalaxyMapNormandy_SFX.pcc` takes from it, are not: see [NOTICE](NOTICE).
+The files in this repository are under the GNU General Public License v3.0 ([LICENSE](LICENSE)). The game content in
+the built mod and the Community Patch's class are not: see [NOTICE](NOTICE).

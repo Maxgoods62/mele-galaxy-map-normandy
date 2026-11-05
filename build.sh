@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Build Galaxy Map Normandy from this repo's sources and the player's own game files, then put the M3 mod folder in
-# dist/Galaxy Map Normandy (moddesc.ini at its root). Install that folder with ME3Tweaks Mod Manager, game closed.
+# dist/Galaxy Map Normandy (moddesc.ini at its root) and what it was built from in dist/build.stamp. Install that folder
+# with ME3Tweaks Mod Manager, game closed.
 #   ./build.sh            build everything
 # Runs in WSL. The tools are Windows programs: lectool and mele-mcp are built from the toolkit (MELE_TOOLKIT) into
 # build/tools, vgmstream decodes the LE3 travel sound. Settings come from the environment or from build.env (not in
@@ -11,6 +12,9 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -f "$HERE/build.env" ]]; then . "$HERE/build.env"; fi
 
 TOOLKIT="${MELE_TOOLKIT:-$HERE/../../mele-maxgoods-toolkit}"
+# The toolkit commit a release is built with: scripts/release.sh refuses a build from any other. A test build at another
+# commit only gets a note. It is set here, so build.env can't change it.
+TOOLKIT_COMMIT=a20edc6787ca72711d1c5fcddcb44c50867be553
 DOTNET="${MELE_DOTNET:-dotnet.exe}"
 VGMSTREAM="${MELE_VGMSTREAM:-vgmstream-cli}"
 LE_DIR="${MELE_LE_DIR:?set MELE_LE_DIR to the Legendary Edition folder, as a Windows path}"
@@ -45,7 +49,55 @@ command -v "$VGMSTREAM" >/dev/null || die "$VGMSTREAM not found: set MELE_VGMSTR
 [[ -f "$TOOLKIT/tools/mele-mcp/external/LegendaryExplorer/LegendaryExplorer/LegendaryExplorerCore/LegendaryExplorerCore.csproj" ]] \
     || die "the toolkit's LEC submodule is missing: git -C '$TOOLKIT' submodule update --init"
 
+# A build that stops leaves no stamp: the old one goes now, and the new one is written last (step 8).
+rm -f "$HERE/dist/build.stamp" "$HERE/dist/build.stamp.tmp"
 mkdir -p "$BUILD/tools" "$BUILD/sound" "$BUILD/button"
+
+# in_git <folder>: the folder is the top of a git checkout, not a copy of the sources or a folder inside another one.
+in_git() { [[ "$(git -C "$1" rev-parse --show-toplevel 2> /dev/null)" -ef "$1" ]]; }
+# git_state <folder>: its commit, its number of uncommitted changes and a hash of them. The changes are the lines of its
+# git status and the files whose edits git hides (git update-index --skip-worktree or --assume-unchanged), submodules
+# included. "none none -" when the folder is not the top of a git checkout.
+git_state() {
+    local head changes
+    if in_git "$1" && head="$(git -C "$1" rev-parse --verify -q HEAD)"; then
+        changes="$(git -C "$1" status --porcelain --ignore-submodules=none
+            git -C "$1" ls-files -v --recurse-submodules | grep '^[[:lower:]S]' || true)"
+        echo "$head $(grep -c . <<< "$changes" || true)" \
+            "$({ printf '%s\n' "$changes"; git -C "$1" diff HEAD --submodule=diff; } | md5sum | cut -c1-8)"
+    else
+        echo "none none -"
+    fi
+}
+# mod_files: the files of mod/ that go into the mod folder, NUL-separated and relative to mod/. In a git checkout these
+# are the files git sees, committed or new: a file git ignores, such as a stray .pcc, never ships.
+mod_files() {
+    if in_git "$HERE"; then
+        git -C "$HERE" ls-files -z --cached --others --exclude-standard -- mod | sed -z 's|^mod/||' | sort -zu \
+            | while IFS= read -r -d '' f; do if [[ -f "$HERE/mod/$f" ]]; then printf '%s\0' "$f"; fi; done
+    else
+        (cd "$HERE/mod" && find . -type f -print0 | sed -z 's|^\./||')
+    fi
+}
+# manifest_hash <folder>: the SHA-256 of the sorted list of its files with their own SHA-256. scripts/release.sh
+# computes it the same way.
+manifest_hash() { (cd "$1" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 -r sha256sum) | sha256sum | cut -c1-64; }
+# What the build is made from, for dist/build.stamp: sampled now and again at the end, as another program could change
+# the repo or the toolkit meanwhile.
+modver="$(sed -n 's/^modver=//p' "$HERE/mod/moddesc.ini" | tr -d '\r')"
+mod_state="$(git_state "$HERE")"
+kit_state="$(git_state "$TOOLKIT")"
+if [[ "${kit_state%% *}" != "$TOOLKIT_COMMIT" ]]; then
+    echo "note: the toolkit is at ${kit_state%% *}, not at TOOLKIT_COMMIT $TOOLKIT_COMMIT: fine for a test build," \
+        "but scripts/release.sh refuses it"
+fi
+# The LE1 Community Patch the menu's base class comes from (step 2): line 2 of its _metacmm.txt is its version.
+le1cp="$(sed -n 2p "$(wslpath -u "$LE_DIR\\Game\\ME1\\BioGame\\DLC\\DLC_MOD_LE1CP\\_metacmm.txt" 2> /dev/null)" 2> /dev/null \
+    | tr -d '\r')" || true
+if [[ ! "$le1cp" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+    le1cp=unknown
+    echo "note: no LE1 Community Patch version in DLC_MOD_LE1CP\\_metacmm.txt: scripts/release.sh refuses this build"
+fi
 
 # Tools: rebuilt when the toolkit's commit or working tree changed since the last build.
 stamp="$(git -C "$TOOLKIT" rev-parse HEAD) $({ git -C "$TOOLKIT" status --porcelain; git -C "$TOOLKIT" diff HEAD --submodule=diff; } | md5sum | cut -c1-8)"
@@ -239,11 +291,34 @@ button() {    # button <new name> <filters> [addtexture option]
 button EnterButton_Normal "$GREY,curves=interp=pchip:$BUTTON_BLUE"
 button EnterButton_Hover "split[p][a];[p]$PANEL[p];[a]$GREY,curves=interp=pchip:$BUTTON_BROWN,lutrgb=a='min(255,val*2.5)'[a];[p][a]overlay=format=rgb,format=rgba,$CORNERS,$UNDO" --argb
 
-# 7. The M3 mod folder.
+# 7. The M3 mod folder: the files of mod/ that git sees, the packages, and LICENSE and NOTICE in a LICENSE folder.
+# moddesc.ini's [UPDATES] section makes M3's deployment put the LICENSE folder and README.txt in the 7z beside the mod;
+# M3 never installs them into the game, and it refuses to load the mod when one is missing.
 echo "== dist"
 rm -rf "$DIST"
-mkdir -p "$DIST"
-cp -r "$HERE/mod/." "$DIST/"
+mkdir -p "$DIST/LICENSE"
+mod_files > "$BUILD/mod_files"
+while IFS= read -r -d '' f; do
+    mkdir -p "$(dirname "$DIST/$f")"
+    cp "$HERE/mod/$f" "$DIST/$f"
+done < "$BUILD/mod_files"
+[[ -f "$DIST/moddesc.ini" ]] || die "no moddesc.ini among the files of mod/ that git sees"
+if in_git "$HERE"; then
+    git -C "$HERE" ls-files --others --ignored --exclude-standard -- mod | sed 's/^/note: left out, git ignores it: /'
+fi
+cp "$HERE/LICENSE" "$HERE/NOTICE" "$DIST/LICENSE/"
 cp "$BUILD"/{Startup_MOD_GalaxyMapNormandy,ModSettings_Submenus_GalaxyMapNormandy,GalaxyMapNormandy_NOR10,GalaxyMapNormandy_SFX}.pcc "$TLK"/*.pcc "$COOKED/"
-echo "built $(win "$DIST") (modver $(sed -n 's/^modver=//p' "$HERE/mod/moddesc.ini" | tr -d '\r'))"
+echo "built $(win "$DIST") (modver $modver)"
 ls -l "$COOKED" | tail -n +2
+
+# 8. dist/build.stamp, written last so that a build that stops leaves none. scripts/release.sh checks it against the
+# repo, the toolkit and dist/Galaxy Map Normandy. A dirty count is "changed" when the folder changed during the build.
+read -r mod_commit mod_dirty _ <<< "$mod_state"
+[[ "$(git_state "$HERE")" == "$mod_state" ]] || mod_dirty=changed
+read -r kit_commit kit_dirty _ <<< "$kit_state"
+[[ "$(git_state "$TOOLKIT")" == "$kit_state" ]] || kit_dirty=changed
+files="$(manifest_hash "$DIST")"
+printf '%s\n' "modver=$modver" "mod_commit=$mod_commit" "mod_dirty=$mod_dirty" "toolkit_commit=$kit_commit" \
+    "toolkit_dirty=$kit_dirty" "le1cp=$le1cp" "files=$files" > "$HERE/dist/build.stamp.tmp"
+sed 's/^/stamp: /' "$HERE/dist/build.stamp.tmp"
+mv "$HERE/dist/build.stamp.tmp" "$HERE/dist/build.stamp"

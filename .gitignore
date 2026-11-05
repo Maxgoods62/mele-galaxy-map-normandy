@@ -3,6 +3,7 @@
 *.ogg
 *.wem
 *.7z
+*.zip
 ini*/
 build/
 dist/

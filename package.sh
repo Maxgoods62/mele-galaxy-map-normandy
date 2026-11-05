@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Zip the M3 mod folder: dist/GalaxyMapNormandy-v<modver>.zip and its checksum in dist/SHA256SUMS. The zip holds the
-# folder "Galaxy Map Normandy" (moddesc.ini at its root, as ME3Tweaks Mod Manager imports it) and a LICENSE folder with
-# LICENSE and NOTICE. The mod is for LE1 only, so no folder is named after the game.
+# Zip the M3 mod folder for local tests: dist/GalaxyMapNormandy-v<modver>.zip and its checksum in dist/SHA256SUMS. The
+# zip holds the folder "Galaxy Map Normandy" alone: moddesc.ini at its root, as ME3Tweaks Mod Manager imports it, and
+# the LICENSE folder (LICENSE, NOTICE) and README.txt that build.sh puts there. The mod is for LE1 only, so no folder is
+# named after the game.
 #   ./package.sh              run ./build.sh first
 #   ./package.sh --no-build   zip the dist/Galaxy Map Normandy that is already there
-# The zip contains content derived from the player's own game files (NOTICE). It is for local testing: a public copy
-# goes only to Nexus, after asking ME3Tweaks, as the 7z that M3's own deployment makes (docs/building.md).
+# The zip contains content derived from the game files (NOTICE). The public archive is the 7z that M3's own deployment
+# makes (docs/releasing.md).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -27,26 +28,44 @@ esac
 modver="$(sed -n 's/^modver=//p' "$HERE/mod/moddesc.ini" | tr -d '\r')"
 [[ "$modver" =~ ^[0-9A-Za-z._-]+$ ]] || die "no usable modver in mod/moddesc.ini: '$modver'"
 
-# With --no-build the folder may be an older build: each file of mod/ must be there unchanged, the packages
-# present, and nothing else.
+# mod_files: the files of mod/ that build.sh copies, NUL-separated and relative to mod/: in a git checkout the files git
+# sees, committed or new, and not those it ignores.
+mod_files() {
+    if [[ "$(git -C "$HERE" rev-parse --show-toplevel 2> /dev/null)" -ef "$HERE" ]]; then
+        git -C "$HERE" ls-files -z --cached --others --exclude-standard -- mod | sed -z 's|^mod/||' | sort -zu \
+            | while IFS= read -r -d '' f; do if [[ -f "$HERE/mod/$f" ]]; then printf '%s\0' "$f"; fi; done
+    else
+        (cd "$HERE/mod" && find . -type f -print0 | sed -z 's|^\./||')
+    fi
+}
+
+# With --no-build the folder may be an older build: each of those files of mod/ must be there unchanged, the packages
+# and the two license texts present, and nothing else.
 [[ -d "$MOD" ]] || die "no $MOD: run ./package.sh without --no-build"
-while IFS= read -r -d '' f; do
-    rel="${f#"$HERE/mod/"}"
+LIST="$(mktemp)"
+trap 'rm -f "$LIST"' EXIT
+mod_files > "$LIST"
+n=0
+while IFS= read -r -d '' rel; do
     [[ -f "$MOD/$rel" ]] || die "missing $NAME/$rel"
-    cmp -s "$f" "$MOD/$rel" || die "$NAME/$rel differs from mod/$rel: run ./package.sh without --no-build"
-done < <(find "$HERE/mod" -type f -print0)
+    cmp -s "$HERE/mod/$rel" "$MOD/$rel" || die "$NAME/$rel differs from mod/$rel: run ./package.sh without --no-build"
+    n=$((n + 1))
+done < "$LIST"
 for p in "${PACKAGES[@]}"; do
     [[ -s "$MOD/DLC_MOD_GalaxyMapNormandy/CookedPCConsole/$p.pcc" ]] || die "missing or empty $p.pcc in $NAME"
 done
-(( $(find "$MOD" -type f | wc -l) == $(find "$HERE/mod" -type f | wc -l) + ${#PACKAGES[@]} )) \
+for f in LICENSE NOTICE; do
+    [[ -s "$HERE/$f" ]] || die "missing $f"
+    cmp -s "$HERE/$f" "$MOD/LICENSE/$f" || die "$NAME/LICENSE/$f is missing or differs from $f: run ./package.sh without --no-build"
+done
+(( $(find "$MOD" -type f | wc -l) == n + ${#PACKAGES[@]} + 2 )) \
     || die "$NAME holds files that build.sh does not put there: run ./package.sh without --no-build"
-for f in NOTICE LICENSE; do [[ -s "$HERE/$f" ]] || die "missing $f"; done
 
 ZIP="GalaxyMapNormandy-v$modver.zip"
 rm -f "$DIST/$ZIP" "$DIST/$ZIP.tmp" "$DIST/SHA256SUMS"
-python3 -I - "$DIST/$ZIP.tmp" "$DIST" "$NAME" "$HERE/LICENSE" "$HERE/NOTICE" <<'EOF'
+python3 -I - "$DIST/$ZIP.tmp" "$DIST" "$NAME" <<'EOF'
 import os, sys, zipfile
-out, dist, name, *extra = sys.argv[1:]
+out, dist, name = sys.argv[1:]
 files = []
 for root, dirs, names in os.walk(os.path.join(dist, name)):
     dirs.sort()
@@ -54,8 +73,6 @@ for root, dirs, names in os.walk(os.path.join(dist, name)):
 with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
     for f in files:
         z.write(f, os.path.relpath(f, dist))
-    for f in extra:
-        z.write(f, "LICENSE/" + os.path.basename(f))
 with zipfile.ZipFile(out) as z:
     bad = z.testzip()
     if bad:

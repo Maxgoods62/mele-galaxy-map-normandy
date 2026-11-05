@@ -1,9 +1,9 @@
 # Game assets
 
 The mod uses BioWare content: the SR-1 Normandy model, the ME2 PC button art and the ME3 galaxy map travel sound. None
-of it is in this repository. `.gitignore` keeps out every package and sound file (`*.pcc`, `*.wav`, `*.ogg`, `*.wem`, `*.7z`) and the
-`build/` and `dist/` folders. `build.sh` reads the content from your own Legendary Edition install and builds it into
-`GalaxyMapNormandy_SFX.pcc`.
+of it is in this repository. `.gitignore` keeps out every package and sound file (`*.pcc`, `*.wav`, `*.ogg`, `*.wem`, `*.7z`, `*.zip`) and the
+`build/` and `dist/` folders. `build.sh` reads the content from an installed copy of the Legendary Edition and builds
+it into `GalaxyMapNormandy_SFX.pcc`.
 
 ## Files the build reads
 
@@ -126,7 +126,7 @@ The label is drawn with the game's own `EngineFonts.LargeFont`.
 
 ## Where the content ends up
 
-`GalaxyMapNormandy_SFX.pcc` holds the cues, the mesh and the button's textures. It is built on your machine, lands in
-`dist/Galaxy Map Normandy/DLC_MOD_GalaxyMapNormandy/CookedPCConsole/` and is for your own use with your own copy of
-the game ([NOTICE](../NOTICE)). The other packages hold this repository's compiled classes and strings, a copy of the
+`GalaxyMapNormandy_SFX.pcc` holds the cues, the mesh and the button's textures. A build puts it in
+`dist/Galaxy Map Normandy/DLC_MOD_GalaxyMapNormandy/CookedPCConsole/`, and the 7z on Nexus Mods holds the one from the
+maintainer's build. Either way, it is for personal use with a legitimate copy of the game ([NOTICE](../NOTICE)). The other packages hold this repository's compiled classes and strings, a copy of the
 LE1 Community Patch's `ModSettingsSubmenu` class, and an otherwise empty level with one actor.

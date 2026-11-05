@@ -3,14 +3,20 @@ Galaxy Map Normandy
 Mass Effect, Mass Effect Legendary Edition and all of their content belong to Electronic Arts and BioWare. This mod is
 not affiliated with or endorsed by Electronic Arts or BioWare.
 
-This repository contains no game files. Its own files (the UnrealScript sources, the strings in src/tlk, the mod's .ini
-and .m3cd files, the build script and the documentation) are under the GNU General Public License v3.0, in LICENSE.
+This repository contains no game files. Its own files (the UnrealScript sources, the strings in src/tlk, the mod's .ini,
+.m3cd and README.txt files, the scripts and the documentation) are under the GNU General Public License v3.0, in LICENSE.
 
-build.sh reads game files from the player's own installed copy of Mass Effect Legendary Edition: the SR-1 Normandy
-model from LE1's BIOA_ICE20_11_LAY.pcc, two interface sound cues from LE1's snd_gui.pcc (used as templates), the Mass
-Effect 2 PC button art from LE2's Startup_INT.pcc, and the Mass Effect 3 galaxy map travel sound from LE3's
-SFXGame.pcc. docs/ASSETS.md lists what it takes and what it does with each file.
+build.sh reads game files from an installed copy of Mass Effect Legendary Edition: the SR-1 Normandy model from LE1's
+BIOA_ICE20_11_LAY.pcc, two interface sound cues from LE1's snd_gui.pcc (used as templates), the Mass Effect 2 PC button
+art from LE2's Startup_INT.pcc, and the Mass Effect 3 galaxy map travel sound from LE3's SFXGame.pcc. docs/ASSETS.md
+lists what it takes and what it does with each file.
 
-The built packages contain content derived from those files: GalaxyMapNormandy_SFX.pcc holds the model, the button
-art and the sounds. That content is not covered by the GPL. The built packages are for personal use with a legitimate copy of the
-game.
+The built packages contain content derived from those files: GalaxyMapNormandy_SFX.pcc holds the model, the button art
+and the sounds. That content is not covered by the GPL. The built packages, in the archive on Nexus Mods or built by
+you, are for personal use with a legitimate copy of the game.
+
+ModSettings_Submenus_GalaxyMapNormandy.pcc holds a compiled copy of the LE1 Community Patch's ModSettingsSubmenu class,
+as other mods' settings pages do. build.sh decompiles it at build time from the installed Community Patch's
+ModSettingsMenu.pcc; the game uses the Community Patch's own class in memory. The class belongs to the authors of the
+LE1 Community Patch and is not covered by the GPL. The Community Patch's README says that anyone can use the patch for
+any purpose without permission from its authors.

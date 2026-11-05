@@ -27,10 +27,12 @@ how to change them in a running game.
 | `src/ModSettingsSubmenu_GalaxyMapNormandy.uc`, `src/ModSettingsSubmenu_GalaxyMapNormandyStep.uc` | the settings page and the step list in the LE1 Community Patch's Mod Settings Menu |
 | `src/sound/flight_sounds.py` | builds the waves of the flight sound variants; `build.sh` asks only for the one `FlightSound` names ([ASSETS.md](ASSETS.md#flight-sound-variants)) |
 | `src/tlk/<language>.tsv` | the settings pages' words in each language: a string id, a tab, the text |
-| `mod/` | the M3 mod folder without its packages: `moddesc.ini`, `AutoLoad.ini`, `ConfigDelta-GalaxyMapNormandy.m3cd` (the Sideloader level and the Mod Settings Menu row) |
+| `mod/` | the M3 mod folder without its packages and license texts: `moddesc.ini`, `README.txt` (the read-me in the 7z), `AutoLoad.ini`, `ConfigDelta-GalaxyMapNormandy.m3cd` (the Sideloader level and the Mod Settings Menu row) |
 | `build.sh`, `build.env.example` | the build ([building.md](building.md)) |
 | `package.sh` | zips the built mod folder for local tests ([Package](building.md#package)) |
-| `docs/` | this page, [building.md](building.md), [tuning.md](tuning.md) and [ASSETS.md](ASSETS.md) (which game files the build reads and what it does with them) |
+| `scripts/release.sh` | checks a release, checks the 7z that M3 deploys, and publishes the GitHub release ([releasing.md](releasing.md)) |
+| `scripts/protect-repo.sh` | locks the GitHub repo for releases, once; rendered from the toolkit's release kit, so it is not edited here |
+| `docs/` | this page, [building.md](building.md), [tuning.md](tuning.md), [ASSETS.md](ASSETS.md) (which game files the build reads and what it does with them) and [releasing.md](releasing.md) (how a version is published) |
 
 The `.pcc` packages are build output, and `GalaxyMapNormandy_SFX.pcc` holds BioWare content, so none of them is
 in git.
