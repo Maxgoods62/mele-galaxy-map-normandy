@@ -1,0 +1,3 @@
+# Check out every file exactly as it is stored, on Windows too: the build scripts need LF, and the
+# game and M3 read AutoLoad.ini and the .m3cd byte for byte, stored with CRLF.
+* -text
