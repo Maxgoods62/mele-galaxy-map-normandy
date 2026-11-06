@@ -158,7 +158,7 @@ stick. The ship chases the cursor and turns toward where it flies.
 | `SystemTurnSpeed` | `12.0` | interp speed | `TurnSpeed` in system view |
 | `ClusterMaxSpeed` | `1300.0` | units/s | Ship top speed, cluster level |
 | `SystemMaxSpeed` | `250.0` | units/s | Ship top speed, system view |
-| `ClusterFlightSpeed` | `0.75` | fraction | Game cursor speed, cluster level |
+| `ClusterFlightSpeed` | `0.5625` | fraction | Game cursor speed, cluster level |
 | `SystemFlightSpeed` | `0.75` | fraction | Game cursor speed, system view |
 
 `ChaseSpeed` and `TurnSpeed` are speeds for the engine's `VInterpTo` and `RInterpTo` functions. Each frame, these move

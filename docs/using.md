@@ -77,8 +77,9 @@ Russian and Japanese games show the English words.
 ### Controller
 
 The controller keeps the normal game's controls. The stick moves the map cursor, and the ship follows it. The Flight
-speed setting changes how fast the stick moves the cursor. At 100 %, the map cursor moves at about three quarters of
-its speed in the normal game. 125 % is close to the normal speed.
+speed setting changes how fast the stick moves the cursor. At 100 %, the map cursor moves at a little over half its
+speed in the normal game at cluster level, and at about three quarters of it in system view. 200 % at cluster level
+and 125 % in system view are close to the normal speed.
 
 When you move the stick, the arrow hides until you move the mouse again. As soon as you touch the controller, the game
 shows its controller prompts and the Enter Orbit button hides. A click or a key press brings the button back, but a

@@ -13,6 +13,8 @@ Community Patch 2.0 or later and ME3Tweaks Mod Manager.
 
 ## Development builds
 
+- v0.27: a slower ship at cluster level. 100 % Cluster flight speed is now the old 75 %, the player's pick:
+  `ClusterFlightSpeed` 0.5625 (was 0.75). System view keeps its speed.
 - v0.27: the docs are rewritten from the code. `docs/using.md` is new, the full guide for players. `docs/releasing.md`
   is gone: the release steps are at the top of `scripts/release.sh`, and the toolkit's `docs/releasing.md` says how
   my mods are released and checked. The README is under 5000 characters.

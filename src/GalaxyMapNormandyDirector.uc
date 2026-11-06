@@ -1422,7 +1422,7 @@ defaultproperties
     SystemTurnSpeed = 12.0
     ClusterMaxSpeed = 1300.0
     SystemMaxSpeed = 250.0
-    ClusterFlightSpeed = 0.75
+    ClusterFlightSpeed = 0.5625
     SystemFlightSpeed = 0.75
     YawOffset = -16384
     MoveSpeedStart = 20.0
