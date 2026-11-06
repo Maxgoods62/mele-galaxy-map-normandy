@@ -94,7 +94,7 @@ mouse move alone does not.
 
 ## Sound
 
-A whoosh plays when the ship sets off after a rest of at least 0.6 s. While the ship flies, an engine and a drive
+A whoosh plays each time the ship sets off. While the ship flies, an engine and a drive
 play. They get higher and louder as the ship goes faster, and they fade out when it stops. When you close the map, all
 of the sound fades out.
 

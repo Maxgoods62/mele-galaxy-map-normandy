@@ -26,6 +26,7 @@ var transient SoundCue Loop2SystemCue;
 var transient SoundCue PlayingLoopCue;
 var transient SoundCue PlayingLoop2Cue;
 var transient AudioComponent WhooshSound;
+var transient AudioComponent OldWhooshSound;
 var transient AudioComponent LoopSound;
 var transient AudioComponent OldLoopSound;
 var transient AudioComponent Loop2Sound;
@@ -319,14 +320,7 @@ public function UpdateFlightSound(float DeltaTime)
             SlowTime = 0.0;
             if (RestTime >= RestBeforeSound)
             {
-                if (bSystem && PlayCue(WhooshSound, WhooshCue, WhooshSystemPitch, WhooshSystemVolume))
-                {
-                    bWhooshPlaying = TRUE;
-                }
-                else if (!bSystem && PlayCue(WhooshSound, WhooshCue, WhooshClusterPitch, WhooshClusterVolume))
-                {
-                    bWhooshPlaying = TRUE;
-                }
+                PlayWhoosh(bSystem);
             }
             PlayingLoopCue = LoopCue;
             if (bSystem && LoopSystemCue != None)
@@ -386,6 +380,35 @@ public function UpdateFlightSound(float DeltaTime)
             RestartLoop(Loop2Sound, OldLoop2Sound, PlayingLoop2Cue);
             Loop2Age = 0.0;
         }
+    }
+}
+
+// Each start plays the whoosh on the other of two components: the last whoosh, maybe still playing after a quick stop
+// and start, fades out over LoopFadeOut instead of being cut. A whoosh that has ended keeps that FadeOut until its
+// next play, where PlayCue clears it.
+public function PlayWhoosh(bool bSystem)
+{
+    local AudioComponent Ending;
+    local float Pitch;
+    local float Volume;
+
+    Pitch = WhooshClusterPitch;
+    Volume = WhooshClusterVolume;
+    if (bSystem)
+    {
+        Pitch = WhooshSystemPitch;
+        Volume = WhooshSystemVolume;
+    }
+    if (WhooshSound != None)
+    {
+        Ending = WhooshSound;
+        WhooshSound = OldWhooshSound;
+        OldWhooshSound = Ending;
+        OldWhooshSound.FadeOut(LoopFadeOut, 0.0);
+    }
+    if (PlayCue(WhooshSound, WhooshCue, Pitch, Volume))
+    {
+        bWhooshPlaying = TRUE;
     }
 }
 
@@ -1338,6 +1361,15 @@ public function bool PlayCue(out AudioComponent Sound, SoundCue Cue, float Pitch
         }
     }
     Sound.Stop();
+    // Play keeps the fade of a FadeOut called while the component was stopped (a whoosh that had ended, faded by
+    // PlayWhoosh or Cleanup): the new sound fades from its first frame and stops at the fade's end, which a 0.4 s fade
+    // makes silent. Only a Stop that ends a fade clears it, so clear it here (proven live, 2026-11-06).
+    Sound.FadeInStartTime = 0.0;
+    Sound.FadeInStopTime = -1.0;
+    Sound.FadeInTargetVolume = 1.0;
+    Sound.FadeOutStartTime = 0.0;
+    Sound.FadeOutStopTime = -1.0;
+    Sound.FadeOutTargetVolume = 1.0;
     Sound.SoundCue = Cue;
     Sound.PitchMultiplier = Pitch;
     Sound.VolumeMultiplier = Volume;
@@ -1383,7 +1415,7 @@ public function Cleanup()
     UnregisterPointerDraw();
     // The loops fade out as when the ship stops (StopFlying fades only what still flies, so it can run every tick). The
     // whoosh fades too, once per play: Cleanup runs every tick while the map is closed, and a FadeOut called again
-    // starts over from full volume.
+    // starts over from full volume. The whoosh before it already fades (PlayWhoosh).
     StopFlying();
     if (bWhooshPlaying)
     {
@@ -1428,7 +1460,7 @@ defaultproperties
     MoveSpeedStart = 20.0
     MoveSpeedStop = 10.0
     StopDelay = 0.15
-    RestBeforeSound = 0.6
+    RestBeforeSound = 0.0
     LoopFadeIn = 0.15
     LoopFadeOut = 0.5
     FullSpeed = 550.0

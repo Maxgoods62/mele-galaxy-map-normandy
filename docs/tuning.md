@@ -176,8 +176,7 @@ them. `ClusterFlightSpeed` and `SystemFlightSpeed` are fractions of the game's o
 ## Sound
 
 The ship starts to fly when its speed goes above `MoveSpeedStart`. It stops after `StopDelay` seconds below
-`MoveSpeedStop`, so a short wobble neither restarts nor cuts the sound. A start plays the whoosh, if the ship has
-rested, and starts the loops: the engine, and with variants 1 to 5 the drive too. The loops get higher and louder as
+`MoveSpeedStop`, so a short wobble neither restarts nor cuts the sound. A start plays the whoosh and starts the loops: the engine, and with variants 1 to 5 the drive too. The loops get higher and louder as
 the ship goes faster. When the ship stops, they fade out and the whoosh plays to its end.
 
 ### Flight and timing
@@ -188,7 +187,7 @@ the ship goes faster. When the ship stops, they fade out and the whoosh plays to
 | `MoveSpeedStart` | `20.0` | units/s | Above it, the ship starts to fly |
 | `MoveSpeedStop` | `10.0` | units/s | Below it, the ship counts as slow |
 | `StopDelay` | `0.15` | seconds | Time spent slow before the flight stops |
-| `RestBeforeSound` | `0.6` | seconds | Rest needed before a start plays the whoosh |
+| `RestBeforeSound` | `0.0` | seconds | Rest needed before a start plays the whoosh |
 | `FullSpeed` | `550.0` | units/s | Speed where the loops reach their top |
 | `FlightSystemFullSpeed` | `120.0` | units/s | Full speed in system view, variants 1 to 5 |
 | `bLoopRestart` | `TRUE` | on or off | Restarts each loop with a crossfade |
@@ -199,7 +198,8 @@ them. `build.sh` builds the original sound and the variant that `FlightSound` na
 needs a new build. A live change takes effect the next time the map opens. If you set a variant the build left out,
 the director plays the original sound.
 
-The loops start on every start of a flight. The whoosh plays only after the ship has rested for `RestBeforeSound`.
+The loops and the whoosh start on every start of a flight. A whoosh still playing from the start before fades out
+over `LoopFadeOut`. Set `RestBeforeSound` above 0 to play the whoosh only after the ship has rested that long.
 After the map changes level, the first start always plays it.
 
 The loops follow the ship's speed as a share of full speed. The speed scale multiplies `FullSpeed`. In system view,

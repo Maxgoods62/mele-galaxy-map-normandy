@@ -13,6 +13,11 @@ Community Patch 2.0 or later and ME3Tweaks Mod Manager.
 
 ## Development builds
 
+- v0.27: every start of a flight plays the whoosh. Before, it played only after a rest of 0.6 s (`RestBeforeSound`,
+  now 0), so a quick stop and start lost Bright thrusters' whoosh (user, 2026-11-06). A whoosh still playing from the
+  start before fades out over `LoopFadeOut` on its own component instead of being cut. LE1's `Play()` keeps the fade
+  of a `FadeOut` called on a stopped component, so the next sound faded out in 0.4 s and stopped: since the close fade
+  above, the first whoosh after reopening the map was silent. `PlayCue` now clears the fade before each play.
 - v0.27: a slower ship at cluster level. 100 % Cluster flight speed is now the old 75 %, the player's pick:
   `ClusterFlightSpeed` 0.5625 (was 0.75). System view keeps its speed.
 - v0.27: the docs are rewritten from the code. `docs/using.md` is new, the full guide for players. `docs/releasing.md`

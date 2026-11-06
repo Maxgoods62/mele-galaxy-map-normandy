@@ -92,7 +92,7 @@ ME2 and ME3 play this sound through Wwise, which pitches and filters it live. LE
 `flight_sounds.py` bakes the fixed pitch, filters and reverb into the variant's waves. The director sets pitch and
 volume from the ship's speed. If a variant's cue doesn't load, the director plays the original sound.
 
-A flight starts with a whoosh if the ship was resting. The loops rise with speed, and fade out once the ship stops or
+A flight starts with a whoosh. The loops rise with speed, and fade out once the ship stops or
 the map closes. ISACT plays a loop wave once, so the director restarts each loop with a crossfade.
 [tuning.md](tuning.md) has the values.
 
