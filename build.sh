@@ -33,6 +33,8 @@ LOOP_A=191335730
 LOOP_B=634254545
 # The SR-1 static mesh in BIOA_ICE20_11_LAY.pcc (ice20_normandy).
 SR1_UINDEX=31
+# BioVFX_Env_Galaxymap.Particles.Normandy_Engine_Trails in LE3's BioA_Nor_203aGalaxyMap.pcc.
+TRAIL_UINDEX=757
 # LE2's PC button in its Startup_INT.pcc, and ffmpeg curves of its brightness for the colours of LE1's buttons: the blue
 # of the galaxy map's Back button, and the art over the brown panel a button shows under the pointer (docs/ASSETS.md).
 BUTTON_ART=GUI_SF_PC_SharedAssets.PC_SharedAssets_I3
@@ -268,6 +270,10 @@ lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$S/travel_loop.
 grep -E '^wave' "$OUT" || true
 lectool portmesh "$LE1\\BIOA_ICE20_11_LAY.pcc" "$SR1_UINDEX" "$SFX" SR1_Normandy
 if grep -E 'BROKEN' "$OUT"; then die "broken material in the SR-1 port"; fi
+# The engine trail of ME3's galaxy map Normandy (ME2's look), with its LE3 materials, textures and shaders. portfx stops
+# with ERROR on a broken material or on anything LE1 can't load.
+lectool portfx "$LE3\\BioA_Nor_203aGalaxyMap.pcc" "$TRAIL_UINDEX" "$SFX" EngineTrail
+grep -E '^[0-9]+	ParticleSystem	EngineTrail	' "$OUT" || die "no EngineTrail: the toolkit needs portfx, or export $TRAIL_UINDEX is not Normandy_Engine_Trails"
 # The button: LE2 shows it mirrored, with the cut corner at the bottom left (docs/ASSETS.md).
 B="$BUILD/button"
 rm -f "$B"/*

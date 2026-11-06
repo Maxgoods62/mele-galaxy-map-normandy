@@ -27,6 +27,8 @@ folders:
 | LE2 | `Startup_INT.pcc` | one texture | the Enter Orbit button |
 | LE1 | `snd_gui.pcc` | two sound cues | templates for the mod's cues |
 | LE1 | `BIOA_ICE20_11_LAY.pcc` | export 31, a static mesh | the ship |
+| LE3 | `BioA_Nor_203aGalaxyMap.pcc` | export 757, a particle system | the engine trail |
+| LE3 | `SFXGame.pcc`, `Startup.pcc` | one material and four textures that the trail uses | the engine trail |
 | LE1 Community Patch | `CookedPCConsole\ModSettingsMenu.pcc` | the class `ModSettingsSubmenu` | base class of the settings pages |
 | LE1 Community Patch | `_metacmm.txt` | line 2, the patch version | `dist/build.stamp` |
 
@@ -36,7 +38,9 @@ LE3. The build takes the sounds 256246750, 191335730 and 634254545 from this ban
 
 The LE2 texture is `GUI_SF_PC_SharedAssets.PC_SharedAssets_I3`, the button of Mass Effect 2's PC interface. The two LE1
 cues are `c_snd_guiswish` and `c_galaxymap_enter`. Export 31 of `BIOA_ICE20_11_LAY.pcc` is the static mesh
-`ice20_normandy`, the SR-1 Normandy.
+`ice20_normandy`, the SR-1 Normandy. Export 757 of LE3's `BioA_Nor_203aGalaxyMap.pcc` is the particle system
+`BioVFX_Env_Galaxymap.Particles.Normandy_Engine_Trails`, the engine trail of the Normandy on the Mass Effect 3 galaxy
+map.
 
 From `_metacmm.txt`, the build only copies the version line into `dist/build.stamp`, the record of what a build was
 made from.
@@ -286,7 +290,22 @@ In a build from the current game files, most of the ship's textures name one of 
 `Textures1` or `CharTextures3`. LE1 keeps most texture images in these TFC files, and the ship's full-size images stay
 there. The star cube map that comes with the materials, `StarsCube01_Tex`, is copied whole: six faces of 4 MB each.
 
-The ship keeps its own materials. The director lights it at run time with its own sky light.
+The ship keeps its own materials. At run time the director lights it with its own sky light, and raises the nozzle
+glow on its own copy of the first material ([how-it-works.md](how-it-works.md#the-engines)).
+
+## The engine trail: `EngineTrail`
+
+`lectool portfx` copies export 757 of LE3's `BioA_Nor_203aGalaxyMap.pcc` into `GalaxyMapNormandy_SFX.pcc` as
+`EngineTrail`, with the materials, the beam mesh `RectangularLightTapered` and the textures it uses, and their shaders.
+The effect has three emitters: a halo, a bright core and the beam.
+
+LE3 loads a few of these from files it always keeps loaded, and LE1 has no such copies: the halo material
+`Dot_Math_Glow_Cheap` and three textures in `SFXGame.pcc`, and one texture in `Startup.pcc`. portfx copies them from
+those LE3 files first, under the same names, so the effect uses the copies. The build stops if lectool reports a broken
+material or anything LE1 can't load.
+
+Mass Effect 2's galaxy map has the same kind of trail. Legendary Explorer Core converts shaders only between LE1 and
+LE3, so the build takes LE3's copy.
 
 ## The Enter Orbit button: `EnterButton_Normal` and `EnterButton_Hover`
 
@@ -358,6 +377,7 @@ other packages hold only the mod's own work, and [how-it-works.md](how-it-works.
 - the cues of the variant that `FlightSound` picks, such as `c_flight5_whoosh`, `c_flight5_engine`, `c_flight5_drive`
   and `c_flight5_drive_system`;
 - `SR1_Normandy`, with its materials and textures;
+- `EngineTrail`, with its materials, the beam mesh and textures;
 - `EnterButton_Normal` and `EnterButton_Hover`.
 
 A build puts all the packages in `dist/Galaxy Map Normandy/DLC_MOD_GalaxyMapNormandy/CookedPCConsole/`. The files made

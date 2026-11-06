@@ -2,7 +2,8 @@
 
 Galaxy Map Normandy is a mod for Mass Effect 1 in the Legendary Edition (LE1). On the galaxy map, a lit SR-1 Normandy
 takes the place of the orange cursor ring, as in Mass Effect 2 and 3. It shows at cluster and system level. The ship
-follows the cursor and turns toward where it flies, and its sound comes from the Mass Effect 3 travel sound. The mouse
+follows the cursor and turns toward where it flies, its engines glow and trail blue light as in Mass Effect 2, and its
+sound comes from the Mass Effect 3 travel sound. The mouse
 works as in Mass Effect 2, with its Enter Orbit button, and the controller keeps the normal game's controls.
 
 Download the 7z file from the [Nexus Mods page](NEXUS_PAGE_URL). You can also build the mod from this repo with your
@@ -78,7 +79,7 @@ hold for every save and apply the next time the map opens. Details: [docs/using.
 ## Credits
 
 - BioWare and Electronic Arts, for Mass Effect Legendary Edition. The built mod holds content that the build reads
-  from your games: the SR-1 model from LE1, the PC button art from LE2, the travel sound from LE3 and two LE1
+  from your games: the SR-1 model from LE1, the PC button art from LE2, the travel sound and engine trail from LE3 and two LE1
   interface sounds used as templates ([docs/ASSETS.md](docs/ASSETS.md)).
 - The LE1 Community Patch team, for the Sideloader and the Mod Settings Menu. The mod's settings pages include a copy
   of that menu's page code.

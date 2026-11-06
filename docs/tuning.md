@@ -98,7 +98,8 @@ colour takes a path such as `ShipGlow.B`. Booleans are `true` or `false`, and te
 - Each time the map opens, the director reads the settings again. `SetupFlightSound` then sets the sound values for
   the chosen flight sound, which are listed under [Values set when the map opens](#values-set-when-the-map-opens).
   Change those while the map is open. The change lasts until the map closes.
-- `ShipGlow` and `ShipLightBrightness` are read when the ship is made. That happens the first time the map shows
+- `ShipGlow`, `ShipLightBrightness`, `bEngineTrails`, `EngineNozzles`, `EngineTrailRotation` and `EngineTrailScale`
+  are read when the ship is made. That happens the first time the map shows
   cluster or system level after it opens. Close the map and open it again to see a change.
 - Turn `bMousePointer`, `bTakeLeftButton` or `bHideRing` off with the map closed. With the map open, the left button,
   the arrow and the ring keep their old state until the map shows the galaxy level or a planet, or closes.
@@ -144,6 +145,31 @@ A full turn is 65536 rotation units, so `-16384` is a quarter turn.
 The ship has its own sky light, `GalaxyMapNormandyShipLight`. It sits on a lighting channel that only the ship's mesh
 has, so it lights nothing else. `ShipLightBrightness` sets its brightness. `ShipGlow` is the ambient glow of the
 ship's light environment, the part of the engine that lights one moving actor. Both are read when the ship is made.
+
+## Engines
+
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `bEngineTrails` | `TRUE` | on or off | Puts the halos and beams on the nozzles. Off keeps only the nozzle glow |
+| `EngineNozzles` | four positions | mesh units | Where the trails sit on the SR-1 mesh |
+| `EngineTrailRotation` | `{Pitch = 0, Yaw = 16384, Roll = 0}` | rotation units | Turns each trail so its beam points back |
+| `EngineTrailScale` | `1.5` | factor | Size of the halos and beams |
+| `EngineTrailLength` | `1.0` | factor | Beam length at full thrust |
+| `EngineGlowRest` | `1.0` | factor | Nozzle glow at rest. The game's own value is 1 |
+| `EngineGlowFlight` | `12.0` | factor | Nozzle glow at full thrust |
+| `EngineRiseTime` | `0.3` | seconds | Time from rest to full thrust |
+| `EngineFallTime` | `0.6` | seconds | Time from full thrust to rest |
+
+Thrust is the ship's speed as a share of full speed, the share the flight sound uses (see
+[Flight and timing](#flight-and-timing)). At 0 the nozzles glow at `EngineGlowRest` and the beams have no length. At 1
+they glow at `EngineGlowFlight` and the beams are `EngineTrailLength` long. Between the two, glow and length go up in a
+straight line. Thrust moves toward the speed's share over `EngineRiseTime` or `EngineFallTime`.
+
+`EngineNozzles` are positions in the SR-1 mesh's own units, before the ship's size is applied. X is across the ship,
+Y along it, where the nozzles are at -166, and Z is up. The four defaults are the SR-1's four rear nozzles. The trails are parts of the ship actor, so the ship's size scales them, `EngineTrailScale` included.
+
+`EngineTrailLength`, `EngineGlowRest`, `EngineGlowFlight`, `EngineRiseTime` and `EngineFallTime` are read each frame.
+The other engine values are read when the ship is made.
 
 ## Ship motion
 

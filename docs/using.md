@@ -8,7 +8,8 @@ The galaxy map has four levels: the galaxy, a cluster, a system and a planet. Th
 levels:
 
 - A lit SR-1 Normandy takes the place of the orange ring that marks the map cursor. The ship follows the cursor and
-  turns its nose toward where it flies.
+  turns its nose toward where it flies. Its engines glow, and blue beams trail behind them as it speeds up, as in
+  Mass Effect 2.
 - The ship has a flight sound, made from the Mass Effect 3 travel sound.
 - The mouse works as in Mass Effect 2, with an arrow pointer and the Enter Orbit button.
 

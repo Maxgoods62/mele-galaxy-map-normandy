@@ -14,7 +14,7 @@ The build makes these packages (`.pcc` files, which hold the game's objects):
 | `Startup_MOD_GalaxyMapNormandy` | the director, the ship light, the settings helper | at startup |
 | `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the settings strings, one per language code | at startup |
 | `GalaxyMapNormandy_NOR10` | an empty level with one director actor | with the Normandy's levels |
-| `GalaxyMapNormandy_SFX` | the SR-1 mesh, the button art, the sound cues | by the director |
+| `GalaxyMapNormandy_SFX` | the SR-1 mesh, the engine trail, the button art, the sound cues | by the director |
 | `ModSettings_Submenus_GalaxyMapNormandy` | the settings pages | when the player opens them |
 
 `AutoLoad.ini` names the startup package and the talk table, the game's string table. The LE1 Community Patch (LE1CP)
@@ -59,6 +59,20 @@ Spawned actors land in the hub's persistent level, and nothing lights that level
 own sky light reaches only the NOR10 design levels. So the ship brings `GalaxyMapNormandyShipLight`, a sky light (a
 light with no position) attached to the director. It reaches only the `Unnamed_6` lighting channel, which only the
 ship's mesh has. Channels can't change at runtime, so the class sets them in its defaults.
+
+## The engines
+
+The SR-1's material has its own switch for the glow of the rear nozzles, `Vfx_engine`. The director gives the ship its
+own copy of that material, a material instance, and raises the glow while the ship flies.
+
+Four copies of `EngineTrail` sit on the nozzles, as parts of the ship actor, so they follow the ship's size. It is the
+engine trail of the Normandy on the Mass Effect 3 galaxy map, which looks like Mass Effect 2's: a halo, a bright core
+and a beam. The effect takes the length of its beam from its `Size` parameter, and the director sets that each frame.
+At rest the halos stay and the beams are gone. The build copies the effect from LE3
+([ASSETS.md](ASSETS.md#the-engine-trail-enginetrail)).
+
+Glow and beams follow the engine's thrust, which follows the ship's speed as a share of full speed, as the flight
+sound does. [tuning.md](tuning.md#engines) has the values.
 
 ## Settings
 

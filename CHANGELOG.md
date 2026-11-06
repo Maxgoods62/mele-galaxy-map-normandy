@@ -6,13 +6,18 @@ became v0.27. The version number is `modver` in `mod/moddesc.ini`.
 ## v0.27 (unreleased)
 
 The first version made for players. On the LE1 galaxy map, a lit SR-1 Normandy takes the place of the orange cursor
-ring at cluster and system level, with a sound made from the ME3 travel sound. The mouse works as in ME2, with an
+ring at cluster and system level, with engine glow and trails as in ME2 and a sound made from the ME3 travel sound. The mouse works as in ME2, with an
 arrow pointer and an Enter Orbit button, and the controller works as before. In the LE1 Community Patch's Mod Settings
 Menu you can set the ship's speed, turn rate, response and size. It needs Mass Effect Legendary Edition, the LE1
 Community Patch 2.0 or later and ME3Tweaks Mod Manager.
 
 ## Development builds
 
+- v0.27: engine glow and trails in flight (user, 2026-11-06). The director raises the SR-1 material's own nozzle glow
+  (`Vfx_engine`) on the ship's copy of the material, and puts four copies of the ME3 galaxy map Normandy's engine
+  trail on the nozzles: halos at rest, and beams that grow with speed, as in ME2. `build.sh` copies the trail from LE3
+  with the toolkit's new `lectool portfx`, which also copies the LE3 material and textures that LE1 can't load. In
+  game: user OK (2026-11-06).
 - v0.27: every start of a flight plays the whoosh. Before, it played only after a rest of 0.6 s (`RestBeforeSound`,
   now 0), so a quick stop and start lost Bright thrusters' whoosh (user, 2026-11-06). A whoosh still playing from the
   start before fades out over `LoopFadeOut` on its own component instead of being cut. LE1's `Play()` keeps the fade

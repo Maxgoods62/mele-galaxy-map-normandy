@@ -32,6 +32,10 @@ var transient AudioComponent OldLoopSound;
 var transient AudioComponent Loop2Sound;
 var transient AudioComponent OldLoop2Sound;
 var transient GalaxyMapNormandyShipLight ShipLight;
+var transient MaterialInstanceConstant ShipMaterial;
+var transient ParticleSystem EngineFX;
+var transient array<ParticleSystemComponent> EngineTrails;
+var transient float EngineThrust;
 var transient float LoopAge;
 var transient float Loop2Age;
 var transient bool bWhooshPlaying;
@@ -129,6 +133,15 @@ var float FlightSystemFullSpeed;
 var bool bHideRing;
 var LinearColor ShipGlow;
 var float ShipLightBrightness;
+var bool bEngineTrails;
+var array<Vector> EngineNozzles;
+var Rotator EngineTrailRotation;
+var float EngineTrailScale;
+var float EngineTrailLength;
+var float EngineGlowRest;
+var float EngineGlowFlight;
+var float EngineRiseTime;
+var float EngineFallTime;
 var bool bLimitMouse;
 var float MouseScale;
 var float MouseMaxRate;
@@ -266,6 +279,8 @@ public event function Tick(float DeltaTime)
         LastShipLocation = Ring.Location;
         RestTime = RestBeforeSound;
         StopFlying();
+        EngineThrust = 0.0;
+        UpdateEngines(0.0);
         return;
     }
     NewLocation = VInterpTo(Ship.Location, Ring.Location, DeltaTime, Chase);
@@ -300,6 +315,84 @@ public event function Tick(float DeltaTime)
         Ship.SetRotation(RInterpTo(Ship.Rotation, Facing, DeltaTime, Turn));
     }
     UpdateFlightSound(DeltaTime);
+    UpdateEngines(DeltaTime);
+}
+
+// The engines follow the flight sound: thrust rises to the speed fraction the loops use (SpeedAlpha) while the ship
+// flies, and falls to 0 once it stops. It brightens the SR-1's own engine glow (its material's Vfx_engine, which LE1's
+// cinematics also use) and lengthens the beam of each engine's trail (the effect's Size parameter, as in ME2).
+public function UpdateEngines(float DeltaTime)
+{
+    local float Target;
+    local float Time;
+    local Vector Size;
+    local int I;
+
+    Target = 0.0;
+    if (bFlying)
+    {
+        Target = SpeedAlpha(GalaxyCam != None && GalaxyCam.m_nCurrentState == 3);
+    }
+    Time = EngineRiseTime;
+    if (Target < EngineThrust)
+    {
+        Time = EngineFallTime;
+    }
+    if (Time <= 0.0)
+    {
+        EngineThrust = Target;
+    }
+    else
+    {
+        EngineThrust += FClamp(Target - EngineThrust, -DeltaTime / Time, DeltaTime / Time);
+    }
+    if (ShipMaterial != None)
+    {
+        ShipMaterial.SetScalarParameterValue('Vfx_engine', Lerp(EngineGlowRest, EngineGlowFlight, EngineThrust));
+    }
+    Size.X = 1.0;
+    Size.Y = 1.0;
+    Size.Z = EngineTrailLength * EngineThrust;
+    for (I = 0; I < EngineTrails.Length; I++)
+    {
+        EngineTrails[I].SetVectorParameter('Size', Size);
+    }
+}
+
+// ME2's galaxy map Normandy: each engine carries Normandy_Engine_Trails, a blue glow, a hot core and a light beam,
+// copied by build.sh from ME3's galaxy map as GalaxyMapNormandy_SFX.EngineTrail. The components sit on the ship, so
+// EngineNozzles are in the SR-1 mesh's units and the effect scales with the ship. The ship's material gets its own
+// instance so its engine glow can change.
+public function SetupEngines()
+{
+    local ParticleSystemComponent Trail;
+    local int I;
+
+    ShipMaterial = Ship.StaticMeshComponent.CreateAndSetMaterialInstanceConstant(0);
+    EngineThrust = 0.0;
+    EngineTrails.Length = 0;
+    if (!bEngineTrails)
+    {
+        return;
+    }
+    if (EngineFX == None)
+    {
+        EngineFX = ParticleSystem(DynamicLoadObject("GalaxyMapNormandy_SFX.EngineTrail", Class'ParticleSystem'));
+    }
+    if (EngineFX == None)
+    {
+        return;
+    }
+    for (I = 0; I < EngineNozzles.Length; I++)
+    {
+        Trail = new (Ship) Class'ParticleSystemComponent';
+        Trail.SetTemplate(EngineFX);
+        Trail.SetTranslation(EngineNozzles[I]);
+        Trail.SetRotation(EngineTrailRotation);
+        Trail.SetScale(EngineTrailScale);
+        Ship.AttachComponent(Trail);
+        EngineTrails.AddItem(Trail);
+    }
 }
 
 // Starts above MoveSpeedStart, stops after StopDelay below MoveSpeedStop: a short wobble neither restarts nor cuts it.
@@ -1327,6 +1420,8 @@ public function bool SpawnShip()
     Ship.StaticMeshComponent.SetLightingChannels(Channels);
     Ship.LightEnvironment.AmbientGlow = ShipGlow;
     Ship.ReattachComponent(Ship.LightEnvironment);
+    SetupEngines();
+    UpdateEngines(0.0);
     Ship.SetHidden(TRUE);
     return TRUE;
 }
@@ -1432,6 +1527,8 @@ public function Cleanup()
         Ship.Destroy();
         Ship = None;
     }
+    EngineTrails.Length = 0;
+    ShipMaterial = None;
     if (ShipLight != None && ShipLight.bAttached)
     {
         DetachComponent(ShipLight);
@@ -1487,6 +1584,15 @@ defaultproperties
     bHideRing = TRUE
     ShipGlow = {R = 1.5, G = 1.5, B = 1.65, A = 1.0}
     ShipLightBrightness = 1.0
+    bEngineTrails = TRUE
+    EngineNozzles = ({X = 19.3, Y = -166.0, Z = 48.1}, {X = -19.3, Y = -166.0, Z = 48.1}, {X = 38.4, Y = -166.0, Z = 35.9}, {X = -38.4, Y = -166.0, Z = 35.9})
+    EngineTrailRotation = {Pitch = 0, Yaw = 16384, Roll = 0}
+    EngineTrailScale = 1.5
+    EngineTrailLength = 1.0
+    EngineGlowRest = 1.0
+    EngineGlowFlight = 12.0
+    EngineRiseTime = 0.3
+    EngineFallTime = 0.6
     bLimitMouse = TRUE
     MouseScale = 0.4
     MouseMaxRate = 480.0

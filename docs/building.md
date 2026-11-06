@@ -23,8 +23,8 @@ the .NET 8 runtime. The first build downloads NuGet packages, so it needs networ
 
 ### Game files
 
-The build reads `BIOA_ICE20_11_LAY.pcc` and `snd_gui.pcc` from LE1, `Startup_INT.pcc` from LE2 and `SFXGame.pcc` from
-LE3. Each one is in `Game\ME<n>\BioGame\CookedPCConsole` in the Legendary Edition folder. From the Community Patch
+The build reads `BIOA_ICE20_11_LAY.pcc` and `snd_gui.pcc` from LE1, `Startup_INT.pcc` from LE2, and `SFXGame.pcc`,
+`Startup.pcc` and `BioA_Nor_203aGalaxyMap.pcc` from LE3. Each one is in `Game\ME<n>\BioGame\CookedPCConsole` in the Legendary Edition folder. From the Community Patch
 folder, `Game\ME1\BioGame\DLC\DLC_MOD_LE1CP`, it reads `CookedPCConsole\ModSettingsMenu.pcc` and `_metacmm.txt`.
 [ASSETS.md](ASSETS.md#files-the-build-reads) says what it does with each one.
 
@@ -212,6 +212,10 @@ are released, and how to check a download.
 - `SFXGame.pcc export 53327 is not the Wwise_Generic_Galaxy_Map bank` or `WEM <id> was not in the bank`: the build
   finds the sound bank by its export number, its place in the package. Another game version, or a mod that changed
   LE3's `SFXGame.pcc`, can move it.
+- `no EngineTrail`: the toolkit has no `lectool portfx`, so check out `TOOLKIT_COMMIT`. If it has, export 757 of
+  LE3's `BioA_Nor_203aGalaxyMap.pcc` is not the engine trail: another game version or a mod moved it.
+- `ERROR ... can't load it` or `ERROR broken material` from portfx: an object of the engine trail did not come across
+  from LE3. The line names it.
 - `no FlightSound in the director's defaultproperties`: the build reads the line `FlightSound = <n>` near the end of
   `src/GalaxyMapNormandyDirector.uc`. Keep that form: only spaces before it, one space on each side of `=`, and nothing
   after the number.
