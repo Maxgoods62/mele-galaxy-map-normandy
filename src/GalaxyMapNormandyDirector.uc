@@ -11,7 +11,8 @@ Class GalaxyMapNormandyDirector extends Actor
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
 // A mouse player also gets ME2's Enter Orbit button when the ship is on something the map can enter (UpdateEnterButton).
 // The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu (ReadSettings).
-// The flight sound is one of six built into the mod, set by FlightSound (SetupFlightSound).
+// The flight sound is the variant that FlightSound names, or the original sound if that variant does not load. build.sh
+// builds only these two (SetupFlightSound, LoadFlightSound).
 
 var transient BioCameraBehaviorGalaxy GalaxyCam;
 var transient BioSFHandler_GalaxyMap Handler;
@@ -67,6 +68,8 @@ var transient bool bHeadingSet;
 var transient float FlySpeed;
 var transient bool bLeftHeld;
 var transient float LeftHeldTime;
+var transient Actor PressSelected;
+var transient bool bPressCanSelect;
 var transient bool bLeftBindTaken;
 var transient string SavedLeftBind;
 var transient BioPlayerInput BindInput;
@@ -812,9 +815,11 @@ public function LimitMouse(float DeltaTime)
 // counts, then clears them; this takes the counts for the pointer instead (DrawPointer moves it on screen). While the
 // left button is held, a virtual stick toward the pointer goes into m_fCursorDelta, so the cursor moves as with the
 // pad (bVirtualStick); with bVirtualStick off, this moves the cursor itself: it turns and flies toward the pointer,
-// braking to stop on it, and coasts to a stop once released. The cursor is the ship, as in ME2: selection and the system camera follow it. The
-// left button's binding (select what is highlighted, on press) is taken in cluster and system view, and a short click
-// selects instead.
+// braking to stop on it, and coasts to a stop once released. The cursor is the ship, as in ME2: selection and the
+// system camera follow it. The left button's binding (select what is highlighted, on press) is taken in cluster and
+// system view, and a short click selects instead. A press on something a click would select may still be a click, so
+// there the cursor waits until the press is longer than ClickTime. A quick click then selects that object and the ship
+// stays where it is. Anywhere else the ship flies from the first frame of the press.
 // The pad's stick (m_fLeftStickX/Y) is left alone: moving it hands the cursor back to the native control.
 public function UpdatePointer(float DeltaTime)
 {
@@ -891,15 +896,24 @@ public function UpdatePointer(float DeltaTime)
     if (bHeld && !bLeftHeld)
     {
         bButtonPressed = bPointerOnButton;
+        // What a click would act on: the object the cursor is on when the button goes down, if Select takes it (the
+        // Enter button's test). A planet still to be scanned counts, since a click scans it.
+        PressSelected = GalaxyCam.m_pSelectedObject;
+        bPressCanSelect = PressSelected != None && !PressSelected.bStatic && !PressSelected.bTickIsDisabled;
     }
     if (bHeld)
     {
-        LeftHeldTime += DeltaTime;
+        // One long frame (a hitch) adds 0.05 s at most, so it cannot turn a quick click into a flight. DeltaTime is the
+        // world's frame time. Timing the press with WorldInfo.RealTimeSeconds would not help: a hitch takes real time
+        // too.
+        LeftHeldTime += FMin(DeltaTime, 0.05);
     }
     else if (bLeftHeld)
     {
-        // As on any button, a press on it only counts if it is also released on it, however long it took.
-        bClick = LeftHeldTime < ClickTime;
+        // As on any button, a press on it only counts if it is also released on it, however long it took. Any other
+        // click selects only if the cursor is still on what it was on at the press: a press off anything to select
+        // flies the ship from its first frame, and the ship may reach an object before the release.
+        bClick = LeftHeldTime < ClickTime && GalaxyCam.m_pSelectedObject == PressSelected;
         if (bButtonPressed)
         {
             bClick = bPointerOnButton;
@@ -910,9 +924,11 @@ public function UpdatePointer(float DeltaTime)
         }
         LeftHeldTime = 0.0;
         bButtonPressed = FALSE;
+        PressSelected = None;
+        bPressCanSelect = FALSE;
     }
     bLeftHeld = bHeld;
-    bFly = bHeld && !bButtonPressed;
+    bFly = bHeld && !bButtonPressed && (!bPressCanSelect || LeftHeldTime >= ClickTime);
     if (!bPointerActive || !bPointerPlaced || GalaxyCam.m_bPaused || GalaxyCam.m_fZoomTime > 0.0)
     {
         return;
@@ -1317,6 +1333,8 @@ public function ReleasePointer()
     bPointerPlaced = FALSE;
     bLeftHeld = FALSE;
     LeftHeldTime = 0.0;
+    PressSelected = None;
+    bPressCanSelect = FALSE;
     PendingMouseX = 0.0;
     PendingMouseY = 0.0;
     bHeadingSet = FALSE;
