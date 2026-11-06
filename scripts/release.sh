@@ -13,7 +13,7 @@
 # step here, because this repo has no workflow. The toolkit repo must be public too, because the GPL needs the tools
 # that build the mod to be public: publish refuses otherwise.
 #
-# The steps for a version. The tag is v and modver from mod/moddesc.ini, as in v0.27.
+# The steps for a version. The tag is v and modver from mod/moddesc.ini, as in v1.0.
 #  1. Create the Nexus page. Set modsite in mod/moddesc.ini to its URL, and put that URL in place of NEXUS_PAGE_URL in
 #     README.md. Date the version's heading in CHANGELOG.md with the day you publish: ## v<modver> (YYYY-MM-DD). Set
 #     TOOLKIT_COMMIT in build.sh to the toolkit commit you build with, which must be on the toolkit's main on GitHub.
@@ -30,9 +30,9 @@
 #     files, writes dist/release/SHA256SUMS and dist/release/notes.md, and asks you to type the tag. GitHub then creates
 #     the release and its tag on the commit you pushed. If GitHub refuses, no tag is left behind.
 #  8. Once the Nexus page is public, register the DLC folder name and the mount priority with M3: Mod Utils > Submit mod
-#     information to ME3Tweaks. Then update the Compatibility section of README.md. The form reads the mod's name from
-#     NameStrRef in the [GUI] section of AutoLoad.ini. This mod has none yet, so the form lists nothing for it; adding
-#     one needs a name string in every src/tlk/*.tsv file and a test in the game.
+#     information to ME3Tweaks. Then update the Compatibility section of README.md. The form lists the DLC folder only
+#     if AutoLoad.ini has a NameStrRef in its [GUI] section. This mod's is 74220000, the id of the string "Galaxy Map
+#     Normandy" in every src/tlk/*.tsv file. The form sends modname from mod/moddesc.ini as the mod's name.
 set -euo pipefail
 
 REPO=Maxgoods62/mele-galaxy-map-normandy
