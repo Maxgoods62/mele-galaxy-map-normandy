@@ -6,7 +6,7 @@
 #   ./package.sh              run ./build.sh first
 #   ./package.sh --no-build   zip the dist/Galaxy Map Normandy that is already there
 # The zip contains content derived from the game files (NOTICE). The public archive is the 7z that M3's own deployment
-# makes (docs/releasing.md).
+# makes (the steps are at the top of scripts/release.sh).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

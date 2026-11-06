@@ -1,200 +1,383 @@
 # Tuning
 
-Every value that shapes the ship, its sound and the mouse is a plain property of the `GalaxyMapNormandyDirector`
-class. The defaults are in the `defaultproperties` block at the end of
-[`src/GalaxyMapNormandyDirector.uc`](../src/GalaxyMapNormandyDirector.uc). To change one for good, edit it there,
-run `./build.sh` and apply the mod again with M3 ([building.md](building.md)).
+The director is the actor that runs the ship, its sound and the mouse while the galaxy map is open. Its class is
+`GalaxyMapNormandyDirector`, in [`src/GalaxyMapNormandyDirector.uc`](../src/GalaxyMapNormandyDirector.uc). Every value
+on this page is a property of that class, and its default is in the `defaultproperties` block at the end of the file.
+
+You can try a value in a running game, where the change lasts for a while. To keep it, you change its default and
+build the mod again. The eight in-game settings work on top of some of these values.
+
+Speeds are in the game's distance units per second. Sizes in pixels are for a screen 1080 pixels high, and they scale
+with the height of your screen.
 
 ## In-game settings
 
-The Galaxy Map Normandy page of the LE1 Community Patch's Mod Settings Menu multiplies some of the defaults below. The
-director reads the multipliers each time the map opens (`ReadSettings`).
+The Galaxy Map Normandy page of the Mod Settings Menu has four settings for each map level. Each one multiplies a
+director value.
 
-| Setting (cluster / system) | Multiplies | `IntStats` slot (cluster, system) |
+| Setting | At cluster level | In system view |
 |---|---|---|
-| Flight speed | `ClusterFlightSpeed` / `SystemFlightSpeed`, which scale the galaxy camera's `m_fMovementScalar` (the game's own cursor speed, for the controller and the mouse alike; put back when the map closes or shows the galaxy level or a planet), `ClusterMaxSpeed` / `SystemMaxSpeed`, `FullSpeed`, `FlyClusterSpeed` / `FlySystemSpeed` | 100, 104 |
-| Turn rate | `TurnSpeed` / `SystemTurnSpeed` | 101, 105 |
-| Ship response | `ChaseSpeed` / `SystemChaseSpeed` | 102, 106 |
-| Ship size | `ShipScale` / `SystemShipScale` | 103, 107 |
+| Flight speed | `ClusterFlightSpeed` | `SystemFlightSpeed` |
+| Turn rate | `TurnSpeed` | `SystemTurnSpeed` |
+| Ship response | `ChaseSpeed` | `SystemChaseSpeed` |
+| Ship size | `ShipScale` | `SystemShipScale` |
 
-A value is stored as a percent in the gamer profile's `IntStats` list (0 or no slot = 100). The LE1 Community Patch keeps
-its FOV in slot 0 and nothing else in the game uses the list, so this mod takes slots 100 to 107, away from the low
-slots. v0.25 also kept a choice of flight sound in slot 108; nothing reads it any more. `GalaxyMapNormandySettings`
-reads and writes the slots, and the menu writes the profile file after each change
-through the Options screen's save (`BioSFHandler_PCOptions.SaveProfile`), as LE1CP does for its FOV. The engine's own
-profile save command (`SFXEngine.QueueSaveGameCommand`) only fills an in-memory record, and the game writes the file
-on its own only now and then.
+Each setting is a percent of the default: 50, 75, 100, 125, 150 or 200. The director reads the eight settings once,
+each time the map opens. It multiplies a value by its setting whenever it uses the value, and never writes the result
+back. So a value you change in a running game still gets the setting on top. [using.md](using.md) shows the settings
+pages and says where the game keeps them.
 
-## Changing values in a running game
+Flight speed reaches further than the other settings. The flight speed value times its setting is the speed scale of
+that map level, which the director keeps in `SpeedScale`. The speed scale multiplies the game's own cursor speed, the
+galaxy camera's `m_fMovementScalar`. That speed moves the map cursor for the controller and for the mouse. The game
+gets its own value back when the map shows the galaxy level or a planet, or closes. The speed scale also multiplies
+these values:
 
-mele-mcp's `live_set` tool writes a property of a live object through `MeleBridge.asi`, so you can try a value with the
-map open and see the effect at once. Both come from
-[mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit). `MeleBridge.asi` has no prebuilt
-download; the
-[mele-bridge README](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/tools/mele-bridge/README.md)
-shows how to build and install it.
+- `ClusterMaxSpeed` and `SystemMaxSpeed`, the ship's top speeds.
+- `FullSpeed` and `SystemFullSpeed`, the speeds where the flight sound reaches its top pitch and volume.
+- `FlyClusterSpeed` and `FlySystemSpeed`, the top speeds of the mouse's heading model.
 
-The director is this object while a Normandy level is loaded:
+Turn rate scales the turn of the nose toward the ship's motion. While the mouse flies the ship in the heading model,
+the nose turns at `FlyTurnRate` instead, and no setting changes that.
+
+## Try a value in a running game
+
+### What you need
+
+- MeleBridge for LE1 (`MeleBridge.asi`), an ASI mod from the toolkit. It lets tools read and write objects in the
+  running game. There is no prebuilt download. The
+  [MeleBridge README](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/tools/mele-bridge/README.md) shows
+  how to build it and install it into `Game\ME1\Binaries\Win64\ASI`, with the game closed.
+- mele-mcp, the toolkit's MCP server. Its `live_find`, `live_get` and `live_set` tools talk to MeleBridge.
+  `./build.sh` builds a copy into `build/tools/mele-mcp`. You call the tools from an MCP client, which is a program
+  that calls a server's tools, or from WSL with the toolkit's `mcp_call.py` script.
+- The game running, with a save loaded on the Normandy. The LE1 Community Patch's Sideloader loads the director's
+  level, `GalaxyMapNormandy_NOR10`, with every level whose name starts with `BIOA_NOR10`.
+
+Both tools come from [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit). Its
+[getting started page](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/docs/getting-started.md) covers
+the server, how to register it in a client, and the bridge. The
+[mele-mcp README](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/tools/mele-mcp/README.md#live-objects-melebridge)
+lists every live tool.
+
+### Find the director
+
+Call `live_find` with `game` set to `LE1` and `className` set to `GalaxyMapNormandyDirector`. It returns the
+director's path:
 
 ```
 GalaxyMapNormandy_NOR10.TheWorld.PersistentLevel.GalaxyMapNormandyDirector_0
 ```
 
-From an MCP client connected to mele-mcp, call `live_set` with `game` set to `LE1`, `objectPath` to that path,
-`property` to the field name and `value` to the new value as JSON. From WSL, the toolkit's `mcp_call.py` does the same
-with the mele-mcp that `build.sh` built. Run it from this repository's folder (`MELE_DOTNET` can be left out when
-`dotnet.exe` is on `PATH`):
+### Set a value
+
+Call `live_set` with `game`, `objectPath` (the path above), `property` (the name of the value) and `value` (the new
+value as JSON). From WSL, run this in this repository's folder after `./build.sh`. `<toolkit>` is your
+mele-maxgoods-toolkit checkout.
 
 ```bash
-MELE_DOTNET='/mnt/c/Program Files/dotnet/dotnet.exe' \
 MELE_DLL="$(wslpath -w build/tools/mele-mcp/MeleMcp.dll)" \
-python3 -I <toolkit checkout>/tools/mele-mcp/scripts/mcp_call.py live_set \
+python3 -I <toolkit>/tools/mele-mcp/scripts/mcp_call.py live_set \
   '{"game": "LE1",
     "objectPath": "GalaxyMapNormandy_NOR10.TheWorld.PersistentLevel.GalaxyMapNormandyDirector_0",
-    "property": "MouseStickCluster", "value": 1.5}'
+    "property": "ChaseSpeed", "value": 5.0}'
 ```
 
-`live_get` with the same `game` and `objectPath` reads the values back. A struct member takes a property path, such as
-`ShipGlow.B`. Booleans are `true` or `false`.
+This halves `ChaseSpeed`, so the ship trails further behind the cursor at cluster level. If `dotnet.exe` is not on
+your `PATH`, also set `MELE_DOTNET` to the WSL path of the Windows `dotnet.exe`, as in `build.env.example`.
 
-- A live change is lost when the level loads again. The director in the level package has no values of its own, so
-  it starts with the class defaults.
-- `ShipGlow` and `ShipLightBrightness` are read when the ship is created: the first time the map shows cluster or
-  system level after it opens. Close the map and open it again to see a change.
-- While its window is out of focus, LE1 stops ticking the world, the director included. A change shows once you click
-  back into the game.
+`live_get` with the same `game` and `objectPath` reads every value back. Add `property` to read only one. A part of a
+colour takes a path such as `ShipGlow.B`. Booleans are `true` or `false`, and text goes in quotes.
+
+### How long a change lasts
+
+`live_set` changes only the game's memory. Nothing is written to a file.
+
+- A change holds until the Normandy's level loads again, for example when you leave the ship or load a save. The
+  director then starts again from its class defaults, because the level gives it no values of its own.
+- Each time the map opens, the director reads the settings again. `SetupFlightSound` then sets the sound values for
+  the chosen flight sound, which are listed under [Values set when the map opens](#values-set-when-the-map-opens).
+  Change those while the map is open. The change lasts until the map closes.
+- `ShipGlow` and `ShipLightBrightness` are read when the ship is made. That happens the first time the map shows
+  cluster or system level after it opens. Close the map and open it again to see a change.
+- Turn `bMousePointer`, `bTakeLeftButton` or `bHideRing` off with the map closed. With the map open, the left button,
+  the arrow and the ring keep their old state until the map shows the galaxy level or a planet, or closes.
+- While the game window is not in focus, LE1 stops its world, and the director with it. A change shows once you click
+  back into the game. The toolkit's `live_keep_ticking` tool stops that pause while it is on, so the world keeps
+  running with the game in the background. It is off each time the game starts.
+
+## Make a change permanent
+
+1. Change the value's line in the `defaultproperties` block of `src/GalaxyMapNormandyDirector.uc`.
+2. Run `./build.sh`.
+3. Install `dist/Galaxy Map Normandy` again with ME3Tweaks Mod Manager (M3), with the game closed.
+
+[building.md](building.md) covers the build and the install.
+
+`build.sh` reads `FlightSound` from its line in `defaultproperties`, and it builds only that variant's sound. Keep that
+line as `FlightSound = <number>`: only spaces before it, one space on each side of `=`, and nothing after the number.
+Otherwise `build.sh` stops with `no FlightSound in the director's defaultproperties`.
+
+The sound values of variants 1 to 5 are written in the code of `SetupFlightSound`. To change one for good, edit the
+variant's branch in that function. `SetupFlightSound` starts each time from the defaults of the engine loop and its
+timings, then sets the variant's own values. So those defaults reach the original sound, and `LoopFadeIn` and
+`LoopFadeOut` also reach variants 1 and 2. `SetupFlightSound` sets the whoosh and drive values itself, so their lines
+in `defaultproperties` have no effect.
 
 ## Ship
 
-| Field | Default | What it does |
-|---|---|---|
-| `ShipScale` | 0.06 | Ship size at cluster level. The ship's draw scale is this value times the cursor ring's draw scale divided by 1.5 (the ring's draw scale at cluster and system level). |
-| `SystemShipScale` | 0.0375 | The same in system view, where the planets are smaller next to the cursor than the systems are at cluster level. |
-| `YawOffset` | -16384 | Added to the ship's yaw (65536 is a full turn), because the mesh's long axis is Y. |
-| `bHideRing` | true | Hides the orange cursor ring's mesh while the ship shows. |
-| `ShipGlow` | (R 1.5, G 1.5, B 1.65, A 1.0) | Ambient glow of the ship's light environment. Read when the ship is created. |
-| `ShipLightBrightness` | 1.0 | Brightness of the ship's own sky light (`GalaxyMapNormandyShipLight`, lighting channel `Unnamed_6`). Read when the ship is created. |
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `ShipScale` | `0.06` | factor | Ship size at cluster level |
+| `SystemShipScale` | `0.0375` | factor | Ship size in system view |
+| `YawOffset` | `-16384` | rotation units | Turns the mesh so its nose points forward |
+| `bHideRing` | `TRUE` | on or off | Hides the orange cursor ring under the ship |
+| `ShipGlow` | `{R = 1.5, G = 1.5, B = 1.65, A = 1.0}` | linear colour | Ambient glow on the ship |
+| `ShipLightBrightness` | `1.0` | factor | Brightness of the ship's own light |
+
+The ship's draw scale is its size value times the draw scale of the cursor ring, divided by 1.5. The Ship size
+setting multiplies the size value. In system view the planets are smaller next to the cursor than the systems are at
+cluster level, so the ship is smaller there too.
+
+A full turn is 65536 rotation units, so `-16384` is a quarter turn.
+
+The ship has its own sky light, `GalaxyMapNormandyShipLight`. It sits on a lighting channel that only the ship's mesh
+has, so it lights nothing else. `ShipLightBrightness` sets its brightness. `ShipGlow` is the ambient glow of the
+ship's light environment, the part of the engine that lights one moving actor. Both are read when the ship is made.
 
 ## Ship motion
 
-The game moves the hidden cursor, for the controller and for the mouse's virtual stick alike, and the ship eases after
-it.
+At cluster level and in system view, the game moves the map cursor for the controller and for the mouse's virtual
+stick. The ship chases the cursor and turns toward where it flies.
 
-| Field | Default | What it does |
-|---|---|---|
-| `ChaseSpeed` | 10.0 | How fast the ship closes in on the cursor at cluster level (the interpolation speed of `VInterpTo`). |
-| `TurnSpeed` | 6.0 | How fast the ship turns toward its motion at cluster level (`RInterpTo`). |
-| `SystemChaseSpeed` | 10.0 | `ChaseSpeed` in system view. |
-| `SystemTurnSpeed` | 12.0 | `TurnSpeed` in system view. The camera follows the cursor there, so a slow turn shows as the ship swinging around the middle of the screen. |
-| `ClusterMaxSpeed` | 1300.0 | Top speed of the ship at cluster level, in units per second. A last guard: the ship never goes faster, whatever moves the cursor. |
-| `SystemMaxSpeed` | 250.0 | The same in system view. |
-| `ClusterFlightSpeed` | 0.75 | The game's own cursor speed at cluster level, as a fraction of vanilla: it scales the galaxy camera's `m_fMovementScalar` for the controller and the mouse alike, and also the speed caps above, `FullSpeed` and `FlyClusterSpeed`. The Flight speed setting multiplies it. |
-| `SystemFlightSpeed` | 0.75 | The same in system view (`SystemMaxSpeed`, `FullSpeed`, `FlySystemSpeed`). |
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `ChaseSpeed` | `10.0` | interp speed | How tightly the ship follows the cursor, cluster level |
+| `TurnSpeed` | `6.0` | interp speed | How fast the nose turns, cluster level |
+| `SystemChaseSpeed` | `10.0` | interp speed | `ChaseSpeed` in system view |
+| `SystemTurnSpeed` | `12.0` | interp speed | `TurnSpeed` in system view |
+| `ClusterMaxSpeed` | `1300.0` | units/s | Ship top speed, cluster level |
+| `SystemMaxSpeed` | `250.0` | units/s | Ship top speed, system view |
+| `ClusterFlightSpeed` | `0.75` | fraction | Game cursor speed, cluster level |
+| `SystemFlightSpeed` | `0.75` | fraction | Game cursor speed, system view |
+
+`ChaseSpeed` and `TurnSpeed` are speeds for the engine's `VInterpTo` and `RInterpTo` functions. Each frame, these move
+the ship's place or its heading part of the way to the target. A higher value closes the gap faster. The Ship
+response and Turn rate settings multiply them. Outside the heading model, the nose only turns while the ship moves
+faster than `MoveSpeedStop`.
+
+In system view the camera follows the cursor, so a slow turn shows as the ship swinging around the middle of the
+screen. This is why `SystemTurnSpeed` is higher.
+
+The top speeds are a last guard: the ship never flies faster, whatever moves the cursor. The speed scale multiplies
+them. `ClusterFlightSpeed` and `SystemFlightSpeed` are fractions of the game's own cursor speed.
+[In-game settings](#in-game-settings) says what else they scale.
 
 ## Sound
 
-The ship "flies" when its speed goes above `MoveSpeedStart`, and stops flying after `StopDelay` seconds below
-`MoveSpeedStop`, so a short wobble neither restarts nor cuts the sound.
+The ship starts to fly when its speed goes above `MoveSpeedStart`. It stops after `StopDelay` seconds below
+`MoveSpeedStop`, so a short wobble neither restarts nor cuts the sound. A start plays the whoosh, if the ship has
+rested, and starts the loops: the engine, and with variants 1 to 5 the drive too. The loops get higher and louder as
+the ship goes faster. When the ship stops, they fade out and the whoosh plays to its end.
 
-| Field | Default | What it does |
-|---|---|---|
-| `MoveSpeedStart` | 20.0 | Speed (units per second) above which the ship starts to fly: the engine loop starts, and the whoosh if the ship rested for `RestBeforeSound`. |
-| `MoveSpeedStop` | 10.0 | Speed below which the ship counts as slow. The ship also turns toward its motion only above this speed. |
-| `StopDelay` | 0.15 | Seconds below `MoveSpeedStop` before the flight stops: the loop fades out and the whoosh plays to its end. |
-| `RestBeforeSound` | 0.6 | Seconds the ship must rest before a start plays the whoosh again. The loop starts in any case. |
-| `LoopFadeIn` | 0.15 | Fade-in of the engine loop, in seconds. |
-| `LoopFadeOut` | 0.5 | Fade-out of the engine loop when the ship stops, and of the loops and the whoosh when the map closes, in seconds. |
-| `FullSpeed` | 550.0 | Speed at which the loop reaches `LoopPitchMax` and `LoopVolumeMax`. |
-| `LoopPitchMin`, `LoopPitchMax` | 0.95, 1.1 | Pitch of the loop from standstill to `FullSpeed`. |
-| `LoopVolumeMin`, `LoopVolumeMax` | 0.75, 1.0 | Volume of the loop from standstill to `FullSpeed`. |
-| `bLoopRestart` | true | Restarts the loop on a second audio component and crossfades the two. The game plays the loop's wave only once. |
-| `LoopRestartTime` | 2.2 | Seconds of playback before the restart, counted at the loop's current pitch. |
-| `LoopCrossfade` | 0.3 | Length of the restart's crossfade, in seconds. |
-| `LoopCurve` | 0 | Shape of the pitch and volume change from standstill to full speed: 0 a straight line between the multipliers, 1 Wwise's Log3 curve, 2 its Sine curve (both run on the pitch in cents and the volume in dB, as Wwise does). |
-| `FlightSound` | 5 | The flight sound: 0 the original sound (`c_travel_whoosh`, `c_travel_loop`), 1 to 5 the variants of [ASSETS.md](ASSETS.md#flight-sound-variants) (5 is Bright thrusters). `build.sh` builds only this variant's cues, so a change needs a rebuild. Each time the map opens, `SetupFlightSound` sets the sound fields of this table for it (0 takes the class defaults), so a value changed with `live_set` lasts until the map closes. If a variant's cue does not load, the director plays the original sound. |
-| `SystemFullSpeed` | 0.0 | Full speed in system view; 0 uses `FullSpeed`. The variants set it to `FlightSystemFullSpeed`. |
-| `FlightSystemFullSpeed` | 120.0 | The variants' full speed in system view, where the ship flies far slower than at cluster level. |
+### Flight and timing
 
-The variants play a second loop with the engine (the drive), and use other values for some fields above. They are set
-in `SetupFlightSound`, not in `defaultproperties`:
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `FlightSound` | `5` | 0 to 5 | Which flight sound plays |
+| `MoveSpeedStart` | `20.0` | units/s | Above it, the ship starts to fly |
+| `MoveSpeedStop` | `10.0` | units/s | Below it, the ship counts as slow |
+| `StopDelay` | `0.15` | seconds | Time spent slow before the flight stops |
+| `RestBeforeSound` | `0.6` | seconds | Rest needed before a start plays the whoosh |
+| `FullSpeed` | `550.0` | units/s | Speed where the loops reach their top |
+| `FlightSystemFullSpeed` | `120.0` | units/s | Full speed in system view, variants 1 to 5 |
+| `bLoopRestart` | `TRUE` | on or off | Restarts each loop with a crossfade |
 
-| Field | What it does |
-|---|---|
-| `Loop2PitchMin`, `Loop2PitchMax`, `Loop2VolumeMin`, `Loop2VolumeMax`, `Loop2Curve` | The same as the `Loop` fields, for the drive. |
-| `WhooshClusterPitch`, `WhooshSystemPitch`, `WhooshClusterVolume`, `WhooshSystemVolume` | Pitch and volume of the whoosh at each level (ME2 and ME3 change the whoosh by level). |
+`FlightSound` 0 is the original sound. Variants 1 to 5 are other mixes of the same travel sound: 1 is the ME3 mix, 2
+the ME2 mix, 3 Deep rumble, 4 Soft hum and 5 Bright thrusters. [ASSETS.md](ASSETS.md#flight-sound-variants) describes
+them. `build.sh` builds the original sound and the variant that `FlightSound` names, and no other. So a new variant
+needs a new build. A live change takes effect the next time the map opens. If you set a variant the build left out,
+the director plays the original sound.
 
-The variants' loop waves are 16 s long, so they set `LoopRestartTime` to 15.5. At cluster level and in system view a
-variant can play a different wave of the drive (`c_flight<n>_drive`, `c_flight<n>_drive_system`).
+The loops start on every start of a flight. The whoosh plays only after the ship has rested for `RestBeforeSound`.
+After the map changes level, the first start always plays it.
+
+The loops follow the ship's speed as a share of full speed. The speed scale multiplies `FullSpeed`. In system view,
+`SystemFullSpeed` takes its place when it is above 0. Variants 1 to 5 set it to `FlightSystemFullSpeed`, because the
+ship flies far slower in system view. They copy it when the map opens, so a live change to `FlightSystemFullSpeed`
+shows the next time the map opens. To try a value with the map open, set `SystemFullSpeed`.
+
+LE1's sound engine, ISACT, plays the wave of a loop only once. With `bLoopRestart` on, the director starts the loop
+again on a second sound before the end, and crossfades the two.
+
+### Values set when the map opens
+
+Each time the map opens, `SetupFlightSound` sets these values for the chosen flight sound. A live change lasts until
+the map closes. The defaults below are the values of the original sound.
+[Make a change permanent](#make-a-change-permanent) says which of them the variants keep.
+
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `LoopPitchMin` | `0.95` | factor | Engine pitch at rest |
+| `LoopPitchMax` | `1.1` | factor | Engine pitch at full speed |
+| `LoopVolumeMin` | `0.75` | factor | Engine volume at rest |
+| `LoopVolumeMax` | `1.0` | factor | Engine volume at full speed |
+| `LoopCurve` | `0` | 0, 1 or 2 | How the engine rises with speed |
+| `LoopFadeIn` | `0.15` | seconds | Fade-in of the loops |
+| `LoopFadeOut` | `0.5` | seconds | Fade-out of the loops |
+| `LoopRestartTime` | `2.2` | seconds | Play time before a loop restarts |
+| `LoopCrossfade` | `0.3` | seconds | Length of a restart's crossfade |
+| `SystemFullSpeed` | `0.0` | units/s | Full speed in system view, 0 for `FullSpeed` |
+| `Loop2PitchMin` | `1.0` | factor | Drive pitch at rest |
+| `Loop2PitchMax` | `1.0` | factor | Drive pitch at full speed |
+| `Loop2VolumeMin` | `1.0` | factor | Drive volume at rest |
+| `Loop2VolumeMax` | `1.0` | factor | Drive volume at full speed |
+| `Loop2Curve` | no line, so `0` | 0, 1 or 2 | How the drive rises with speed |
+| `WhooshClusterPitch` | `1.0` | factor | Whoosh pitch, cluster level |
+| `WhooshSystemPitch` | `1.0` | factor | Whoosh pitch, system view |
+| `WhooshClusterVolume` | `1.0` | factor | Whoosh volume, cluster level |
+| `WhooshSystemVolume` | `1.0` | factor | Whoosh volume, system view |
+
+Pitch and volume are multipliers, and 1.0 leaves the sound as it is. The drive plays only with variants 1 to 5.
+Variants 1, 2 and 5 have a second drive sound for system view, and variants 3 and 4 play one drive at both levels.
+
+`LoopCurve` and `Loop2Curve` shape the rise of a loop from rest to full speed. 0 is a straight line between the two
+multipliers. 1 rises fast and then levels off, like the Log3 curve of Wwise, the sound engine of ME2 and ME3. 2
+follows a quarter of a sine wave, like the Sine curve of Wwise. Curves 1 and 2 work on the pitch in cents and on the
+volume in decibels, as Wwise does.
+
+`LoopRestartTime` counts the loop's own play time, so a loop at a higher pitch reaches it sooner. The loop waves of
+the variants are 16 seconds long, so the variants restart them after 15.5. `LoopFadeOut` also fades the loops and the
+whoosh when the map closes.
 
 ## Mouse
 
-With `bMousePointer` on (the default), the mouse works as in ME2: an arrow pointer, hold the left button to fly, click
-to select. Sizes in pixels are for a 1080-pixel-high screen and scale with the screen's height.
+With `bMousePointer` on, the mouse works as in ME2. An arrow pointer moves freely, holding the left button flies the
+ship toward it, and a short click selects.
 
-| Field | Default | What it does |
-|---|---|---|
-| `bMousePointer` | true | The ME2 control with an arrow pointer. When false, the vanilla mouse control stays, slowed by the limiter below. |
-| `bTakeLeftButton` | true | Clears the left button's binding at cluster and system level, so that a press does not select at the start of every flight. A click shorter than `ClickTime` selects instead. The binding is restored everywhere else. |
-| `ClickTime` | 0.25 | A left-button press shorter than this (seconds) selects the highlighted object. |
-| `PointerGain` | 1.0 | Pixels the arrow moves per raw mouse count. At 1 it moves like a desktop pointer without acceleration. |
-| `PointerSignX`, `PointerSignY` | 1.0, -1.0 | Direction of each mouse axis on screen; -1 flips it. |
-| `PointerSize` | 24.0 | Size of the arrow, in pixels. |
-| `PointerMargin` | 8.0 | How close to the screen's edge the arrow can go, in pixels. |
-| `PointerFill` | white (255, 255, 255, 255) | Fill colour of the arrow. |
-| `PointerOutline` | black (0, 0, 0, 255) | Outline colour of the arrow. |
-| `bVirtualStick` | true | While the left button is held, a virtual stick from the ship toward the arrow goes into the game's own cursor control, so the mouse moves the ship as the controller does. When false, the heading model below flies the cursor instead. |
-| `StickRadius` | 150.0 | Distance in pixels between the arrow and the hidden cursor (which the ship follows closely) that gives a full stick deflection. The stick is larger further out and smaller closer in, so the ship slows down as it reaches the arrow. |
-| `MouseStickCluster` | 1.75 | Largest virtual stick at cluster level; 1 is a full controller deflection. 1.75 is about 1,010 units per second, against about 579 for the full stick. |
-| `MouseStickSystem` | 0.85 | Largest virtual stick in system view. |
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `bMousePointer` | `TRUE` | on or off | The ME2 control with an arrow pointer |
+| `bTakeLeftButton` | `TRUE` | on or off | Frees the left button for flying |
+| `ClickTime` | `0.25` | seconds | A shorter press is a click |
+| `PointerGain` | `1.0` | pixels per count | Arrow speed |
+| `PointerSignX` | `1.0` | 1 or -1 | Direction of the mouse's X axis |
+| `PointerSignY` | `-1.0` | 1 or -1 | Direction of the mouse's Y axis |
+| `PointerSize` | `24.0` | pixels | Arrow size |
+| `PointerMargin` | `8.0` | pixels | Closest the arrow gets to the screen edge |
+| `PointerFill` | `{R = 255, G = 255, B = 255, A = 255}` | colour | Arrow fill, white |
+| `PointerOutline` | `{R = 0, G = 0, B = 0, A = 255}` | colour | Arrow outline, black |
+| `bVirtualStick` | `TRUE` | on or off | Flies through the game's stick control |
+| `StickRadius` | `150.0` | pixels | Arrow distance for a full stick |
+| `MouseStickCluster` | `1.75` | stick | Largest virtual stick, cluster level |
+| `MouseStickSystem` | `0.85` | stick | Largest virtual stick, system view |
+
+With `bMousePointer` off, the mouse control of the normal game stays, slowed down by the
+[limiter](#limiter-bmousepointer-off). The Enter Orbit button needs `bMousePointer` on.
+
+In the normal game, a press of the left button selects what is highlighted. That would zoom in at the start of every
+flight. With `bTakeLeftButton` on, the director blanks that binding at cluster and system level, and a press shorter
+than `ClickTime` selects instead. The binding comes back at the galaxy level and in the planet view, and when the map
+closes. It also comes back while another panel, such as the travel prompt, is on top. With `bTakeLeftButton` off,
+every press selects.
+
+`PointerGain` 1 moves the arrow one pixel for each raw count from the mouse, like a desktop pointer without
+acceleration. The arrow appears on the map cursor when the mouse moves. Moving the controller stick hides it until the
+mouse moves again. -1 in `PointerSignX` or `PointerSignY` turns that axis around.
+
+While the left button is held, a virtual stick points from the map cursor toward the arrow. The ship stays close to
+the cursor. The game's cursor control then moves the cursor as it does for the controller. With the arrow
+`StickRadius` pixels from the cursor, the stick is a full controller stick, 1.0. Further out the stick grows, up to
+`MouseStickCluster` or `MouseStickSystem`. Closer in it shrinks, so the ship slows down as it reaches the arrow. The
+Flight speed setting scales this too, through the game's cursor speed. With `bVirtualStick` off, the
+[heading model](#heading-model-bvirtualstick-off) flies the cursor instead.
 
 ### Enter Orbit button
 
-The button at the bottom centre of the screen. It shows where a controller gets its A or Y prompt, and only while the
-game is not showing those prompts.
+The button sits at the bottom centre of the screen. It shows when the ship is on something the map can enter, as the
+controller's A prompt does. It stays hidden while the game shows the controller prompts, and those stay until you
+click or press a key. Moving the mouse alone does not end them.
 
-| Field | Default | What it does |
-|---|---|---|
-| `bEnterButton` | true | Turns the button on. The director clears it if the button's textures or font do not load. |
-| `ButtonWidth`, `ButtonHeight` | 307.0, 49.0 | Size of the button, in pixels. LE2 shows it at this size. |
-| `ButtonBottom` | 54.0 | Distance from the bottom of the screen, in pixels. |
-| `ButtonFadeTime` | 0.3 | Seconds of the fade from blue to brown under the pointer. |
-| `ButtonTextScale` | 0.5 | Scale of the label on `EngineFonts.LargeFont`, whose letters are 52 pixels high. |
-| `ButtonTextOffset` | 8.0 | How far right of the panel's centre the label sits, in pixels, to clear the cut corner. |
-| `ButtonText` | (102, 204, 255, 255) | Label colour: `#66ccff`, that of LE1's Back button. |
-| `ButtonTextHover` | white (255, 255, 255, 255) | Label colour under the pointer, also as on that button. |
-| `OrbitLabel`, `SystemLabel`, `ScanLabel` | Enter Orbit, Enter System, Scan | The three labels. `ReadLabels` sets them for the game's language when the map first opens. |
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `bEnterButton` | `TRUE` | on or off | Shows the button |
+| `ButtonWidth` | `307.0` | pixels | Button width |
+| `ButtonHeight` | `49.0` | pixels | Button height |
+| `ButtonBottom` | `54.0` | pixels | Gap below the button |
+| `ButtonFadeTime` | `0.3` | seconds | Fade to the hover look and back |
+| `ButtonTextScale` | `0.5` | factor | Label size |
+| `ButtonTextOffset` | `8.0` | pixels | Moves the label right of centre |
+| `ButtonText` | `{R = 102, G = 204, B = 255, A = 255}` | colour | Label colour, light blue |
+| `ButtonTextHover` | `{R = 255, G = 255, B = 255, A = 255}` | colour | Label colour under the pointer, white |
+| `OrbitLabel` | `"Enter Orbit"` | text | Label in system view |
+| `SystemLabel` | `"Enter System"` | text | Label at cluster level |
+| `ScanLabel` | `"Scan"` | text | Label on something still to scan |
 
-### Heading model (`bVirtualStick` false)
+The director turns `bEnterButton` off if the button's textures or its font do not load. It checks this the first
+time it makes the ship after the level loads.
 
-The nose turns toward the arrow at a limited rate and the ship thrusts along it, so a reversal is a tight U-turn.
+A press on the button counts only if you also release it on the button, however long you hold it. A click there does
+what the A prompt does. On something still to scan, it scans.
 
-| Field | Default | What it does |
-|---|---|---|
-| `FlyClusterSpeed` | 150.0 | Top speed at cluster level, in units per second. |
-| `FlySystemSpeed` | 105.0 | Top speed in system view. |
-| `FlyAccelTime` | 0.35 | Seconds from standstill to top speed. |
-| `FlyDecelTime` | 0.5 | Seconds from top speed to standstill. The ship also brakes on the way in, to stop on the arrow. |
-| `FlyTurnRate` | 440.0 | How fast the nose turns, in degrees per second. |
-| `FlyTurnSpeedMin` | 0.6 | Share of the top speed left when the nose points away from the arrow. |
+The hover look is the brown and gold panel, and the normal look is blue. The label is drawn with the font
+`EngineFonts.LargeFont`, and `ButtonTextScale` scales it. `ButtonTextOffset` moves the label right, away from the
+button's cut corner at the bottom left.
 
-### Limiter (`bMousePointer` false)
+The labels hold the English words. In French, German, Italian, Spanish and Polish games, the director replaces them
+with that language's words when it first makes the ship after the level loads. Russian and Japanese games keep the
+English words, because the font has Latin letters only. So a new default label shows only in English, Russian and
+Japanese games.
 
-The game moves the cursor by the raw mouse counts, which makes it much faster than the controller. The limiter scales
-and caps them.
+### Heading model (`bVirtualStick` off)
 
-| Field | Default | What it does |
-|---|---|---|
-| `bLimitMouse` | true | Turns the limiter on. |
-| `MouseScale` | 0.4 | Factor on the raw mouse counts. |
-| `MouseMaxRate` | 480.0 | Largest mouse movement passed on, in counts per second. |
+With `bVirtualStick` off, the director flies the map cursor itself while the left button is held. The nose turns
+toward the arrow at a limited rate and the ship thrusts along it, so a reversal is a tight U-turn. It brakes to stop
+on the arrow, and it coasts to a stop when you let go.
+
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `FlyClusterSpeed` | `150.0` | units/s | Top speed, cluster level |
+| `FlySystemSpeed` | `105.0` | units/s | Top speed, system view |
+| `FlyAccelTime` | `0.35` | seconds | From rest to top speed |
+| `FlyDecelTime` | `0.5` | seconds | From top speed to rest |
+| `FlyTurnRate` | `440.0` | degrees/s | How fast the nose turns |
+| `FlyTurnSpeedMin` | `0.6` | fraction | Least share of top speed while turning |
+
+The speed scale multiplies both top speeds. The ship flies slower the further its nose points from the arrow, but
+never below `FlyTurnSpeedMin` times its top speed. `FlyDecelTime` also sets how hard the ship brakes on its way to the
+arrow. In this model the nose follows the flight heading, so `TurnSpeed` and the Turn rate setting do not apply while
+the mouse flies the ship.
+
+### Limiter (`bMousePointer` off)
+
+With `bMousePointer` off, the game moves the cursor by the raw counts from the mouse. That makes the mouse much faster
+than the controller. The limiter scales the counts down and caps their rate.
+
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `bLimitMouse` | `TRUE` | on or off | Turns the limiter on |
+| `MouseScale` | `0.4` | factor | Factor on the raw mouse counts |
+| `MouseMaxRate` | `480.0` | counts/s | Cap on the scaled counts |
 
 ## Values to read
 
-The director writes these fields itself. `live_get` reads them while a Normandy level is loaded.
+The director writes these values itself. `live_get` reads them while the Normandy is loaded, and they start over when
+its level loads again.
 
-| Field | What it holds |
+| Value | What it holds |
 |---|---|
-| `TickCount` | Number of times the director has ticked. |
-| `LastSpeed` | The ship's speed in the last frame, in units per second. |
-| `PeakSpeed` | The highest `LastSpeed` so far. |
-| `PeakMouseRate` | The highest raw mouse rate the limiter has seen, in counts per second (only while the limiter runs: `bMousePointer` false and `bLimitMouse` true). |
+| `TickCount` | Frames the director has run |
+| `LastSpeed` | Ship speed in the last frame, in units/s, height left out |
+| `PeakSpeed` | Highest `LastSpeed` so far |
+| `PeakMouseRate` | Highest raw mouse rate the limiter has seen, in counts/s |
+| `SpeedScale` | The speed scale of the current map level |
+| `ClusterSpeedScale`, `ClusterTurnScale`, `ClusterResponseScale`, `ClusterSizeScale` | The cluster settings as multipliers |
+| `SystemSpeedScale`, `SystemTurnScale`, `SystemResponseScale`, `SystemSizeScale` | The system settings as multipliers |
+| `bFlying` | `true` while the ship counts as flying |
+| `FlySpeed` | Speed of the heading model, in units/s |
+| `VirtualStickX`, `VirtualStickY` | The virtual stick before its cap (1 is a full stick) |
+| `LoadedFlightSound` | The flight sound now loaded, -1 before the first |
+
+A setting multiplier is the stored percent divided by 100, so 1.0 is 100 %. `PeakSpeed` and `PeakMouseRate` keep
+their highest value. Set one to 0 with `live_set` to measure again.
+`PeakMouseRate` grows only while the limiter runs, with `bMousePointer` off and `bLimitMouse` on.

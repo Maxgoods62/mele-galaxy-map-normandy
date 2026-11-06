@@ -1,12 +1,38 @@
 #!/usr/bin/env bash
-# Check and publish a release of Galaxy Map Normandy (docs/releasing.md). Its archive is the 7z that ME3Tweaks Mod
-# Manager's deployment makes, uploaded to Nexus Mods only. The GitHub release holds SHA256SUMS for that 7z, and notes.
+# Check and publish a release of Galaxy Map Normandy. Its archive is the 7z that ME3Tweaks Mod Manager's deployment
+# makes, uploaded to Nexus Mods only. The GitHub release holds SHA256SUMS for that 7z, and notes. How my mods are
+# released and checked: docs/releasing.md in mele-maxgoods-toolkit.
 #   scripts/release.sh check v<modver>                        every gate before M3's deployment
 #   scripts/release.sh archive v<modver> <7z>                 the deployed 7z holds exactly dist/Galaxy Map Normandy
 #   scripts/release.sh publish v<modver> <7z> <downloaded>    all gates, then the GitHub release once you confirm
 # Needs git, gh (logged in as the repo's admin), python3 and a 7z reader: 7zz, 7z, bsdtar or Windows' tar.exe. The
 # toolkit is MELE_TOOLKIT, read as build.sh reads it. Writes only dist/release/, and the release on GitHub. It never runs
 # git tag, git push or gh release delete: GitHub creates the tag when the release publishes.
+#
+# Once, right after the repo goes public and before the first release: run scripts/protect-repo.sh. It skips its Pages
+# step here, because this repo has no workflow. The toolkit repo must be public too, because the GPL needs the tools
+# that build the mod to be public: publish refuses otherwise.
+#
+# The steps for a version. The tag is v and modver from mod/moddesc.ini, as in v0.27.
+#  1. Create the Nexus page. Set modsite in mod/moddesc.ini to its URL, and put that URL in place of NEXUS_PAGE_URL in
+#     README.md. Date the version's heading in CHANGELOG.md with the day you publish: ## v<modver> (YYYY-MM-DD). Set
+#     TOOLKIT_COMMIT in build.sh to the toolkit commit you build with, which must be on the toolkit's main on GitHub.
+#     Commit and push main.
+#  2. Run ./build.sh, then scripts/release.sh check v<modver>.
+#  3. In M3, delete the mod's old folder from the mod library, copy dist/Galaxy Map Normandy there, and refresh the mod
+#     library: a copy on top of the old folder can ship stale files. Then use Mod Utils > Deploy mod to 7z file for
+#     distribution, which needs Developer mode in M3's settings and M3's backup of LE1. Keep the file name M3 proposes,
+#     GalaxyMapNormandy_<modver>.7z, because SHA256SUMS names that file. Read every warning: only errors stop Deploy.
+#  4. Run scripts/release.sh archive v<modver> <7z>.
+#  5. Install the 7z with M3 and test it in the game.
+#  6. Upload the 7z to the Nexus page. Download it back once.
+#  7. Run scripts/release.sh publish v<modver> <deployed 7z> <downloaded 7z>. It runs every check again, compares the two
+#     files, writes dist/release/SHA256SUMS and dist/release/notes.md, and asks you to type the tag. GitHub then creates
+#     the release and its tag on the commit you pushed. If GitHub refuses, no tag is left behind.
+#  8. Once the Nexus page is public, register the DLC folder name and the mount priority with M3: Mod Utils > Submit mod
+#     information to ME3Tweaks. Then update the Compatibility section of README.md. The form reads the mod's name from
+#     NameStrRef in the [GUI] section of AutoLoad.ini. This mod has none yet, so the form lists nothing for it; adding
+#     one needs a name string in every src/tlk/*.tsv file and a test in the game.
 set -euo pipefail
 
 REPO=Maxgoods62/mele-galaxy-map-normandy
@@ -22,7 +48,7 @@ PACKAGES=(Startup_MOD_GalaxyMapNormandy GalaxyMapNormandy_NOR10 GalaxyMapNormand
 USAGE="usage: scripts/release.sh check v<modver>
        scripts/release.sh archive v<modver> <7z from M3's Deploy mod>
        scripts/release.sh publish v<modver> <7z from M3's Deploy mod> <the same 7z downloaded back from Nexus>
-docs/releasing.md has the steps."
+The steps are at the top of scripts/release.sh."
 
 die() { echo "release.sh: $*" >&2; exit 1; }
 

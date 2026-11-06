@@ -13,15 +13,18 @@ Community Patch 2.0 or later and ME3Tweaks Mod Manager.
 
 ## Development builds
 
+- v0.27: the docs are rewritten from the code. `docs/using.md` is new, the full guide for players. `docs/releasing.md`
+  is gone: the release steps are at the top of `scripts/release.sh`, and the toolkit's `docs/releasing.md` says how
+  my mods are released and checked. The README is under 5000 characters.
 - v0.27: the release files. `scripts/release.sh` checks a release, checks the 7z that M3 deploys against the build, and
-  publishes a GitHub release that holds only `SHA256SUMS` for that 7z (`docs/releasing.md`). `build.sh` pins the
-  toolkit commit (`TOOLKIT_COMMIT`) and writes `dist/build.stamp`: the mod's and the toolkit's commits, their
-  uncommitted changes, the LE1 Community Patch version it read and a hash of the built files. `moddesc.ini`'s
-  `[UPDATES]` section puts a `LICENSE` folder and `README.txt` in the 7z that M3 deploys, and M3 does not install them
-  in the game. The zip of `package.sh` holds them inside the mod folder. `build.sh` copies only the files of `mod/`
-  that git sees, and its count of uncommitted changes includes edits that git hides. `release.sh` checks the built
-  folder against the commit, asks GitHub itself for `main`, the tag and the toolkit commit, and checks that M3 made the
-  7z, under the name M3 proposes.
+  publishes a GitHub release that holds only `SHA256SUMS` for that 7z (its steps are at the top of the script).
+  `build.sh` pins the toolkit commit (`TOOLKIT_COMMIT`) and writes `dist/build.stamp`: the mod's and the toolkit's
+  commits, their uncommitted changes, the LE1 Community Patch version it read and a hash of the built files.
+  `moddesc.ini`'s `[UPDATES]` section puts a `LICENSE` folder and `README.txt` in the 7z that M3 deploys, and M3 does
+  not install them in the game. The zip of `package.sh` holds them inside the mod folder. `build.sh` copies only the
+  files of `mod/` that git sees, and its count of uncommitted changes includes edits that git hides. `release.sh` checks
+  the built folder against the commit, asks GitHub itself for `main`, the tag and the toolkit commit, and checks that M3
+  made the 7z, under the name M3 proposes.
 - v0.27: closing the map fades the engine, the drive and the whoosh out over `LoopFadeOut` (0.4 s for Bright
   thrusters). Before, the loops stopped at once and the whoosh played on into the close. `build.sh` stops when lectool
   gives a flight sound cue no wave of its own (a toolkit without `buildsound --unique-wave`) and when `FlightSound`
