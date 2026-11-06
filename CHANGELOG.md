@@ -23,8 +23,9 @@ Legendary Edition, the LE1 Community Patch 2.0 or later and ME3Tweaks Mod Manage
   name, Galaxy Map Normandy, untranslated, under that id. M3's Submit mod information form lists the mod only with it.
   Tested in game (2026-11-06): the game boots and the map works.
 - v1.0: `NOTICE` names the LE3 engine trail, and it limits "personal use" to the game content in the built packages. The
-  README and `README.txt` say that all of the code is written by an LLM. M3's description and `README.txt` mention the
-  engine glow and trails, and `README.txt` links the GitHub releases, which name the source of each version.
+  README and `README.txt` say that all of the code is written by an LLM. M3's description is a short summary.
+  `README.txt` mentions the engine glow and trails, and it links the GitHub releases, which name the source of each
+  version.
   `.gitignore` keeps out more game and binary file types.
 - v0.27: engine glow and trails in flight (2026-11-06). The director raises the SR-1 material's own nozzle glow
   (`Vfx_engine`) on the ship's copy of the material, and puts four copies of the ME3 galaxy map Normandy's engine trail
