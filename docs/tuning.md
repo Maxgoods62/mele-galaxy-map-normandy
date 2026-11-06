@@ -56,8 +56,8 @@ the nose turns at `FlyTurnRate` instead, and no setting changes that.
 
 Both tools come from [mele-maxgoods-toolkit](https://github.com/Maxgoods62/mele-maxgoods-toolkit). Its
 [getting started page](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/docs/getting-started.md) covers
-the server, how to register it in a client, and the bridge. The
-[mele-mcp README](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/tools/mele-mcp/README.md#live-objects-melebridge)
+the server, how to register it in a client, and the bridge. The [mele-mcp
+README](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/tools/mele-mcp/README.md#live-objects-melebridge)
 lists every live tool.
 
 ### Find the director
@@ -165,8 +165,9 @@ Thrust is the ship's speed as a share of full speed, the share the flight sound 
 they glow at `EngineGlowFlight` and the beams are `EngineTrailLength` long. Between the two, glow and length go up in a
 straight line. Thrust moves toward the speed's share over `EngineRiseTime` or `EngineFallTime`.
 
-`EngineNozzles` are positions in the SR-1 mesh's own units, before the ship's size is applied. X is across the ship,
-Y along it, where the nozzles are at -166, and Z is up. The four defaults are the SR-1's four rear nozzles. The trails are parts of the ship actor, so the ship's size scales them, `EngineTrailScale` included.
+`EngineNozzles` are positions in the SR-1 mesh's own units, before the ship's size is applied. X is across the ship, Y
+along it, where the nozzles are at -166, and Z is up. The four defaults are the SR-1's four rear nozzles. The trails are
+parts of the ship actor, so the ship's size scales them, `EngineTrailScale` included.
 
 `EngineTrailLength`, `EngineGlowRest`, `EngineGlowFlight`, `EngineRiseTime` and `EngineFallTime` are read each frame.
 The other engine values are read when the ship is made.
@@ -202,8 +203,9 @@ them. `ClusterFlightSpeed` and `SystemFlightSpeed` are fractions of the game's o
 ## Sound
 
 The ship starts to fly when its speed goes above `MoveSpeedStart`. It stops after `StopDelay` seconds below
-`MoveSpeedStop`, so a short wobble neither restarts nor cuts the sound. A start plays the whoosh and starts the loops: the engine, and with variants 1 to 5 the drive too. The loops get higher and louder as
-the ship goes faster. When the ship stops, they fade out and the whoosh plays to its end.
+`MoveSpeedStop`, so a short wobble neither restarts nor cuts the sound. A start plays the whoosh and starts the loops:
+the engine, and with variants 1 to 5 the drive too. The loops get higher and louder as the ship goes faster. When the
+ship stops, they fade out and the whoosh plays to its end.
 
 ### Flight and timing
 
@@ -238,9 +240,10 @@ again on a second sound before the end, and crossfades the two.
 
 ### Values set when the map opens
 
-Each time the map opens, `SetupFlightSound` sets these values for the chosen flight sound. A live change lasts until
-the map closes. The defaults below are the values of the original sound.
-[Make a change permanent](#make-a-change-permanent) says which of them the variants keep.
+Each time the map opens, `SetupFlightSound` sets these values for the chosen flight sound. A live change lasts until the
+map closes. The defaults below are the values of the original sound. Bright thrusters (5), the sound the mod plays, has
+values of its own, such as `LoopFadeIn` 0.08 and `LoopFadeOut` 0.4. [Make a change permanent](#make-a-change-permanent)
+says which of them the variants keep.
 
 | Value | Default | Unit | What it does |
 |---|---|---|---|
@@ -303,9 +306,11 @@ With `bMousePointer` off, the mouse control of the normal game stays, slowed dow
 
 In the normal game, a press of the left button selects what is highlighted. That would zoom in at the start of every
 flight. With `bTakeLeftButton` on, the director blanks that binding at cluster and system level, and a press shorter
-than `ClickTime` selects instead. The binding comes back at the galaxy level and in the planet view, and when the map
-closes. It also comes back while another panel, such as the travel prompt, is on top. With `bTakeLeftButton` off,
-every press selects.
+than `ClickTime` selects instead. If the press starts on something a click would select, the ship waits `ClickTime`
+before it flies, so a click does not move it. Each frame adds 0.05 s at most to the press, so a slow frame does not turn
+a click into a flight. The binding comes back at the galaxy level and in the planet view, and when the map closes. It
+also comes back while another panel, such as the travel prompt, is on top. With `bTakeLeftButton` off, every press
+selects.
 
 `PointerGain` 1 moves the arrow one pixel for each raw count from the mouse, like a desktop pointer without
 acceleration. The arrow appears on the map cursor when the mouse moves. Moving the controller stick hides it until the

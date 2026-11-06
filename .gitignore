@@ -1,7 +1,16 @@
 *.pcc
+*.tfc
+*.bik
+*.isb
+*.afc
+*.tlk
+*.sav
 *.wav
 *.ogg
 *.wem
+*.dll
+*.asi
+*.exe
 *.7z
 *.zip
 ini*/

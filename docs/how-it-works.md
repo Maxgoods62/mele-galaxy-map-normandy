@@ -12,15 +12,16 @@ The build makes these packages (`.pcc` files, which hold the game's objects):
 | Package | Holds | Loaded |
 |---|---|---|
 | `Startup_MOD_GalaxyMapNormandy` | the director, the ship light, the settings helper | at startup |
-| `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the settings strings, one per language code | at startup |
+| `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the mod's name and the settings strings, one per language code | at startup |
 | `GalaxyMapNormandy_NOR10` | an empty level with one director actor | with the Normandy's levels |
 | `GalaxyMapNormandy_SFX` | the SR-1 mesh, the engine trail, the button art, the sound cues | by the director |
 | `ModSettings_Submenus_GalaxyMapNormandy` | the settings pages | when the player opens them |
 
-`AutoLoad.ini` names the startup package and the talk table, the game's string table. The LE1 Community Patch (LE1CP)
-has a Sideloader, which loads extra level files into a map. M3 merges `ConfigDelta-GalaxyMapNormandy.m3cd` into the
-game's config at install. It makes the Sideloader load the mod's level with every level whose name starts with
-`BIOA_NOR10`.
+`AutoLoad.ini` names the startup package and the talk table, the game's string table. Its `NameStrRef` is 74220000,
+the string with the mod's name. ME3Tweaks Mod Manager (M3) lists the mod in its Submit mod information form only when
+it has one. The LE1 Community Patch (LE1CP) has a Sideloader, which loads extra level files into a map. M3 merges
+`ConfigDelta-GalaxyMapNormandy.m3cd` into the game's config at install. It makes the Sideloader load the mod's level
+with every level whose name starts with `BIOA_NOR10`.
 
 The director is an actor, an object in a level that runs every frame. It leaves the game's galaxy map handler in
 place, because a subclass of that handler broke zooming out of the planet view.
@@ -46,8 +47,10 @@ stick. The director writes it where the game reads mouse movement (`m_fCursorDel
 as it does for the controller, so selection and the system camera work as usual.
 
 The left button selects on press, which would zoom in at the start of every flight. At cluster and system level the
-director blanks that binding, and a short click selects instead. At other levels, or when another panel has focus,
-the binding comes back and the arrow hides.
+director blanks that binding, and a short click selects instead. When a press starts on something a click would
+select, the virtual stick waits until the press is longer than a click, so a click leaves the ring where it is.
+Anywhere else the stick starts on the first frame. At other levels, or when another panel has focus, the binding comes
+back and the arrow hides.
 
 The Enter Orbit button runs the test the game runs before it obeys the controller's A button. It stays hidden while
 the map is in controller mode. Its words are the Mass Effect 2 translations, picked by the game's own word on the A
@@ -90,11 +93,11 @@ base class is LE1CP's `ModSettingsSubmenu`. The menu package carries a copy of i
 patch's own class ([ASSETS.md](ASSETS.md#the-community-patch-settings-page-class)).
 
 The strings are in [`src/tlk/`](../src/tlk), one file for each of the eight languages. Each line is a string id, a
-tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220001 to 74220022, and they
-start with 7422, the mod's mount. Every file must have exactly the ids of `INT.tsv`, or the build stops. The page
-classes use a string as `$<id>`, and the row that the `.m3cd` adds uses 74220022 for its description. To add a string,
-give it the next free id in all eight files. The game's other language codes FE, GE, IE, RA and PLPC get copies of FR,
-DE, IT, RU and PL.
+tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220022, and they
+start with 7422, the mod's mount. Every file must have exactly the ids of `INT.tsv`, or the build stops. 74220000 is
+the mod's name, for `NameStrRef` in `AutoLoad.ini`. The page classes use a string as `$<id>`, and the row that the
+`.m3cd` adds uses 74220022 for its description. To add a string, give it the next free id in all eight files. The
+game's other language codes FE, GE, IE, RA and PLPC get copies of FR, DE, IT, RU and PL.
 
 ## Sound
 
@@ -106,9 +109,8 @@ ME2 and ME3 play this sound through Wwise, which pitches and filters it live. LE
 `flight_sounds.py` bakes the fixed pitch, filters and reverb into the variant's waves. The director sets pitch and
 volume from the ship's speed. If a variant's cue doesn't load, the director plays the original sound.
 
-A flight starts with a whoosh. The loops rise with speed, and fade out once the ship stops or
-the map closes. ISACT plays a loop wave once, so the director restarts each loop with a crossfade.
-[tuning.md](tuning.md) has the values.
+A flight starts with a whoosh. The loops rise with speed, and fade out once the ship stops or the map closes. ISACT
+plays a loop wave once, so the director restarts each loop with a crossfade. [tuning.md](tuning.md) has the values.
 
 ## Files
 
@@ -119,10 +121,10 @@ the map closes. ISACT plays a loop wave once, so the director restarts each loop
 | `src/GalaxyMapNormandySettings.uc` | the settings in the gamer profile | |
 | `src/ModSettingsSubmenu_*.uc` | the settings page, and the steps of one setting | |
 | `src/sound/flight_sounds.py` | the waves of the flight sound variants | [ASSETS.md](ASSETS.md#flight-sound-variants) |
-| `src/tlk/*.tsv` | the settings strings, one file per language | |
+| `src/tlk/*.tsv` | the mod's name and the settings strings, one file per language | |
 | `mod/moddesc.ini` | the mod's description for M3 | [building.md](building.md) |
 | `mod/README.txt` | the read-me in the download | |
-| `mod/.../AutoLoad.ini` | the startup package, the talk table, the mount | |
+| `mod/.../AutoLoad.ini` | the startup package, the talk table, the mod's name, the mount | |
 | `mod/.../ConfigDelta-GalaxyMapNormandy.m3cd` | the Sideloader level and the menu row | |
 | `build.sh`, `build.env.example` | the build and its settings | [building.md](building.md) |
 | `package.sh` | zips the built mod for tests | [building.md](building.md) |

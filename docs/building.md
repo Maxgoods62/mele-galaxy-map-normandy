@@ -24,9 +24,10 @@ the .NET 8 runtime. The first build downloads NuGet packages, so it needs networ
 ### Game files
 
 The build reads `BIOA_ICE20_11_LAY.pcc` and `snd_gui.pcc` from LE1, `Startup_INT.pcc` from LE2, and `SFXGame.pcc`,
-`Startup.pcc` and `BioA_Nor_203aGalaxyMap.pcc` from LE3. Each one is in `Game\ME<n>\BioGame\CookedPCConsole` in the Legendary Edition folder. From the Community Patch
-folder, `Game\ME1\BioGame\DLC\DLC_MOD_LE1CP`, it reads `CookedPCConsole\ModSettingsMenu.pcc` and `_metacmm.txt`.
-[ASSETS.md](ASSETS.md#files-the-build-reads) says what it does with each one.
+`Startup.pcc` and `BioA_Nor_203aGalaxyMap.pcc` from LE3. Each one is in `Game\ME<n>\BioGame\CookedPCConsole` in the
+Legendary Edition folder. From the Community Patch folder, `Game\ME1\BioGame\DLC\DLC_MOD_LE1CP`, it reads
+`CookedPCConsole\ModSettingsMenu.pcc` and `_metacmm.txt`. [ASSETS.md](ASSETS.md#files-the-build-reads) says what it does
+with each one.
 
 ### The toolkit
 
@@ -95,10 +96,10 @@ edit to a file that git does not track is not seen, so delete `build/tools/` to 
 | `== building <tool>` | `build/tools/lectool/`, `build/tools/mele-mcp/` | The two tools, when rebuilt |
 | `== classes` | `build/Startup_MOD_GalaxyMapNormandy.pcc` | The mod's classes, loaded at game start |
 | `== menu` | `build/ModSettings_Submenus_GalaxyMapNormandy.pcc` | The settings pages |
-| `== strings` | `build/tlk/` | The menu's text, 13 packages |
+| `== strings` | `build/tlk/` | The mod's name and the menu's text, 13 packages |
 | `== level` | `build/GalaxyMapNormandy_NOR10.pcc` | A small level that holds the director |
 | `== sound` | `build/sound/` | The travel sound and the flight sound waves |
-| `== sfx` | `build/GalaxyMapNormandy_SFX.pcc` | The sound cues, the SR-1 model and the button art |
+| `== sfx` | `build/GalaxyMapNormandy_SFX.pcc` | The sound cues, the SR-1 model, the engine trail and the button art |
 | `== dist` | `dist/Galaxy Map Normandy/` | The M3 mod folder |
 | None, last | `dist/build.stamp` | What the build was made from |
 

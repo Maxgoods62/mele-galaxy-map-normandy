@@ -1,10 +1,11 @@
 Galaxy Map Normandy, a mod for Mass Effect 1 in the Legendary Edition (LE1)
 
 On the galaxy map, a lit SR-1 Normandy takes the place of the orange cursor
-ring, as in Mass Effect 2 and 3. It shows at cluster and system level. The
-mouse works as in Mass Effect 2: hold the left button to fly toward the arrow,
-and click to select. An Enter Orbit button shows when the ship is on
-something you can enter. The controller keeps the normal game's controls.
+ring, as in Mass Effect 2 and 3. It shows at cluster and system level. Its
+engines glow and trail blue light as in Mass Effect 2. The mouse works as in
+Mass Effect 2 too: hold the left button to fly toward the arrow, and click to
+select. An Enter Orbit button shows when the ship is on something you can
+enter. The controller keeps the normal game's controls.
 
 You need:
 - Mass Effect Legendary Edition
@@ -29,7 +30,12 @@ hold for every save and apply the next time the map opens.
 Source code and documentation:
 https://github.com/Maxgoods62/mele-galaxy-map-normandy
 
+Source of each version (its release names the commits it was built from):
+https://github.com/Maxgoods62/mele-galaxy-map-normandy/releases
+
 All controls, settings and known issues:
 https://github.com/Maxgoods62/mele-galaxy-map-normandy/blob/main/docs/using.md
+
+All of the code was written by an LLM, Claude Opus 5.5, from my instructions.
 
 The LICENSE folder holds the licence texts.

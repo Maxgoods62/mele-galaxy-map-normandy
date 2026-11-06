@@ -1,9 +1,10 @@
 # Game assets
 
 Galaxy Map Normandy uses content from all three games of the Legendary Edition, and one class of the LE1 Community
-Patch. None of it is in this repository. `.gitignore` keeps out packages, sound files and archives (`*.pcc`, `*.wav`,
-`*.ogg`, `*.wem`, `*.7z`, `*.zip`) and the `build/` and `dist/` folders. Only the files of `mod/` that git sees go into
-the mod folder, so a stray `.pcc` there never ships.
+Patch. None of it is in this repository. `.gitignore` keeps out game files, sound files, archives and programs (`*.pcc`,
+`*.tfc`, `*.bik`, `*.isb`, `*.afc`, `*.tlk`, `*.sav`, `*.wav`, `*.ogg`, `*.wem`, `*.dll`, `*.asi`, `*.exe`, `*.7z`,
+`*.zip`) and the `build/` and `dist/` folders. Only the files of `mod/` that git sees go into the mod folder, so a stray
+`.pcc` there never ships.
 
 [build.sh](../build.sh) reads the content from your installed game and builds it into the mod's packages. It only reads
 the game files, and in this repo it writes only into `build/` and `dist/`. [building.md](building.md) explains how to
@@ -382,6 +383,7 @@ other packages hold only the mod's own work, and [how-it-works.md](how-it-works.
 
 A build puts all the packages in `dist/Galaxy Map Normandy/DLC_MOD_GalaxyMapNormandy/CookedPCConsole/`. The files made
 on the way stay in `build/sound` and `build/button`. The archive on Nexus Mods holds the same packages, from the
-maintainer's build. Either way, the built packages are for personal use with a legitimate copy of the game.
+maintainer's build. Either way, the game content in the built packages is for personal use with a legitimate copy of
+the game.
 
 The game content in these packages is not under the GPL: see [NOTICE](../NOTICE).

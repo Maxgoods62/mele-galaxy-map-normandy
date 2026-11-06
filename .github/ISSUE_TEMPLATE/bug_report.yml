@@ -24,7 +24,7 @@ body:
     attributes:
       label: Mod version
       description: The `modver` of the mod you installed.
-      placeholder: "0.27"
+      placeholder: "1.0"
     validations:
       required: true
   - type: input

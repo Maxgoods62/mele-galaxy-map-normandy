@@ -38,7 +38,9 @@ flies, up to its top speed. It slows down as it gets close to the arrow, as if y
 Flight speed setting changes how fast it flies.
 
 A click is a press shorter than 0.25 s. It selects what is highlighted under the ship, as a click does in the normal
-game. A longer press only flies the ship.
+game. A longer press only flies the ship. When the ship is on something a click selects, it waits 0.25 s before it
+flies, so a click does not move it. Anywhere else it sets off at once, and a click makes a short move. A stutter in the
+game does not turn a click into a flight.
 
 ### The Enter Orbit button
 
@@ -95,9 +97,8 @@ mouse move alone does not.
 
 ## Sound
 
-A whoosh plays each time the ship sets off. While the ship flies, an engine and a drive
-play. They get higher and louder as the ship goes faster, and they fade out when it stops. When you close the map, all
-of the sound fades out.
+A whoosh plays each time the ship sets off. While the ship flies, an engine and a drive play. They get higher and louder
+as the ship goes faster, and they fade out when it stops. When you close the map, all of the sound fades out.
 
 ## Settings
 
