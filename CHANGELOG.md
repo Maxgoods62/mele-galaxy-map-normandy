@@ -3,7 +3,7 @@
 The builds under "Development builds" were made for testing between 2026-10-28 and 2026-11-06. The last of them, v0.27,
 became v1.0 with the changes marked v1.0 in that list. The version number is `modver` in `mod/moddesc.ini`.
 
-## v0.27 (unreleased)
+## v1.0 (2026-11-06)
 
 The first version made for players. On the LE1 galaxy map, a lit SR-1 Normandy takes the place of the orange cursor ring
 at cluster and system level, with engine glow and trails as in ME2 and a sound made from the ME3 travel sound. The mouse

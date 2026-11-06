@@ -6,8 +6,9 @@ follows the cursor and turns toward where it flies. Its engines glow and trail b
 sound is made from the Mass Effect 3 travel sound. The mouse works as in Mass Effect 2, with its Enter Orbit button.
 The controller keeps the normal game's controls.
 
-Download the 7z file from the [Nexus Mods page](NEXUS_PAGE_URL). You can also build the mod from this repo with your
-own game files ([docs/building.md](docs/building.md)).
+Download the 7z file from the
+[Nexus Mods page](https://www.nexusmods.com/masseffectlegendaryedition/mods/3538). You can also build the mod from this
+repo with your own game files ([docs/building.md](docs/building.md)).
 
 All of the code here was written by an LLM, Claude Opus 5.5, through Claude Code, from my instructions. I decide what
 to build and I test the results in the game.
