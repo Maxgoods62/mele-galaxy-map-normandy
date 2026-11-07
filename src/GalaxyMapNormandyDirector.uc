@@ -217,7 +217,7 @@ public event function Tick(float DeltaTime)
     {
         ReadSettings();
     }
-    HideLocationMarker();
+    UpdateLocationMarker(GalaxyCam.m_nCurrentState);
     NewRing = GalaxyCam.m_pCrossHairObject;
     if (NewRing != Ring)
     {
@@ -1345,12 +1345,15 @@ public function ReleasePointer()
     ButtonFade = 0.0;
 }
 
-// The movie's "you are here" marker (ship outline and ring, one clip) makes no sense next to a ship that flies. The movie
-// keeps rewriting the clip's _visible and position but never touches its _alpha. The name label is another clip. Each
-// opening of the map loads a new movie, so this runs every frame. Keep the oPanel check: SetVariableFloat has no null
-// check of its own, and oPanel is what turns None when the game closes the movie.
-public function HideLocationMarker()
+// The movie's "you are here" marker (ship outline and ring, one clip) makes no sense next to a ship that flies, so it is
+// hidden at cluster and system level (MapState 2 and 3) and shown at galaxy level and in planet view, as in the normal
+// game. The movie keeps rewriting the clip's _visible and position but never touches its _alpha (100 in a new movie). The
+// name label is another clip. Each opening of the map loads a new movie, so this runs every frame. Keep the oPanel check:
+// SetVariableFloat has no null check of its own, and oPanel is what turns None when the game closes the movie.
+public function UpdateLocationMarker(int MapState)
 {
+    local float Alpha;
+
     if (Handler == None)
     {
         Handler = FindGalaxyHandler(BioPlayerController(GetALocalPlayerController()));
@@ -1359,9 +1362,14 @@ public function HideLocationMarker()
             return;
         }
     }
+    Alpha = 100.0;
+    if (MapState == 2 || MapState == 3)
+    {
+        Alpha = 0.0;
+    }
     if (Handler.oPanel != None)
     {
-        Handler.oPanel.SetVariableFloat("_root.LocationShip._alpha", 0.0);
+        Handler.oPanel.SetVariableFloat("_root.LocationShip._alpha", Alpha);
     }
 }
 

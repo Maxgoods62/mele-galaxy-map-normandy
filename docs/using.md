@@ -13,8 +13,9 @@ levels:
 - The ship has a flight sound, made from the Mass Effect 3 travel sound.
 - The mouse works as in Mass Effect 2, with an arrow pointer and the Enter Orbit button.
 
-The game's 2D "you are here" marker, a small ship outline in a ring, is gone at every level of the map. The name
-labels stay. At galaxy level and in planet view, there is no ship and the map works as in the normal game.
+The game's 2D "you are here" marker, a small ship outline in a ring, is gone at cluster and system level, where the
+ship flies. The name labels stay. At galaxy level and in planet view, there is no ship and the map works as in the
+normal game: the marker shows at galaxy level, and the game draws none in planet view.
 
 ## Controls
 

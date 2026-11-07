@@ -3,6 +3,12 @@
 The builds under "Development builds" were made for testing between 2026-10-28 and 2026-11-06. The last of them, v0.27,
 became v1.0 with the changes marked v1.0 in that list. The version number is `modver` in `mod/moddesc.ini`.
 
+## Next version (not released)
+
+- The game's 2D "you are here" marker shows again at galaxy level and in planet view, as in the normal game. It stays
+  hidden at cluster and system level, where the ship flies. In game (2026-11-07): planet view shows no marker, as the
+  game draws none there.
+
 ## v1.0 (2026-11-06)
 
 The first version made for players. On the LE1 galaxy map, a lit SR-1 Normandy takes the place of the orange cursor ring

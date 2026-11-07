@@ -45,8 +45,9 @@ At cluster and system level:
 
 A click is a press shorter than 0.25 s. When the ship is on something to select, it waits that long before it flies.
 Any press counts on the Enter Orbit button, which shows at the bottom of the screen when the ship is on something you
-can enter. At galaxy level and in planet view, the map works as in the normal game. The game's 2D "you are here" marker
-is gone, and the name labels stay. All controls: [docs/using.md](docs/using.md#controls).
+can enter. At galaxy level and in planet view, the map works as in the normal game, and the 2D "you are here" marker
+shows at galaxy level. At cluster and system level the ship takes its place, and the name labels stay. All controls:
+[docs/using.md](docs/using.md#controls).
 
 ## Settings
 

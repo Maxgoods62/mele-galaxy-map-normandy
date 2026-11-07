@@ -35,9 +35,10 @@ The map has four levels: galaxy, cluster, system and planet. At cluster and syst
 ship and hides the ring's mesh. It scales the camera's cursor speed (`m_fMovementScalar`) by its own flight speed and
 the player's setting. The ship chases the ring under a speed cap and turns toward where it flies.
 
-At every level, the `_alpha` of the map movie's `LocationShip` clip is set to 0. The map's interface is a Scaleform
-(Flash) movie, and that clip is the 2D "you are here" marker. The movie keeps setting the clip's visibility, but never
-its alpha. The name labels are another clip, so they stay.
+At cluster and system level, the `_alpha` of the map movie's `LocationShip` clip is set to 0. At galaxy level and in
+planet view it is set back to 100, the value of a new movie. The map's interface is a Scaleform (Flash) movie, and that
+clip is the 2D "you are here" marker. The movie keeps setting the clip's visibility, but never its alpha. The name
+labels are another clip, so they stay.
 
 ### Mouse and controller
 
