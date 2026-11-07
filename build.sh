@@ -14,7 +14,7 @@ if [[ -f "$HERE/build.env" ]]; then . "$HERE/build.env"; fi
 TOOLKIT="${MELE_TOOLKIT:-$HERE/../../mele-maxgoods-toolkit}"
 # The toolkit commit a release is built with: scripts/release.sh refuses a build from any other. A test build at another
 # commit only gets a note. It is set here, so build.env can't change it.
-TOOLKIT_COMMIT=9bf6e4c11b43f6a16284393517ae6cf6463c1af8
+TOOLKIT_COMMIT=080866d559b62e085133e0be8f280f1a8d60a277
 DOTNET="${MELE_DOTNET:-dotnet.exe}"
 VGMSTREAM="${MELE_VGMSTREAM:-vgmstream-cli}"
 LE_DIR="${MELE_LE_DIR:?set MELE_LE_DIR to the Legendary Edition folder, as a Windows path}"
