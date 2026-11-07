@@ -51,6 +51,9 @@ var transient Vector LastShipLocation;
 var transient float RestTime;
 var transient float LastSpeed;
 var transient int LastState;
+var transient int SystemWorld;
+var transient Actor SystemActor;
+var transient bool bCheckZoomEnd;
 var transient int TickCount;
 var transient bool bRingHiddenByUs;
 var transient float PeakMouseRate;
@@ -218,6 +221,10 @@ public event function Tick(float DeltaTime)
         ReadSettings();
     }
     UpdateLocationMarker(GalaxyCam.m_nCurrentState);
+    if (GalaxyCam.m_nCurrentState == 1)
+    {
+        SelectCurrentSystem();
+    }
     NewRing = GalaxyCam.m_pCrossHairObject;
     if (NewRing != Ring)
     {
@@ -243,6 +250,17 @@ public event function Tick(float DeltaTime)
         return;
     }
     HideRing();
+    // The safety net of SelectCurrentSystem: once the zoom from galaxy level into the Normandy's cluster is over
+    // (CheckZoomEnd).
+    if (GalaxyCam.m_nCurrentState != LastState)
+    {
+        bCheckZoomEnd = LastState == 1 && GalaxyCam.m_nCurrentState == 2 && IsNormandyCluster(GalaxyCam.m_pSelectedCluster);
+    }
+    if (bCheckZoomEnd && GalaxyCam.m_fZoomTime == 0.0)
+    {
+        bCheckZoomEnd = FALSE;
+        CheckZoomEnd();
+    }
     // In system view the camera follows the cursor, so a slow turn shows as the ship swinging around the screen centre;
     // the planets there are also smaller next to the cursor than the systems are at cluster level. The player's settings
     // (ReadSettings) scale each value. Flight speed has no value of its own: ClusterFlightSpeed and SystemFlightSpeed are
@@ -1373,6 +1391,166 @@ public function UpdateLocationMarker(int MapState)
     }
 }
 
+// Zooming in from galaxy level, the game aims the zoom and puts the cursor on m_pSelectedSystem, or on the cluster's first
+// system when it is None, as it is at galaxy level. The ship starts on the cursor, so it showed on the first system even
+// when the Normandy was at another one of that cluster. While the cluster that holds the Normandy is highlighted at galaxy
+// level, this sets m_pSelectedSystem to the Normandy's system, so the game zooms to it; on any other cluster it is None
+// again. The game lays the cluster out, then reads the system actor's location, so the actor has to be one of that
+// cluster's: one of another cluster stays hidden at the origin, and the zoom flew there (Exodus Cluster, 2026-11-07, when
+// the tag alone picked Strenuus' actor for Asgard). Tested live (2026-11-07): set by hand at galaxy level, the zoom flew
+// to Strenuus, not Pax; with Strenuus' actor moved 170 units off at galaxy level, the zoom still flew to Strenuus.
+public function SelectCurrentSystem()
+{
+    local Actor Wanted;
+
+    if (IsNormandyCluster(GalaxyCam.m_pSelectedObject))
+    {
+        Wanted = SystemActor;
+    }
+    if (GalaxyCam.m_pSelectedSystem != Wanted)
+    {
+        GalaxyCam.m_pSelectedSystem = Wanted;
+    }
+}
+
+// Whether Cluster is the map's actor of the cluster that holds the Normandy. Also brings SystemActor up to date: it is
+// kept for one Active_World, and Cleanup clears them with the map level whose actors they hold.
+public function bool IsNormandyCluster(Actor Cluster)
+{
+    local BioWorldInfo BioWorld;
+    local int ActiveWorld;
+
+    BioWorld = BioWorldInfo(WorldInfo);
+    if (Cluster == None || BioWorld == None || BioWorld.GetGlobalVariables() == None)
+    {
+        return FALSE;
+    }
+    ActiveWorld = BioWorld.GetGlobalVariables().GetInt(13);
+    if (!(string(Cluster.Tag) ~= ("Cluster" $ TwoDigits(ActiveWorld / 10000))))
+    {
+        return FALSE;
+    }
+    if (ActiveWorld != SystemWorld)
+    {
+        SystemWorld = ActiveWorld;
+        SystemActor = None;
+        FindSystem(ActiveWorld);
+    }
+    return TRUE;
+}
+
+// Plot int 13 (Active_World) is cluster * 10000 + system * 100 + planet. Those numbers are the Label of the cluster row
+// (Cluster08) and of the system row (System02) in the galaxy map tables, which hold the DLC rows too (Asgard, row 2009,
+// is Exodus Cluster's System02). The system row names its actor: an InterpActor of the map level named after the row's
+// Name string id (Strenuus 135810, a DLC one may carry a suffix, 176126_243) and tagged with its Label. Sets SystemActor,
+// or leaves it None.
+public function FindSystem(int ActiveWorld)
+{
+    local Bio2DA Clusters;
+    local Bio2DA Systems;
+    local string RowClusterLabel;
+    local string RowSystemLabel;
+    local string ActorName;
+    local name Label;
+    local int ClusterRow;
+    local int Row;
+    local int Cluster;
+    local int NameRef;
+    local InterpActor SystemItem;
+
+    Clusters = GalaxyCam.m_pClusterTable;
+    Systems = GalaxyCam.m_pSystemTable;
+    if (Clusters == None || Systems == None || (ActiveWorld / 100) % 100 == 0)
+    {
+        return;
+    }
+    RowClusterLabel = "Cluster" $ TwoDigits(ActiveWorld / 10000);
+    RowSystemLabel = "System" $ TwoDigits((ActiveWorld / 100) % 100);
+    ClusterRow = -1;
+    for (Row = 0; Row < Clusters.GetNumRows(); Row++)
+    {
+        if (Clusters.GetNameEntryIN(Row, 'Label', Label) && string(Label) ~= RowClusterLabel)
+        {
+            ClusterRow = Clusters.GetRowNumber(Row);
+            break;
+        }
+    }
+    for (Row = 0; ClusterRow >= 0 && Row < Systems.GetNumRows(); Row++)
+    {
+        if (Systems.GetNameEntryIN(Row, 'Label', Label) && string(Label) ~= RowSystemLabel
+            && Systems.GetIntEntryIN(Row, 'Cluster', Cluster) && Cluster == ClusterRow)
+        {
+            if (!Systems.GetIntEntryIN(Row, 'Name', NameRef))
+            {
+                return;
+            }
+            break;
+        }
+    }
+    if (ClusterRow < 0 || Row >= Systems.GetNumRows())
+    {
+        return;
+    }
+    foreach DynamicActors(Class'InterpActor', SystemItem)
+    {
+        ActorName = string(SystemItem.Name);
+        if (string(SystemItem.Tag) ~= RowSystemLabel && (ActorName == string(NameRef) || Left(ActorName, Len(string(NameRef)) + 1) == (string(NameRef) $ "_")))
+        {
+            SystemActor = SystemItem;
+            return;
+        }
+    }
+}
+
+// After a zoom into the Normandy's cluster, the cursor must sit on the Normandy's system, where the game laid it out. It
+// does not when SelectCurrentSystem found no system (the game zoomed to the first one), when the layout put the system
+// somewhere else (a map changed by another mod), or when the game did not use m_pSelectedSystem.
+// Then the cursor and the ship go to the system at once, and the camera pans to it, as it follows the cursor: the first
+// fix of this bug, which works whatever the game did. Tested live (2026-11-07) with SystemActor cleared at galaxy level:
+// the zoom went to Pax, then the cursor and the ship moved to Strenuus. Without FindSystem's actor, the system is the one actor of the laid
+// out cluster with its tag (System02): the other clusters' systems wait hidden. A hidden system is not a place to go to.
+public function CheckZoomEnd()
+{
+    local Actor Wanted;
+    local InterpActor Item;
+
+    Wanted = SystemActor;
+    if ((Wanted == None || Wanted.bHidden) && (SystemWorld / 100) % 100 != 0)
+    {
+        Wanted = None;
+        foreach DynamicActors(Class'InterpActor', Item)
+        {
+            if (!Item.bHidden && string(Item.Tag) ~= ("System" $ TwoDigits((SystemWorld / 100) % 100)))
+            {
+                Wanted = Item;
+                break;
+            }
+        }
+    }
+    if (Wanted == None || Wanted.bHidden || VSize(Ring.Location - Wanted.Location) <= 1.0)
+    {
+        return;
+    }
+    LogInternal("Zoom ended " $ VSize(Ring.Location - Wanted.Location) $ " units from the Normandy's system " $ Wanted.Name
+        $ " (Active_World " $ SystemWorld $ "), cursor moved there", 'GalaxyMapNormandy');
+    Ring.SetLocation(Wanted.Location);
+    bPointerPlaced = FALSE;
+    if (Ship != None)
+    {
+        Ship.SetLocation(Wanted.Location);
+        LastShipLocation = Wanted.Location;
+    }
+}
+
+public function string TwoDigits(int Number)
+{
+    if (Number < 10)
+    {
+        return "0" $ string(Number);
+    }
+    return string(Number);
+}
+
 // The galaxy map's handler is a script handler of one of the open Scaleform panels.
 public function BioSFHandler_GalaxyMap FindGalaxyHandler(BioPlayerController PC)
 {
@@ -1545,6 +1723,9 @@ public function Cleanup()
     }
     RestoreMovementScalar();
     bSettingsRead = FALSE;
+    SystemWorld = 0;
+    SystemActor = None;
+    bCheckZoomEnd = FALSE;
     Ring = None;
     GalaxyCam = None;
     Handler = None;

@@ -35,6 +35,20 @@ The map has four levels: galaxy, cluster, system and planet. At cluster and syst
 ship and hides the ring's mesh. It scales the camera's cursor speed (`m_fMovementScalar`) by its own flight speed and
 the player's setting. The ship chases the ring under a speed cap and turns toward where it flies.
 
+Zooming in from galaxy level, the game aims the zoom and puts the ring on the camera's `m_pSelectedSystem`, or on the
+cluster's first system when that is empty. While the cluster that holds the Normandy is highlighted at galaxy level, the
+director sets `m_pSelectedSystem` to the Normandy's system. On any other cluster it is left empty, as in the normal game.
+
+Plot int 13 (`Active_World`, cluster * 10000 + system * 100 + planet) gives the labels of the cluster and system rows in
+the galaxy map tables (`Cluster08`, `System02`). The system row names the system's actor (its `Name` string id). The
+label alone is not enough: every cluster's second system is tagged `System02`. The game lays the cluster out before it
+reads the actor's location, and the systems of other clusters wait hidden at the origin.
+
+When that zoom ends, the director checks that the ring is on the Normandy's system. If it is not (no row found, a
+map changed by another mod, or a game path that ignored `m_pSelectedSystem`), the ring and the ship move there and
+the camera pans after the ring. Without the tables, the system is the one shown actor with its tag: the systems of the
+other clusters are hidden.
+
 At cluster and system level, the `_alpha` of the map movie's `LocationShip` clip is set to 0. At galaxy level and in
 planet view it is set back to 100, the value of a new movie. The map's interface is a Scaleform (Flash) movie, and that
 clip is the 2D "you are here" marker. The movie keeps setting the clip's visibility, but never its alpha. The name

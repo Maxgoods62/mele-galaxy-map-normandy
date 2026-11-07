@@ -8,6 +8,18 @@ became v1.0 with the changes marked v1.0 in that list. The version number is `mo
 - The game's 2D "you are here" marker shows again at galaxy level and in planet view, as in the normal game. It stays
   hidden at cluster and system level, where the ship flies. In game (2026-11-07): planet view shows no marker, as the
   game draws none there.
+- Zooming in from galaxy level to the cluster the Normandy is in, the zoom now flies to the Normandy's system and the
+  ship starts there. Before, the game aimed at the cluster's first system: in Horse Head Nebula with the Normandy at
+  Strenuus, the ship showed at Pax. While that cluster is highlighted at galaxy level, the director sets the camera's
+  `m_pSelectedSystem` to the Normandy's system, which the game zooms to. Plot int 13 (Active_World) gives the system's
+  row in the galaxy map tables (DLC rows included), and the row gives its actor. A safety net checks the end of that
+  zoom: if the cursor is not on the Normandy's system, the cursor and the ship go there and the camera pans to it. It
+  finds the system without the tables too, as the one shown actor with the system's tag.
+  Tested in game (2026-11-07): Horse Head Nebula (Strenuus), also after a visit to another cluster. Exodus Cluster
+  (Asgard, a DLC system) passed on the build before, which also moved the system's actor before the click; that step
+  turned out to change nothing (the game lays the cluster out first) and was removed. Other clusters zoom as before. The safety net, with the found system cleared by hand: the zoom
+  went to Pax, then the cursor and the ship moved to Strenuus. A first build picked the system by its tag alone, which
+  every cluster's second system shares, and zoomed toward the origin in Exodus Cluster.
 
 ## v1.0 (2026-11-06)
 
