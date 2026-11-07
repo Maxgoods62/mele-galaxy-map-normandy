@@ -71,6 +71,20 @@ git_state() {
         echo "none none -"
     fi
 }
+# unread_hash <folder>: a hash of the content of the files that git_state names but does not read: new files, which git
+# status lists by name only (in submodules too), and the files whose edits git hides.
+unread_hash() {
+    local sub f
+    {
+        git -C "$1" ls-files -z --others --exclude-standard
+        git -C "$1" submodule foreach --quiet --recursive 'printf "%s\0" "$displaypath"' \
+            | while IFS= read -r -d '' sub; do
+                git -C "$1/$sub" ls-files -z --others --exclude-standard \
+                    | while IFS= read -r -d '' f; do printf '%s/%s\0' "$sub" "$f"; done
+            done
+        { git -C "$1" ls-files -v -z --recurse-submodules | grep -z '^[[:lower:]S]' || true; } | sed -z 's/^. //'
+    } | (cd "$1" && xargs -0 -r sha256sum 2>&1 || true) | md5sum | cut -c1-8
+}
 # mod_files: the files of mod/ that go into the mod folder, NUL-separated and relative to mod/. In a git checkout these
 # are the files git sees, committed or new: a file git ignores, such as a stray .pcc, never ships.
 mod_files() {
@@ -101,11 +115,14 @@ if [[ ! "$le1cp" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
     echo "note: no LE1 Community Patch version in DLC_MOD_LE1CP\\_metacmm.txt: scripts/release.sh refuses this build"
 fi
 
-# Tools: rebuilt when the toolkit's commit or working tree changed since the last build.
-stamp="$(git -C "$TOOLKIT" rev-parse HEAD) $({ git -C "$TOOLKIT" status --porcelain; git -C "$TOOLKIT" diff HEAD --submodule=diff; } | md5sum | cut -c1-8)"
+# Tools: rebuilt when the toolkit's commit or working tree changed since the last build. The key is the toolkit's
+# git_state and the content of the files it only names. A toolkit that is not a git checkout has no key, so its tools
+# are built every time.
+stamp=""
+if [[ "${kit_state%% *}" != none ]]; then stamp="$kit_state $(unread_hash "$TOOLKIT")"; fi
 build_tool() {    # build_tool <name> <project dir> <csproj> <output file>
     local out="$BUILD/tools/$1"
-    if [[ -f "$out/$4" && -f "$out.stamp" && "$(cat "$out.stamp")" == "$stamp" ]]; then return; fi
+    if [[ -n "$stamp" && -f "$out/$4" && -f "$out.stamp" && "$(cat "$out.stamp")" == "$stamp" ]]; then return; fi
     echo "== building $1"
     rm -rf "$out" "$out.stamp"
     (cd "$2" && "$DOTNET" build "$3" -c Release -nologo -v q -o "$(win "$out")" | tr -d '\r' | grep -E ' error ' | sort -u) || true

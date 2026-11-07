@@ -4,7 +4,7 @@
 # the LICENSE folder (LICENSE, NOTICE) and README.txt that build.sh puts there. The mod is for LE1 only, so no folder is
 # named after the game.
 #   ./package.sh              run ./build.sh first
-#   ./package.sh --no-build   zip the dist/Galaxy Map Normandy that is already there
+#   ./package.sh --no-build   zip the dist/Galaxy Map Normandy that is already there, from a build that finished
 # The zip contains content derived from the game files (NOTICE). The public archive is the 7z that M3's own deployment
 # makes (the steps are at the top of scripts/release.sh).
 set -euo pipefail
@@ -40,8 +40,10 @@ mod_files() {
 }
 
 # With --no-build the folder may be an older build: each of those files of mod/ must be there unchanged, the packages
-# and the two license texts present, and nothing else.
+# and the two license texts present, and nothing else. A build that stops leaves no dist/build.stamp, and the folder is
+# then the build before it, or half of the new one.
 [[ -d "$MOD" ]] || die "no $MOD: run ./package.sh without --no-build"
+[[ -f "$DIST/build.stamp" ]] || die "no dist/build.stamp: the last ./build.sh stopped before its end, so $NAME may be an older build: run ./package.sh without --no-build"
 LIST="$(mktemp)"
 trap 'rm -f "$LIST"' EXIT
 mod_files > "$LIST"

@@ -86,8 +86,10 @@ It takes no options. Each step prints a header line, such as `== classes`. Lines
 toolkit commit, the patch version or a file left out. At the end, a `built` line gives the Windows path of the mod
 folder and its `modver`. The files of its `CookedPCConsole` folder and the `stamp:` lines follow.
 
-The tools are rebuilt only when the toolkit's commit, `git status` or `git diff` changed since the last build. A later
-edit to a file that git does not track is not seen, so delete `build/tools/` to force a rebuild.
+The tools are rebuilt only when the toolkit's commit or one of its files changed since the last build. New files count,
+and so do files whose edits git hides with `git update-index`. A file that git ignores does not, so delete
+`build/tools/` to force a rebuild after you edit one. A toolkit that is not a git checkout gets its tools built every
+time.
 
 ## What the build makes
 
@@ -175,7 +177,8 @@ checksum into `dist/SHA256SUMS`. The zip holds the `Galaxy Map Normandy` folder 
 If you drop the zip on M3's window, M3 imports it with a warning that the mod was not deployed through M3.
 
 `./package.sh --no-build` zips the folder already in `dist/`. It stops if a file there is missing or extra, or differs
-from `mod/`, `LICENSE` or `NOTICE`.
+from `mod/`, `LICENSE` or `NOTICE`. It also stops when `dist/build.stamp` is missing: the last build stopped, and the
+folder may be the build before it.
 
 The zip holds content made from your game files ([NOTICE](../NOTICE)), so keep it for your own tests. Players get the
 7z that M3's Deploy mod makes, on Nexus Mods only.
@@ -194,7 +197,8 @@ are released, and how to check a download.
 - `<program> not found`: install `python3`, `ffmpeg`, `git` or `vgmstream-cli` in WSL, or set `MELE_DOTNET` or
   `MELE_VGMSTREAM` as the message says.
 - `no toolkit at <path>` or `the toolkit's LEC submodule is missing`: clone the toolkit as above, or fix
-  `MELE_TOOLKIT`. A toolkit copied without git can stop the build later with `fatal: not a git repository`.
+  `MELE_TOOLKIT`. A toolkit copied without git builds, but its tools are rebuilt each time and `scripts/release.sh`
+  refuses the build.
 - `lectool did not build` or `mele-mcp did not build`: the build shows only the compiler lines that contain ` error `.
   An error `CS0121` about `CopyTo` means an SDK older than 10. Also check the SDK, the network for the first NuGet
   download, and the submodule. For the whole output, run `dotnet.exe build lectool.csproj -c Release` in the toolkit's
@@ -224,5 +228,5 @@ are released, and how to check a download.
 - `broken material in the SR-1 port`: the `BROKEN material` lines above it name the material that LEC reports as broken.
 - `no moddesc.ini among the files of mod/ that git sees`: `mod/moddesc.ini` is missing, or git ignores it.
 - ffmpeg stops on the `libvorbis` encoder: install an ffmpeg that has it.
-- `package.sh: ... run ./package.sh without --no-build`: the folder in `dist/` does not match the sources. Run
-  `./package.sh` alone.
+- `package.sh: ... run ./package.sh without --no-build`: the folder in `dist/` does not match the sources, or the last
+  build stopped before its end. Run `./package.sh` alone.
