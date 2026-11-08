@@ -335,9 +335,10 @@ Flight speed setting scales this too, through the game's cursor speed. With `bVi
 
 The button is LE1's own galaxy map button, the Zoom Out button of the planet view. Each time the map opens, the
 director attaches a copy of it into the map's Flash movie and gives it its words. The movie draws it with its own art,
-hover look and font, so a mod that changes the game's interface font changes the button too. It shows when the ship is
-on something the map can enter, as the controller's A prompt does. It stays hidden while the game shows the controller
-prompts, and those stay until you click or press a key. Moving the mouse alone does not end them.
+hover look and font (`$AeroLight`, which LE1 draws with Domyouji), so it matches LE1's other buttons, with or without a
+font mod such as Myriad Pro Begone. It shows when the ship is on something the map can enter, as the controller's A
+prompt does. It stays hidden while the game shows the controller prompts, and those stay until you click or press a
+key. Moving the mouse alone does not end them.
 
 | Value | Default | Unit | What it does |
 |---|---|---|---|

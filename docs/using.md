@@ -60,9 +60,9 @@ one level to another.
 A click on the button counts when you let go on it, however long you hold it. If you move the arrow off the button
 before you let go, nothing happens. A press on the button never flies the ship.
 
-It is the game's own button: the one LE1 shows in planet view, with the game's font. Under the arrow it turns brown
-and gold and its words turn white, as on the game's other buttons. A mod that changes the game's interface font, such as
-Myriad Pro Begone, changes the button's font too.
+It is the game's own button, the one LE1 shows in planet view, in the game's Domyouji font. Under the arrow it turns
+brown and gold and its words turn white, as on the game's other buttons. With Myriad Pro Begone, which uses Domyouji
+across the interface, the button matches the rest of it.
 
 #### Languages of the button
 
