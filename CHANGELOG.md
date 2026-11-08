@@ -3,11 +3,14 @@
 The builds under "Development builds" were made for testing between 2026-10-28 and 2026-11-06. The last of them, v0.27,
 became v1.0 with the changes marked v1.0 in that list. The version number is `modver` in `mod/moddesc.ini`.
 
-## Unreleased
+## v1.2 (2026-11-08)
 
-- A Flight sound volume setting on the Mod Settings page, from 0 % to 140 % in steps of 10 %. It sets how loud the
-  whoosh, the engine and the drive are, at cluster level and in system view. 0 % turns the flight sound off, and
-  Restore defaults sets it back to 100 %.
+A volume setting for the flight sound.
+
+- Flight sound volume, the first row of the Galaxy Map Normandy page in Mod Settings, sets how loud the ship's flight
+  sound is: the whoosh as it sets off, the engine and the drive, at cluster level and in system view. It goes from 0 %
+  to 140 % in steps of 10 %. 100 % is the sound of v1.1, and 0 % turns the sound off. Restore defaults sets it back
+  to 100 %.
 
 ## v1.1 (2026-11-07)
 
