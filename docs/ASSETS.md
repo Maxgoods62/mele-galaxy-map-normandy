@@ -1,10 +1,10 @@
 # Game assets
 
-Galaxy Map Normandy uses content from all three games of the Legendary Edition, and one class of the LE1 Community
-Patch. None of it is in this repository. `.gitignore` keeps out game files, sound files, archives and programs (`*.pcc`,
-`*.tfc`, `*.bik`, `*.isb`, `*.afc`, `*.tlk`, `*.sav`, `*.wav`, `*.ogg`, `*.wem`, `*.dll`, `*.asi`, `*.exe`, `*.7z`,
-`*.zip`) and the `build/` and `dist/` folders. Only the files of `mod/` that git sees go into the mod folder, so a stray
-`.pcc` there never ships.
+Galaxy Map Normandy uses content from LE1 and LE3, words from LE2, and one class of the LE1 Community Patch. None of it
+is in this repository, apart from Mass Effect 2's words for the Enter Orbit button in `src/tlk`. `.gitignore` keeps out
+game files, sound files, archives and programs (`*.pcc`, `*.tfc`, `*.bik`, `*.isb`, `*.afc`, `*.tlk`, `*.sav`, `*.wav`,
+`*.ogg`, `*.wem`, `*.dll`, `*.asi`, `*.exe`, `*.7z`, `*.zip`) and the `build/` and `dist/` folders. Only the files of
+`mod/` that git sees go into the mod folder, so a stray `.pcc` there never ships.
 
 [build.sh](../build.sh) reads the content from your installed game and builds it into the mod's packages. It only reads
 the game files, and in this repo it writes only into `build/` and `dist/`. [building.md](building.md) explains how to
@@ -18,14 +18,12 @@ folders:
 | Game | Folder |
 |---|---|
 | LE1 | `<Legendary Edition folder>\Game\ME1\BioGame\CookedPCConsole` |
-| LE2 | `<Legendary Edition folder>\Game\ME2\BioGame\CookedPCConsole` |
 | LE3 | `<Legendary Edition folder>\Game\ME3\BioGame\CookedPCConsole` |
 | LE1 Community Patch | `<Legendary Edition folder>\Game\ME1\BioGame\DLC\DLC_MOD_LE1CP` |
 
 | Game | File | What the build takes | Used for |
 |---|---|---|---|
 | LE3 | `SFXGame.pcc` | three sounds in export 53327 | the flight sound |
-| LE2 | `Startup_INT.pcc` | one texture | the Enter Orbit button |
 | LE1 | `snd_gui.pcc` | two sound cues | templates for the mod's cues |
 | LE1 | `BIOA_ICE20_11_LAY.pcc` | export 31, a static mesh | the ship |
 | LE3 | `BioA_Nor_203aGalaxyMap.pcc` | export 757, a particle system | the engine trail |
@@ -37,8 +35,7 @@ Export 53327 of LE3's `SFXGame.pcc` is the sound bank `Wwise_Generic_Galaxy_Map`
 LE3. The build takes the sounds 256246750, 191335730 and 634254545 from this bank. They are the three sounds of
 `Play_gui_galaxy_travel_start`, the event that starts the galaxy map travel sound in Mass Effect 3.
 
-The LE2 texture is `GUI_SF_PC_SharedAssets.PC_SharedAssets_I3`, the button of Mass Effect 2's PC interface. The two LE1
-cues are `c_snd_guiswish` and `c_galaxymap_enter`. Export 31 of `BIOA_ICE20_11_LAY.pcc` is the static mesh
+The two LE1 cues are `c_snd_guiswish` and `c_galaxymap_enter`. Export 31 of `BIOA_ICE20_11_LAY.pcc` is the static mesh
 `ice20_normandy`, the SR-1 Normandy. Export 757 of LE3's `BioA_Nor_203aGalaxyMap.pcc` is the particle system
 `BioVFX_Env_Galaxymap.Particles.Normandy_Engine_Trails`, the engine trail of the Normandy on the Mass Effect 3 galaxy
 map.
@@ -308,45 +305,16 @@ material or anything LE1 can't load.
 Mass Effect 2's galaxy map has the same kind of trail. Legendary Explorer Core converts shaders only between LE1 and
 LE3, so the build takes LE3's copy.
 
-## The Enter Orbit button: `EnterButton_Normal` and `EnterButton_Hover`
+## The Enter Orbit button
 
-The button is Mass Effect 2's PC button in LE1's colours. The build makes both images from the LE2 texture:
+The button is not in the mod's packages. It is LE1's own Back button from the galaxy map's Scaleform movie
+(`GUI_SF_GalaxyMap.GalaxyMap`, the same in the LE1 Community Patch). Each time the map opens, the director asks that
+movie, in memory, for a copy of the button's symbol, `backAnim`. The copy has LE1's art, hover look and font. No file is
+read or changed for it, by the build or by the game.
 
-1. `lectool texpng` reads the texture with `LECGAME=LE2` and writes its full-size image as a PNG of 1024 x 128 pixels.
-   The panel, its bevel, the hexagon pattern and the cut corner are all in the image, in LE2's orange.
-2. ffmpeg mirrors the image (`hflip`). The texture has its cut corner at the bottom right. LE2 shows it mirrored, so the
-   cut corner sits at the bottom left.
-3. ffmpeg turns the art grey with `colorchannelmixer` (0.299 red, 0.587 green, 0.114 blue). A `curves` filter with
-   `pchip` interpolation then maps that grey to the new colours.
-4. `lectool addtexture` adds each PNG to `GalaxyMapNormandy_SFX.pcc` as a new top-level interface texture. It has one
-   mip (a single size of the image), is stored in the package, never streams and is not marked as sRGB.
-
-### The button at rest
-
-`EnterButton_Normal` keeps LE2's alpha and maps the grey to blue. The blue is the colour of the Back button on LE1's
-galaxy map. build.sh holds it as a fixed curve, `BUTTON_BLUE`, and reads no LE1 interface file for it. The texture is
-DXT5, a compressed format.
-
-### The button under the pointer
-
-Under the pointer, LE1's buttons show a solid brown panel with art over it. `EnterButton_Hover` copies that look:
-
-1. A solid panel, brown from `#543218` in the middle to `#7f5a25` at the ends. Its alpha is LE2's alpha times 12, up
-   to the full value, so the panel is solid wherever the art is.
-2. LE2's art on top, through the curve `BUTTON_BROWN`, with its alpha times 2.5.
-3. Gold in the lower part of the image, from row 43 down: a band 64 pixels wide along the cut corner, and the bottom
-   right corner. The gold starts at `#f0d264` and darkens toward the bottom edge.
-4. Each colour raised to the power 2.2.
-
-The colours of steps 1 to 3 are the ones seen on screen. Canvas, the engine's 2D drawing on the screen, raises the
-colours of a texture not marked as sRGB to the power 1/2.2. Step 4 undoes that in advance. The colours it leaves are so
-dark that DXT5 would show bands, so this texture is stored uncompressed (`--argb`).
-
-### The button's words and font
-
-The words on the button are text in the director's source: Mass Effect 2's wording in English, French, German,
-Italian, Spanish and Polish. The director draws them with the game's font `EngineFonts.LargeFont`, which it loads from
-the game at run time.
+Its words are Mass Effect 2's own, read once from LE2's talk files (strings 136218 Enter System, 260735 Enter Orbit and
+136916 Scan) and kept in `src/tlk` as strings 74220025 to 74220027, in each language. The build puts them in the mod's
+talk table packages with its other strings. They are game text, so they are not under the GPL either.
 
 ## The Community Patch settings page class
 
@@ -378,11 +346,10 @@ other packages hold only the mod's own work, and [how-it-works.md](how-it-works.
 - the cues of the variant that `FlightSound` picks, such as `c_flight5_whoosh`, `c_flight5_engine`, `c_flight5_drive`
   and `c_flight5_drive_system`;
 - `SR1_Normandy`, with its materials and textures;
-- `EngineTrail`, with its materials, the beam mesh and textures;
-- `EnterButton_Normal` and `EnterButton_Hover`.
+- `EngineTrail`, with its materials, the beam mesh and textures.
 
 A build puts all the packages in `dist/Galaxy Map Normandy/DLC_MOD_GalaxyMapNormandy/CookedPCConsole/`. The files made
-on the way stay in `build/sound` and `build/button`. The archive on Nexus Mods holds the same packages, from the
+on the way stay in `build/sound`. The archive on Nexus Mods holds the same packages, from the
 maintainer's build. Either way, the game content in the built packages is for personal use with a legitimate copy of
 the game.
 

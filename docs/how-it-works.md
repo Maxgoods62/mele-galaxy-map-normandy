@@ -12,9 +12,9 @@ The build makes these packages (`.pcc` files, which hold the game's objects):
 | Package | Holds | Loaded |
 |---|---|---|
 | `Startup_MOD_GalaxyMapNormandy` | the director, the ship light, the settings helper | at startup |
-| `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the mod's name and the settings strings, one per language code | at startup |
+| `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the mod's name, the settings strings and the button's words, one per language code | at startup |
 | `GalaxyMapNormandy_NOR10` | an empty level with one director actor | with the Normandy's levels |
-| `GalaxyMapNormandy_SFX` | the SR-1 mesh, the engine trail, the button art, the sound cues | by the director |
+| `GalaxyMapNormandy_SFX` | the SR-1 mesh, the engine trail, the sound cues | by the director |
 | `ModSettings_Submenus_GalaxyMapNormandy` | the settings pages | when the player opens them |
 
 `AutoLoad.ini` names the startup package and the talk table, the game's string table. Its `NameStrRef` is 74220000,
@@ -68,8 +68,12 @@ Anywhere else the stick starts on the first frame. At other levels, or when anot
 back and the arrow hides.
 
 The Enter Orbit button runs the test the game runs before it obeys the controller's A button. It stays hidden while
-the map is in controller mode. Its words are the Mass Effect 2 translations, picked by the game's own word on the A
-prompt (string 136218).
+the map is in controller mode. The button is the map's own Back button: each time the map opens, the director has the
+map's Scaleform movie make a copy of that symbol (`_root.attachMovie("backAnim", "gmnEnter", 999000)`). The copy brings
+LE1's art, hover look, fades and font (`$AeroLight`, which a font mod such as Myriad Pro Begone may change), and it sits
+in the movie's layers, so a window on top of the map covers it. No movie file is changed. The director sets the copy's
+place, words and frames through the panel, and tests the arrow against it in the movie's 1280 x 720 stage units. Its
+words are Mass Effect 2's, strings 74220025 to 74220027 of the mod's talk tables.
 
 ## The ship's light
 

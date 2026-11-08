@@ -19,7 +19,6 @@ DOTNET="${MELE_DOTNET:-dotnet.exe}"
 VGMSTREAM="${MELE_VGMSTREAM:-vgmstream-cli}"
 LE_DIR="${MELE_LE_DIR:?set MELE_LE_DIR to the Legendary Edition folder, as a Windows path}"
 LE1="$LE_DIR\\Game\\ME1\\BioGame\\CookedPCConsole"
-LE2="$LE_DIR\\Game\\ME2\\BioGame\\CookedPCConsole"
 LE3="$LE_DIR\\Game\\ME3\\BioGame\\CookedPCConsole"
 BUILD="$HERE/build"
 DIST="$HERE/dist/Galaxy Map Normandy"
@@ -35,11 +34,6 @@ LOOP_B=634254545
 SR1_UINDEX=31
 # BioVFX_Env_Galaxymap.Particles.Normandy_Engine_Trails in LE3's BioA_Nor_203aGalaxyMap.pcc.
 TRAIL_UINDEX=757
-# LE2's PC button in its Startup_INT.pcc, and ffmpeg curves of its brightness for the colours of LE1's buttons: the blue
-# of the galaxy map's Back button, and the art over the brown panel a button shows under the pointer (docs/ASSETS.md).
-BUTTON_ART=GUI_SF_PC_SharedAssets.PC_SharedAssets_I3
-BUTTON_BLUE="r='0/0.05 0.65/0.18 0.8/0.52':g='0/0.15 0.65/0.58 0.8/0.78':b='0/0.19 0.65/0.75 0.8/0.88'"
-BUTTON_BROWN="r='0/0.3 0.65/0.4 0.74/0.52 0.8/1':g='0/0.18 0.65/0.26 0.74/0.36 0.8/0.86':b='0/0.08 0.65/0.1 0.74/0.14 0.8/0.34'"
 
 win() { wslpath -w "$1"; }
 die() { echo "build.sh: $*" >&2; exit 1; }
@@ -53,7 +47,7 @@ command -v "$VGMSTREAM" >/dev/null || die "$VGMSTREAM not found: set MELE_VGMSTR
 
 # A build that stops leaves no stamp: the old one goes now, and the new one is written last (step 8).
 rm -f "$HERE/dist/build.stamp" "$HERE/dist/build.stamp.tmp"
-mkdir -p "$BUILD/tools" "$BUILD/sound" "$BUILD/button"
+mkdir -p "$BUILD/tools" "$BUILD/sound"
 
 # in_git <folder>: the folder is the top of a git checkout, not a copy of the sources or a folder inside another one.
 in_git() { [[ "$(git -C "$1" rev-parse --show-toplevel 2> /dev/null)" -ef "$1" ]]; }
@@ -265,7 +259,7 @@ while IFS=$'\t' read -r name file ch n vol mode; do
     ff -i "$V/$file" -c:a libvorbis -q:a 6 "$V/$name.ogg" < /dev/null
 done < "$V/manifest.tsv"
 
-# 6. GalaxyMapNormandy_SFX.pcc: the cues (on cloned LE1 donor cues), the SR-1 mesh and the button's two textures.
+# 6. GalaxyMapNormandy_SFX.pcc: the cues (on cloned LE1 donor cues), the SR-1 mesh and the engine trail.
 echo "== sfx"
 SFX="$(win "$BUILD/GalaxyMapNormandy_SFX.pcc")"
 rm -f "$BUILD/GalaxyMapNormandy_SFX.pcc"
@@ -291,29 +285,6 @@ if grep -E 'BROKEN' "$OUT"; then die "broken material in the SR-1 port"; fi
 # with ERROR on a broken material or on anything LE1 can't load.
 lectool portfx "$LE3\\BioA_Nor_203aGalaxyMap.pcc" "$TRAIL_UINDEX" "$SFX" EngineTrail
 grep -E '^[0-9]+	ParticleSystem	EngineTrail	' "$OUT" || die "no EngineTrail: the toolkit needs portfx, or export $TRAIL_UINDEX is not Normandy_Engine_Trails"
-# The button: LE2 shows it mirrored, with the cut corner at the bottom left (docs/ASSETS.md).
-B="$BUILD/button"
-rm -f "$B"/*
-LECGAME=LE2 lectool texpng "$LE2\\Startup_INT.pcc" "$BUTTON_ART" "$(win "$B/le2.png")"
-GREY=colorchannelmixer=.299:.587:.114:0:.299:.587:.114:0:.299:.587:.114:0
-# Under the pointer: a solid panel, lighter toward its ends, with gold along the cut corner and in the opposite corner.
-# These are the colours seen on screen. Canvas raises a texture's colours to 1/2.2 unless it is sRGB, so the last step
-# undoes that, which leaves colours so dark that DXT5 bands them: this image is stored uncompressed.
-ENDS='abs(2*X/W-1)'
-GOLD='gte(Y,43)*(between(X-4-1.264*(Y-43),0,64)+gte(X+1.264*(Y-43)-1017,0))'
-DOWN='(Y-43)/80'
-PANEL="geq=r='84+43*$ENDS':g='50+40*$ENDS':b='24+13*$ENDS':a='min(255,alpha(X,Y)*12)'"
-CORNERS="geq=r='if($GOLD,240-29*$DOWN,r(X,Y))':g='if($GOLD,210-56*$DOWN,g(X,Y))':b='if($GOLD,100-57*$DOWN,b(X,Y))':a='alpha(X,Y)'"
-UNDO="lutrgb=r='255*pow(val/255,2.2)':g='255*pow(val/255,2.2)':b='255*pow(val/255,2.2)'"
-button() {    # button <new name> <filters> [addtexture option]
-    ff -i "$B/le2.png" -filter_complex "[0:v]hflip,format=rgba,$2" -pix_fmt rgba "$B/$1.png"
-    lectool addtexture "$SFX" "$1" "$(win "$B/$1.png")" ${3:-}
-    # lectool exits 0 on a command it does not know.
-    grep -F "$1" "$OUT" || die "lectool added no $1: the toolkit needs addtexture"
-}
-button EnterButton_Normal "$GREY,curves=interp=pchip:$BUTTON_BLUE"
-button EnterButton_Hover "split[p][a];[p]$PANEL[p];[a]$GREY,curves=interp=pchip:$BUTTON_BROWN,lutrgb=a='min(255,val*2.5)'[a];[p][a]overlay=format=rgb,format=rgba,$CORNERS,$UNDO" --argb
-
 # 7. The M3 mod folder: the files of mod/ that git sees, the packages, and LICENSE and NOTICE in a LICENSE folder.
 # moddesc.ini's [UPDATES] section makes M3's deployment put the LICENSE folder and README.txt in the 7z beside the mod;
 # M3 never installs them into the game, and it refuses to load the mod when one is missing.

@@ -5,19 +5,20 @@ not affiliated with or endorsed by Electronic Arts or BioWare.
 
 The source repository contains no game files. Its own files (the UnrealScript sources, the strings in src/tlk, the
 mod's .ini, .m3cd and README.txt files, the scripts and the documentation) are under the GNU General Public License
-v3.0, in LICENSE.
+v3.0, in LICENSE. Strings 74220025 to 74220027 in src/tlk are the exception: they are Mass Effect 2's own words for its
+Enter System, Enter Orbit and Scan buttons, in each language, and they are not covered by the GPL.
 
 build.sh reads game files from an installed copy of Mass Effect Legendary Edition: the SR-1 Normandy model from LE1's
-BIOA_ICE20_11_LAY.pcc, two interface sound cues from LE1's snd_gui.pcc (used as templates), the Mass Effect 2 PC button
-art from LE2's Startup_INT.pcc, the Mass Effect 3 galaxy map travel sound from LE3's SFXGame.pcc, and the engine trail
-of the Mass Effect 3 galaxy map Normandy. The trail is Normandy_Engine_Trails, export 757 of LE3's
-BioA_Nor_203aGalaxyMap.pcc, with its beam mesh, materials and textures. One of those materials and four of the textures
-come from LE3's SFXGame.pcc and Startup.pcc. docs/ASSETS.md lists what it takes and what it does with each file.
+BIOA_ICE20_11_LAY.pcc, two interface sound cues from LE1's snd_gui.pcc (used as templates), the Mass Effect 3 galaxy map
+travel sound from LE3's SFXGame.pcc, and the engine trail of the Mass Effect 3 galaxy map Normandy. The trail is
+Normandy_Engine_Trails, export 757 of LE3's BioA_Nor_203aGalaxyMap.pcc, with its beam mesh, materials and textures. One
+of those materials and four of the textures come from LE3's SFXGame.pcc and Startup.pcc. docs/ASSETS.md lists what it
+takes and what it does with each file.
 
-The built packages contain content derived from those files: GalaxyMapNormandy_SFX.pcc holds the model, the engine
-trail, the button art and the sounds. That content is not covered by the GPL, and neither are Mass Effect 2's words for
-the Enter Orbit button in src/GalaxyMapNormandyDirector.uc. The game content in the built packages, in the archive on
-Nexus Mods or built by you, is for personal use with a legitimate copy of the game.
+The built packages contain content derived from those files: GalaxyMapNormandy_SFX.pcc holds the model, the engine trail
+and the sounds, and the string packages hold Mass Effect 2's words for the Enter Orbit button. That content is not
+covered by the GPL. The game content in the built packages, in the archive on Nexus Mods or built by you, is for
+personal use with a legitimate copy of the game.
 
 ModSettings_Submenus_GalaxyMapNormandy.pcc holds a compiled copy of the LE1 Community Patch's ModSettingsSubmenu class,
 as other mods' settings pages do. build.sh decompiles it at build time from the installed Community Patch's

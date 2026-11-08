@@ -5,8 +5,14 @@ became v1.0 with the changes marked v1.0 in that list. The version number is `mo
 
 ## Unreleased
 
-Two small fixes.
+The game's own Enter Orbit button, and two small fixes.
 
+- The Enter Orbit button (Enter System or Scan) is now LE1's own galaxy map button, the one the planet view shows as
+  Zoom Out. It has LE1's art, hover look and font, and it sits in the map's own layers, under the labels and rings.
+  Before, the mod drew a copy of LE2's button over the map with a font of its own: the panel was see-through at rest,
+  two layers showed while it changed to the hover look, and a mod that changes the interface font, such as Myriad Pro
+  Begone, did not change its words. The words are Mass Effect 2's, now in Russian and Japanese too. Reported on Nexus.
+- Building the mod no longer needs LE2: the button art is not read from it any more.
 - The Enter Orbit button (Enter System or Scan) reacts to the arrow you see. Before, it went by where the arrow was one
   frame earlier, so a click released just after the arrow left the button could still count.
 - The engine and drive sounds no longer cut out for a moment on a long flight with several quick slowdowns. They kept

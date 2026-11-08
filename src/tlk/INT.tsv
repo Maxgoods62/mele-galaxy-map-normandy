@@ -25,3 +25,8 @@
 74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, and the volume of its flight sound. The same for every save.
 74220023	Flight sound volume
 74220024	How loud the ship's flight sound is on the galaxy map, at both levels: the whoosh, the engine and the drive. 0 % turns it off.
+# The Enter button on the galaxy map: Mass Effect 2's own words in every language (LE2's strings 136218,
+# 260735 and 136916).
+74220025	Enter System
+74220026	Enter Orbit
+74220027	Scan

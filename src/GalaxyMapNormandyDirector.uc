@@ -9,11 +9,23 @@ Class GalaxyMapNormandyDirector extends Actor
 // vanilla galaxy map handler stays in place (a handler subclass broke zooming out of the planet view).
 // With the mouse it plays like ME2: an arrow pointer moves freely, and holding the left button flies the ship (the map
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
-// A mouse player also gets ME2's Enter Orbit button when the ship is on something the map can enter (UpdateEnterButton).
+// A mouse player also gets ME2's Enter System, Enter Orbit and Scan button when the ship is on something the map can
+// enter. It is LE1's own button, the Back button's symbol, put into the map's movie (UpdateEnterButton).
 // The player can scale speed, turn rate, response and size per level, and the flight sound volume, in LE1CP's Mod
 // Settings Menu (ReadSettings).
 // The flight sound is the variant that FlightSound names, or the original sound if that variant does not load. build.sh
 // builds only these two (SetupFlightSound, LoadFlightSound).
+
+// The Enter button's clip in the map's movie. SetEnterButton makes every change and the movie calls each one needs.
+enum EEnterButtonState
+{
+    EBS_None,
+    EBS_Hidden,
+    EBS_FadingOut,
+    EBS_Shown,
+    EBS_Hover,
+    EBS_Shrinking
+};
 
 var transient BioCameraBehaviorGalaxy GalaxyCam;
 var transient BioSFHandler_GalaxyMap Handler;
@@ -92,13 +104,22 @@ var transient float FlightVolumeScale;
 var transient float SpeedScale;
 var transient bool bMovementScaled;
 var transient float VanillaMovementScalar;
-var transient Texture2D ButtonNormal;
-var transient Texture2D ButtonHover;
-var transient Font ButtonFont;
-var transient string EnterLabel;
+var transient EEnterButtonState EnterState;
+var transient BioSFPanel ButtonPanel;
+var transient int ButtonAttaches;
+var transient float NextAttachTime;
+var transient string ShownLabel;
+var transient float ButtonWiden;
+var transient float ShrinkTime;
+var transient float FieldMid;
+var transient float FieldScale;
+var transient bool bPointerInButtonRect;
+var transient bool bHoverSoundDue;
+var transient string SystemText;
+var transient string OrbitText;
+var transient string ScanText;
 var transient bool bPointerOnButton;
 var transient bool bButtonPressed;
-var transient float ButtonFade;
 
 // Tuning; all can be changed live on this actor while the map is open.
 var float ShipScale;
@@ -174,17 +195,48 @@ var float MouseStickCluster;
 var float MouseStickSystem;
 var float ClickTime;
 var bool bEnterButton;
-var float ButtonWidth;
-var float ButtonHeight;
-var float ButtonBottom;
-var float ButtonFadeTime;
-var float ButtonTextScale;
-var float ButtonTextOffset;
-var Color ButtonText;
-var Color ButtonTextHover;
+// Where the button sits, in the movie's stage units (1280 x 720, shown whole and centred on the screen): ButtonCentreX
+// is the middle of the art, ButtonY the top of the clip. ButtonDepth is the clip's depth in the movie, read when the
+// clip is attached (each opening of the map): 999000 is under the map's labels and rings, as LE1's own buttons are,
+// 1500000 over them. The planet panel (2000000) covers either.
+var float ButtonCentreX;
+var float ButtonY;
+var int ButtonDepth;
+// A label wider than ButtonLabelRoom stage units widens the art, up to ButtonMaxWiden times (1 turns it off).
+var float ButtonLabelRoom;
+var float ButtonMaxWiden;
+// At most ButtonAttachTries attaches per opening of the map, ButtonAttachDelay seconds apart; then no button.
+var int ButtonAttachTries;
+var float ButtonAttachDelay;
+// The longest wait, in seconds, for the shrink back from the hover look to end.
+var float ButtonShrinkTime;
+var string ButtonHoverSound;
+// English words for when the mod's strings do not load (ReadLabels).
 var string OrbitLabel;
 var string SystemLabel;
 var string ScanLabel;
+// What the movie holds (GUI_SF_GalaxyMap's GalaxyMap movie, the same in LE1CP): the symbol of LE1's Back button and its
+// geometry in the clip's units. backAnim is a fade wrapper (frames fadeIn, solid, fadeOut, invisible) around backBtn
+// (normal, grow, mouseOn, shrink, mouseOff...), whose art is ButtonArtWidth x ButtonArtHeight at (ButtonArtLeft,
+// ButtonArtTop) from the clip's origin, the art's right edge. Its label is the text field backBtn.buttonText.text,
+// $AeroLight 12 in #66ccff, centred; ButtonFieldMid and ButtonFieldScale are its middle in its parent's units and its
+// _xscale, read again at each attach. backBtn stops on ButtonMouseOffFrame (_currentframe counts from 1) when its
+// shrink ends. ButtonFadeBackFrames gives, for each fadeOut frame (11 to 18), the fadeIn frame with about the same alpha,
+// so a fade out turned back fades in from where it was. LE1's clip has _yscale ButtonYScale. Change ButtonSymbol and
+// ButtonName with the map closed: a clip attached under the old name would stay in the movie.
+var string ButtonSymbol;
+var string ButtonName;
+var float ButtonArtLeft;
+var float ButtonArtTop;
+var float ButtonArtWidth;
+var float ButtonArtHeight;
+var float ButtonYScale;
+var float ButtonFieldMid;
+var float ButtonFieldScale;
+var int ButtonMouseOffFrame;
+var array<int> ButtonFadeBackFrames;
+var float StageWidth;
+var float StageHeight;
 
 // After the player controller has read this frame's input, before the camera moves the cursor (LimitMouse).
 public event function PostBeginPlay()
@@ -290,6 +342,7 @@ public event function Tick(float DeltaTime)
     }
     else
     {
+        HideEnterButton(TRUE);
         LimitMouse(DeltaTime);
     }
     Ship.SetDrawScale(Scale * Ring.DrawScale / 1.5);
@@ -1060,7 +1113,7 @@ public function PlaneAxes(out Vector X, out Vector Y, out Vector Z)
 // it on screen and draws an arrow there, like a desktop pointer that only the mouse moves. The ship's target is the
 // spot under it on the cursor's plane, found again every frame, so it follows the view while the system camera moves.
 // The pointer moves before the Enter button tests it, so a press or release in the next Tick (UpdatePointer) counts
-// where the player saw the arrow; the arrow is drawn after the button, so it stays on top.
+// where the player saw the arrow. The arrow draws over the movie, so over the button too.
 public function DrawPointer(BioHUD H)
 {
     local Canvas C;
@@ -1076,6 +1129,7 @@ public function DrawPointer(BioHUD H)
     local float Denom;
     local float Limit;
     local bool bArrow;
+    local bool bInRect;
 
     C = H.Canvas;
     if (C == None)
@@ -1104,10 +1158,17 @@ public function DrawPointer(BioHUD H)
         PointerScreenX = Spot.X / float(C.SizeX);
         PointerScreenY = Spot.Y / float(C.SizeY);
     }
-    if (EnterLabel != "")
+    bInRect = bArrow && bPointerPlaced && EnterState != EEnterButtonState.EBS_None && PointerOnEnterButton(C, Spot.X, Spot.Y);
+    if (bInRect && !bPointerInButtonRect)
     {
-        DrawEnterButton(C);
+        bHoverSoundDue = TRUE;
     }
+    else if (!bInRect)
+    {
+        bHoverSoundDue = FALSE;
+    }
+    bPointerInButtonRect = bInRect;
+    bPointerOnButton = bInRect && IsEnterButtonShown();
     if (!bArrow)
     {
         return;
@@ -1138,128 +1199,443 @@ public function DrawPointer(BioHUD H)
     }
 }
 
-// ME2's Enter Orbit button, for what the pad's A prompt offers. The test is the one native code runs before it obeys A:
-// m_pSelectedObject is the object the map cursor is in range of, bStatic or bTickIsDisabled mark one that cannot be
-// entered (an asteroid belt), and bHidden one still to be scanned, which a click scans instead (the pad's Y prompt). The
-// pad's prompts show while the panel is in gamepad mode, so the button stays away then. A mouse move alone does not end
-// that mode: a click or a key does.
+// ME2's Enter System, Enter Orbit and Scan button, for what the pad's A and Y prompts offer. The test is the one native
+// code runs before it obeys A: m_pSelectedObject is the object the map cursor is in range of, bStatic or bTickIsDisabled
+// mark one that cannot be entered (an asteroid belt), and bHidden one still to be scanned, which a click scans instead
+// (the pad's Y prompt). The button is LE1's own Back button: its symbol, attached to the map's movie at each opening
+// (EnsureEnterButton), brings LE1's art, $AeroLight label, hover look and fades, and sits in the movie's layers, so
+// windows on top of the map cover it. It fades out when the ship leaves what it was on. It hides at once while the map
+// zooms or is paused, while the panel is in gamepad mode (the pad's prompts show then; a mouse move alone does not end
+// that mode, a click or a key does) and whenever the pointer is released (ReleasePointer): another window has the focus
+// (the galaxy movie draws over the Mod Settings Menu's background), galaxy level, planet view, where LE1 shows its own
+// buttons. Under the arrow it grows to LE1's brown and gold with LE1's hover sound, as the movie's own buttons do, and
+// shrinks back once the arrow leaves. DrawPointer tests the arrow against it (bPointerOnButton).
 public function UpdateEnterButton(float DeltaTime)
 {
     local Actor Selected;
-    local float Step;
+    local string Label;
+    local bool bInstant;
 
-    Selected = GalaxyCam.m_pSelectedObject;
-    EnterLabel = "";
-    if (bEnterButton && Selected != None && !Selected.bStatic && !Selected.bTickIsDisabled && GalaxyCam.m_fZoomTime == 0.0 && !GalaxyCam.m_bPaused && !Handler.oPanel.bUsingGamepad)
+    if (!bEnterButton)
     {
-        EnterLabel = SystemLabel;
+        HideEnterButton(TRUE);
+        return;
+    }
+    EnsureEnterButton();
+    Selected = GalaxyCam.m_pSelectedObject;
+    bInstant = GalaxyCam.m_fZoomTime != 0.0 || GalaxyCam.m_bPaused || Handler.oPanel.bUsingGamepad;
+    if (!bInstant && Selected != None && !Selected.bStatic && !Selected.bTickIsDisabled)
+    {
+        Label = SystemText;
         if (GalaxyCam.m_nCurrentState == 3)
         {
-            EnterLabel = OrbitLabel;
+            Label = OrbitText;
         }
         if (Selected.bHidden)
         {
-            EnterLabel = ScanLabel;
+            Label = ScanText;
         }
     }
-    if (EnterLabel == "")
+    if (Label == "" || EnterState == EEnterButtonState.EBS_None)
     {
-        bPointerOnButton = FALSE;
+        HideEnterButton(bInstant);
+        return;
     }
-    Step = DeltaTime / ButtonFadeTime;
+    SetEnterLabel(Label);
     if (bPointerOnButton)
     {
-        ButtonFade = FMin(ButtonFade + Step, 1.0);
+        SetEnterButton(EEnterButtonState.EBS_Hover);
+    }
+    else if (EnterState == EEnterButtonState.EBS_Hover)
+    {
+        SetEnterButton(EEnterButtonState.EBS_Shrinking);
+    }
+    else if (EnterState == EEnterButtonState.EBS_Shrinking)
+    {
+        ShrinkTime += DeltaTime;
+        if (ShrinkEnded())
+        {
+            SetEnterButton(EEnterButtonState.EBS_Shown);
+        }
     }
     else
     {
-        ButtonFade = FMax(ButtonFade - Step, 0.0);
+        SetEnterButton(EEnterButtonState.EBS_Shown);
     }
 }
 
-// Drawn by DrawPointer after this frame's pointer move and before the arrow. As in ME2 the button sits at the bottom
-// centre. It fades from LE1's blue to the brown and gold of LE1's buttons under the pointer.
-public function DrawEnterButton(Canvas C)
+// Each opening of the map loads a new movie in a new panel, so the clip is attached again when the panel changes, and
+// again if it left the movie under the same panel. Both count against ButtonAttachTries per panel: a movie that refuses
+// the clip costs a few calls, then has no button.
+public function EnsureEnterButton()
 {
-    local Font OldFont;
-    local float Scale;
-    local float X;
-    local float Y;
-    local float Width;
-    local float Height;
-    local float PointerX;
-    local float PointerY;
-    local float TextWidth;
-    local float TextHeight;
-    local float TextScale;
+    local BioSFPanel Panel;
 
-    Scale = float(C.SizeY) / 1080.0;
-    Width = ButtonWidth * Scale;
-    Height = ButtonHeight * Scale;
-    X = (float(C.SizeX) - Width) / 2.0;
-    Y = float(C.SizeY) - (ButtonHeight + ButtonBottom) * Scale;
-    PointerX = PointerScreenX * float(C.SizeX);
-    PointerY = PointerScreenY * float(C.SizeY);
-    bPointerOnButton = bPointerActive && bPointerPlaced && PointerX >= X && PointerX <= X + Width && PointerY >= Y && PointerY <= Y + Height;
-    if (ButtonFade < 1.0)
+    Panel = Handler.oPanel;
+    if (Panel != ButtonPanel)
     {
-        C.SetDrawColor(255, 255, 255, byte(255.0 * (1.0 - ButtonFade)));
-        C.SetPos(X, Y);
-        C.DrawTile(ButtonNormal, Width, Height, 0.0, 0.0, float(ButtonNormal.SizeX), float(ButtonNormal.SizeY));
+        // The old panel is not the map's any more, so this makes no call on it.
+        SetEnterButton(EEnterButtonState.EBS_None);
+        ButtonPanel = Panel;
+        ButtonAttaches = 0;
+        NextAttachTime = 0.0;
     }
-    if (ButtonFade > 0.0)
+    if (Panel == None)
     {
-        C.SetDrawColor(255, 255, 255, byte(255.0 * ButtonFade));
-        C.SetPos(X, Y);
-        C.DrawTile(ButtonHover, Width, Height, 0.0, 0.0, float(ButtonHover.SizeX), float(ButtonHover.SizeY));
+        return;
     }
-    OldFont = C.Font;
-    C.Font = ButtonFont;
-    TextScale = ButtonTextScale * Scale;
-    C.StrLen(EnterLabel, TextWidth, TextHeight);
-    C.DrawColor = ButtonText;
-    if (bPointerOnButton)
+    if (EnterState != EEnterButtonState.EBS_None && !Panel.IsAvailable(ButtonPath()))
     {
-        C.DrawColor = ButtonTextHover;
+        LogInternal("Enter button: " $ ButtonPath() $ " left the map's movie", 'GalaxyMapNormandy');
+        SetEnterButton(EEnterButtonState.EBS_None);
     }
-    C.SetPos(X + (Width - TextWidth * TextScale) / 2.0 + ButtonTextOffset * Scale, Y + (Height - TextHeight * TextScale) / 2.0);
-    C.DrawText(EnterLabel, FALSE, TextScale, TextScale);
-    C.Font = OldFont;
+    if (EnterState != EEnterButtonState.EBS_None || !Panel.bInitialized || ButtonAttaches >= ButtonAttachTries
+        || WorldInfo.RealTimeSeconds < NextAttachTime)
+    {
+        return;
+    }
+    ButtonAttaches++;
+    NextAttachTime = WorldInfo.RealTimeSeconds + ButtonAttachDelay;
+    SetEnterButton(EEnterButtonState.EBS_Hidden);
 }
 
-// The button's words are ME2's own translations. No script call gives the game's language, so its word for the pad's A
-// prompt tells. The font behind DrawText has Latin-1 letters only: Polish goes without its accents, and Russian and
-// Japanese keep the English default. The compiler writes string literals as ASCII, hence the Chr calls.
+// The one place the button's state changes, with the movie calls of each change. Every call goes to the panel the clip
+// was attached to, and only while it is still the map's panel (LiveButtonPanel); without it the state drops to None
+// with no call, as the clip went with the movie.
+//   None: no clip. From a live panel the clip is hidden first, in case it is still there.
+//   Hidden: attached and not drawn. From None it attaches the clip (AttachEnterButton); else _visible off, at once.
+//   FadingOut: the wrapper's fadeOut, which stops at alpha 0. From Hidden it stays Hidden.
+//   Shown: from Hidden or FadingOut, drawn again with backBtn on its normal frame and the wrapper's fadeIn
+//     (ShowEnterButton); from Hover or Shrinking, backBtn on its normal frame.
+//   Hover: backBtn's grow (to brown and gold, label to white) and the hover sound; from hidden, shown first.
+//   Shrinking: backBtn's shrink, only from Hover. UpdateEnterButton moves it on to Shown when the shrink ends.
+public function SetEnterButton(EEnterButtonState NewState)
+{
+    local BioSFPanel Panel;
+    local EEnterButtonState OldState;
+
+    if (NewState == EnterState)
+    {
+        return;
+    }
+    OldState = EnterState;
+    Panel = LiveButtonPanel();
+    if (NewState == EEnterButtonState.EBS_None || Panel == None)
+    {
+        if (Panel != None && OldState != EEnterButtonState.EBS_Hidden)
+        {
+            Panel.SetClipVisibility(ButtonPath(), FALSE);
+        }
+        EnterState = EEnterButtonState.EBS_None;
+        ShownLabel = "";
+        ButtonWiden = 1.0;
+        ShrinkTime = 0.0;
+        bPointerOnButton = FALSE;
+        return;
+    }
+    if (OldState == EEnterButtonState.EBS_None)
+    {
+        if (NewState == EEnterButtonState.EBS_Hidden && AttachEnterButton(Panel))
+        {
+            EnterState = EEnterButtonState.EBS_Hidden;
+        }
+        return;
+    }
+    if (NewState == EEnterButtonState.EBS_Hidden)
+    {
+        Panel.SetClipVisibility(ButtonPath(), FALSE);
+        bPointerOnButton = FALSE;
+    }
+    else if (NewState == EEnterButtonState.EBS_FadingOut)
+    {
+        if (OldState == EEnterButtonState.EBS_Hidden)
+        {
+            return;
+        }
+        Panel.GotoLabelAndPlay(ButtonPath(), "fadeOut");
+        bPointerOnButton = FALSE;
+    }
+    else if (NewState == EEnterButtonState.EBS_Shown)
+    {
+        if (OldState == EEnterButtonState.EBS_Hidden || OldState == EEnterButtonState.EBS_FadingOut)
+        {
+            ShowEnterButton(Panel, OldState);
+        }
+        else
+        {
+            Panel.GotoLabelAndStop(ButtonPath() $ ".backBtn", "normal");
+            RestoreEnterLabel(Panel);
+        }
+    }
+    else if (NewState == EEnterButtonState.EBS_Hover)
+    {
+        if (OldState == EEnterButtonState.EBS_Hidden || OldState == EEnterButtonState.EBS_FadingOut)
+        {
+            ShowEnterButton(Panel, OldState);
+        }
+        Panel.GotoLabelAndPlay(ButtonPath() $ ".backBtn", "grow");
+        // Once per entry of the arrow (DrawPointer): a button that hides and shows again under a still arrow is quiet.
+        if (bHoverSoundDue)
+        {
+            bHoverSoundDue = FALSE;
+            Handler.PlayGuiSoundString(ButtonHoverSound);
+        }
+    }
+    else if (NewState == EEnterButtonState.EBS_Shrinking)
+    {
+        if (OldState != EEnterButtonState.EBS_Hover)
+        {
+            return;
+        }
+        Panel.GotoLabelAndPlay(ButtonPath() $ ".backBtn", "shrink");
+        ShrinkTime = 0.0;
+    }
+    EnterState = NewState;
+}
+
+// Hidden at once or faded out, if there is a clip at all.
+public function HideEnterButton(bool bInstant)
+{
+    bPointerOnButton = FALSE;
+    if (EnterState == EEnterButtonState.EBS_None)
+    {
+        return;
+    }
+    if (bInstant)
+    {
+        SetEnterButton(EEnterButtonState.EBS_Hidden);
+    }
+    else
+    {
+        SetEnterButton(EEnterButtonState.EBS_FadingOut);
+    }
+}
+
+// The panel the clip is in, while it is still the map's: a closed map's panel loses its movie, and Handler.oPanel turns
+// None (OnPanelRemoved) or names the next one.
+public function BioSFPanel LiveButtonPanel()
+{
+    if (ButtonPanel == None || Handler == None || Handler.oPanel != ButtonPanel)
+    {
+        return None;
+    }
+    return ButtonPanel;
+}
+
+public function string ButtonPath()
+{
+    return "_root." $ ButtonName;
+}
+
+public function bool IsEnterButtonShown()
+{
+    return EnterState == EEnterButtonState.EBS_Shown || EnterState == EEnterButtonState.EBS_Hover
+        || EnterState == EEnterButtonState.EBS_Shrinking;
+}
+
+// backBtn's shrink stops on its mouseOff frame (ButtonMouseOffFrame), which lacks the normal frame's border, so the
+// button then goes back to normal. The wait is capped (ButtonShrinkTime) in case the frame never reads back.
+public function bool ShrinkEnded()
+{
+    local BioSFPanel Panel;
+
+    Panel = LiveButtonPanel();
+    return Panel == None || ShrinkTime >= ButtonShrinkTime
+        || Panel.GetVariableInt(ButtonPath() $ ".backBtn._currentframe") >= ButtonMouseOffFrame;
+}
+
+// _root.attachMovie(ButtonSymbol, ButtonName, ButtonDepth) through the panel. The panel answers '' for a clip (tested
+// 2026-11-08), so the attach counts as done when the movie has a clip of that name at that path. The symbol plays its
+// own fadeIn, so the clip starts hidden. Nothing in the movie's script knows the clip: LE1's button manager drives only
+// the buttons it registered, so the hidden system cursor never hovers it. A clip with a name already in the movie would
+// replace that one; ButtonName is the mod's own.
+public function bool AttachEnterButton(BioSFPanel Panel)
+{
+    local array<ASParams> Args;
+    local string Field;
+
+    if (ButtonName == "")
+    {
+        return FALSE;
+    }
+    Args.Length = 3;
+    Args[0].Type = ASParamTypes.ASParam_String;
+    Args[0].sVar = ButtonSymbol;
+    Args[1].Type = ASParamTypes.ASParam_String;
+    Args[1].sVar = ButtonName;
+    Args[2].Type = ASParamTypes.ASParam_Integer;
+    Args[2].nVar = ButtonDepth;
+    Panel.InvokeMethodArgs("_root.attachMovie", Args);
+    if (!Panel.IsAvailable(ButtonPath()) || Panel.GetVariableString(ButtonPath() $ "._name") != ButtonName)
+    {
+        // Whatever the call left at that path goes, so no unplaced clip stays in the movie.
+        if (Panel.IsAvailable(ButtonPath()))
+        {
+            Panel.InvokeMethod(ButtonPath() $ ".removeMovieClip");
+        }
+        if (ButtonAttaches >= ButtonAttachTries)
+        {
+            LogInternal("Enter button: _root.attachMovie(" $ ButtonSymbol $ ", " $ ButtonName $ ", " $ ButtonDepth
+                $ ") made no clip in " $ ButtonAttaches $ " tries, no button in this map", 'GalaxyMapNormandy');
+        }
+        return FALSE;
+    }
+    Panel.SetClipVisibility(ButtonPath(), FALSE);
+    // The field's own scale and middle, before autoSize: autoSize keeps the middle where the field has it at each new
+    // text, and LayoutEnterLabel puts it back there after any change of scale.
+    Field = ButtonPath() $ ".backBtn.buttonText.text";
+    FieldScale = Panel.GetVariableFloat(Field $ "._xscale");
+    FieldMid = Panel.GetVariableFloat(Field $ "._x") + Panel.GetVariableFloat(Field $ "._width") / 2.0;
+    if (FieldScale <= 0.0 || FieldMid <= 0.0)
+    {
+        FieldScale = ButtonFieldScale;
+        FieldMid = ButtonFieldMid;
+    }
+    Panel.SetVariableString(Field $ ".autoSize", "center");
+    ShownLabel = "";
+    ButtonWiden = 1.0;
+    PlaceEnterButton(Panel);
+    LogInternal("Enter button: " $ ButtonPath() $ " attached at depth " $ ButtonDepth $ ", label field middle " $ FieldMid
+        $ ", _xscale " $ FieldScale, 'GalaxyMapNormandy');
+    return TRUE;
+}
+
+// From hidden: placed again (so tunables changed live apply), drawn again, backBtn back to its normal frame, then the
+// wrapper's 0.3 s fadeIn, which stops on its solid frame. A fade out still under way turns back from the fadeIn frame
+// of about the same alpha (ButtonFadeBackFrames), so a selection that drops for a moment does not make it blink.
+public function ShowEnterButton(BioSFPanel Panel, EEnterButtonState OldState)
+{
+    local array<ASParams> Args;
+    local int Frame;
+
+    PlaceEnterButton(Panel);
+    Panel.SetClipVisibility(ButtonPath(), TRUE);
+    Panel.GotoLabelAndStop(ButtonPath() $ ".backBtn", "normal");
+    RestoreEnterLabel(Panel);
+    if (OldState == EEnterButtonState.EBS_FadingOut)
+    {
+        Frame = Panel.GetVariableInt(ButtonPath() $ "._currentframe") - 11;
+        if (Frame >= 0 && Frame < ButtonFadeBackFrames.Length)
+        {
+            Args.Length = 1;
+            Args[0].Type = ASParamTypes.ASParam_Integer;
+            Args[0].nVar = ButtonFadeBackFrames[Frame];
+            Panel.InvokeMethodArgs(ButtonPath() $ ".gotoAndPlay", Args);
+            return;
+        }
+    }
+    Panel.GotoLabelAndPlay(ButtonPath(), "fadeIn");
+}
+
+// The art's middle on ButtonCentreX, ButtonWiden times as wide.
+public function PlaceEnterButton(BioSFPanel Panel)
+{
+    Panel.SetVariableFloat(ButtonPath() $ "._xscale", 100.0 * ButtonWiden);
+    Panel.SetVariableFloat(ButtonPath() $ "._yscale", ButtonYScale);
+    Panel.SetClipLocation(ButtonPath(), EnterButtonX(), ButtonY);
+}
+
+// The clip's x: its origin is the art's right edge.
+public function float EnterButtonX()
+{
+    return ButtonCentreX - ButtonWiden * (ButtonArtLeft + ButtonArtWidth / 2.0);
+}
+
+// Set only when it changes: the movie keeps it while the clip is hidden.
+public function SetEnterLabel(string Label)
+{
+    local BioSFPanel Panel;
+
+    Panel = LiveButtonPanel();
+    if (Panel != None && EnterState != EEnterButtonState.EBS_None && Label != ShownLabel)
+    {
+        LayoutEnterLabel(Panel, Label);
+    }
+}
+
+// The label goes into the field as plain text, and the field's autoSize fits the field to it. A label wider than
+// ButtonLabelRoom (the longest French and German words) widens the whole clip a little through its _xscale; the field
+// gets the inverse scale, so the letters keep their shape. Then the field's middle goes back to FieldMid, every time:
+// autoSize keeps the middle the field had before the new text, which a change of scale moved. Only our clip and the
+// field are scaled: LE1's timelines tween backBtn (the fades) and buttonText (the hover colour), and a clip that script
+// moves or scales no longer follows its timeline. textWidth is in the field's own units, _x and _width in its parent's.
+public function LayoutEnterLabel(BioSFPanel Panel, string Label)
+{
+    local string Field;
+    local float Width;
+    local float Widen;
+
+    Field = ButtonPath() $ ".backBtn.buttonText.text";
+    Panel.SetVariableString(Field $ ".text", Label);
+    Width = Panel.GetVariableFloat(Field $ ".textWidth") * FieldScale / 100.0;
+    Widen = 1.0;
+    if (ButtonLabelRoom > 0.0)
+    {
+        Widen = FClamp(Width / ButtonLabelRoom, 1.0, FMax(ButtonMaxWiden, 1.0));
+    }
+    Panel.SetVariableFloat(Field $ "._xscale", FieldScale / Widen);
+    Panel.SetVariableFloat(Field $ "._x", FieldMid - Panel.GetVariableFloat(Field $ "._width") / 2.0);
+    ShownLabel = Label;
+    if (Widen != ButtonWiden)
+    {
+        LogInternal("Enter button: '" $ Label $ "' is " $ Width $ " units wide, art widened " $ Widen $ " times",
+            'GalaxyMapNormandy');
+        ButtonWiden = Widen;
+        PlaceEnterButton(Panel);
+    }
+}
+
+// After a jump back to backBtn's normal frame. Flash keeps a child that the frame also holds, so the label stays; if
+// this movie rebuilt the field instead, it would show the movie's own word, so the label is laid out again.
+public function RestoreEnterLabel(BioSFPanel Panel)
+{
+    if (ShownLabel != "" && Panel.GetVariableString(ButtonPath() $ ".backBtn.buttonText.text.text") != ShownLabel)
+    {
+        LayoutEnterLabel(Panel, ShownLabel);
+    }
+}
+
+// Whether the arrow's tip (screen pixels) is on the art. The movie shows its 1280 x 720 stage whole, as large as the
+// screen allows and centred (showAll), so the tip goes to stage units first.
+public function bool PointerOnEnterButton(Canvas C, float PointerX, float PointerY)
+{
+    local float Scale;
+    local float StageX;
+    local float StageY;
+    local float Left;
+    local float Top;
+
+    Scale = FMin(float(C.SizeX) / StageWidth, float(C.SizeY) / StageHeight);
+    if (Scale <= 0.0)
+    {
+        return FALSE;
+    }
+    StageX = (PointerX - (float(C.SizeX) - StageWidth * Scale) / 2.0) / Scale;
+    StageY = (PointerY - (float(C.SizeY) - StageHeight * Scale) / 2.0) / Scale;
+    Left = EnterButtonX() + ButtonWiden * ButtonArtLeft;
+    Top = ButtonY + ButtonYScale / 100.0 * ButtonArtTop;
+    return StageX >= Left && StageX <= Left + ButtonWiden * ButtonArtWidth && StageY >= Top
+        && StageY <= Top + ButtonYScale / 100.0 * ButtonArtHeight;
+}
+
+// The button's words are Mass Effect 2's own, from the mod's strings (src/tlk), so the game's language picks them and
+// the movie's font draws every one of them. The English defaults stand in if the strings did not load.
 public function ReadLabels()
 {
-    switch (Left(string(stringref(136218)), 4))
+    SystemText = string($74220025);
+    OrbitText = string($74220026);
+    ScanText = string($74220027);
+    if (SystemText == "")
     {
-        case "Voya":
-            OrbitLabel = "Entrer dans l'orbite";
-            SystemLabel = "Entrer dans le syst" $ Chr(232) $ "me";
-            ScanLabel = "Scanner";
-            break;
-        case "Reis":
-            OrbitLabel = "Umlaufbahn anfliegen";
-            SystemLabel = "System anfliegen";
-            ScanLabel = "Scannen";
-            break;
-        case "Viag":
-            OrbitLabel = "Entra nell'orbita";
-            SystemLabel = "Entra nel sistema";
-            ScanLabel = "Scansione";
-            break;
-        case "Viaj":
-            OrbitLabel = "Entrar en " $ Chr(243) $ "rbita";
-            SystemLabel = "Entrar en el sistema";
-            ScanLabel = "Explorar";
-            break;
-        case "Podr":
-            OrbitLabel = "Wejdz na orbite";
-            SystemLabel = "Przejdz do ukladu";
-            ScanLabel = "Skanuj";
-            break;
-        default:
+        SystemText = SystemLabel;
+    }
+    if (OrbitText == "")
+    {
+        OrbitText = OrbitLabel;
+    }
+    if (ScanText == "")
+    {
+        ScanText = ScanLabel;
     }
 }
 
@@ -1388,10 +1764,10 @@ public function ReleasePointer()
     PendingMouseY = 0.0;
     bHeadingSet = FALSE;
     FlySpeed = 0.0;
-    EnterLabel = "";
-    bPointerOnButton = FALSE;
     bButtonPressed = FALSE;
-    ButtonFade = 0.0;
+    bPointerInButtonRect = FALSE;
+    bHoverSoundDue = FALSE;
+    HideEnterButton(TRUE);
 }
 
 // The movie's "you are here" marker (ship outline and ring, one clip) makes no sense next to a ship that flies, so it is
@@ -1629,15 +2005,7 @@ public function bool SpawnShip()
         ShipMesh = StaticMesh(DynamicLoadObject("GalaxyMapNormandy_SFX.SR1_Normandy", Class'StaticMesh'));
     }
     LoadFlightSound();
-    if (ButtonFont == None)
-    {
-        ButtonNormal = Texture2D(DynamicLoadObject("GalaxyMapNormandy_SFX.EnterButton_Normal", Class'Texture2D'));
-        ButtonHover = Texture2D(DynamicLoadObject("GalaxyMapNormandy_SFX.EnterButton_Hover", Class'Texture2D'));
-        // By name: Engine.GetLargeFont hands back the small font, as the game's ini sets it.
-        ButtonFont = Font(DynamicLoadObject("EngineFonts.LargeFont", Class'Font'));
-        bEnterButton = bEnterButton && ButtonNormal != None && ButtonHover != None && ButtonFont != None;
-        ReadLabels();
-    }
+    ReadLabels();
     if (ShipMesh == None)
     {
         return FALSE;
@@ -1740,6 +2108,10 @@ public function SetRingMeshHidden(bool bNewHidden)
 
 public function Cleanup()
 {
+    // The button drops to None, which hides the clip only while its panel is still the map's (LiveButtonPanel): once the
+    // map is closed, the movie and the clip are gone and no call is made. Then the panel is forgotten.
+    SetEnterButton(EEnterButtonState.EBS_None);
+    ButtonPanel = None;
     ShowRing();
     ReleasePointer();
     UnregisterPointerDraw();
@@ -1856,17 +2228,32 @@ defaultproperties
     MouseStickSystem = 0.85
     ClickTime = 0.25
     bEnterButton = TRUE
-    ButtonWidth = 307.0
-    ButtonHeight = 49.0
-    ButtonBottom = 54.0
-    ButtonFadeTime = 0.3
-    ButtonTextScale = 0.5
-    ButtonTextOffset = 8.0
-    ButtonText = {R = 102, G = 204, B = 255, A = 255}
-    ButtonTextHover = {R = 255, G = 255, B = 255, A = 255}
+    ButtonCentreX = 640.0
+    ButtonY = 655.1
+    ButtonDepth = 999000
+    ButtonLabelRoom = 135.0
+    ButtonMaxWiden = 1.25
+    ButtonAttachTries = 3
+    ButtonAttachDelay = 1.0
+    ButtonShrinkTime = 1.0
+    ButtonHoverSound = "PCMouseHover"
     OrbitLabel = "Enter Orbit"
     SystemLabel = "Enter System"
     ScanLabel = "Scan"
+    ButtonSymbol = "backAnim"
+    ButtonName = "gmnEnter"
+    ButtonArtLeft = -188.0
+    ButtonArtTop = 1.2
+    ButtonArtWidth = 187.8
+    ButtonArtHeight = 26.9
+    ButtonYScale = 103.0
+    ButtonFieldMid = 55.75
+    ButtonFieldScale = 107.2
+    ButtonMouseOffFrame = 20
+    ButtonFadeBackFrames = (6, 4, 3, 3, 2, 2, 1, 1)
+    StageWidth = 1280.0
+    StageHeight = 720.0
+    ButtonWiden = 1.0
     SpeedScale = 1.0
     TickGroup = ETickingGroup.TG_PostAsyncWork
 }

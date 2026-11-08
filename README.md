@@ -85,8 +85,8 @@ every save and apply the next time the map opens. Details: [docs/using.md](docs/
 ## Credits
 
 - BioWare and Electronic Arts, for Mass Effect Legendary Edition. The built mod holds content read from your games:
-  the SR-1 model from LE1, the PC button art from LE2, the travel sound and engine trail from LE3 and two LE1 interface
-  sounds used as templates ([docs/ASSETS.md](docs/ASSETS.md)).
+  the SR-1 model from LE1, the travel sound and engine trail from LE3 and two LE1 interface sounds used as templates
+  ([docs/ASSETS.md](docs/ASSETS.md)). The Enter Orbit button is LE1's own galaxy map button, with Mass Effect 2's words.
 - The LE1 Community Patch team, for the Sideloader and the Mod Settings Menu. The mod's settings pages include a copy
   of that menu's page code.
 - ME3Tweaks, for M3 and [Legendary Explorer](https://github.com/ME3Tweaks/LegendaryExplorer), whose core library the

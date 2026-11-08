@@ -60,7 +60,9 @@ one level to another.
 A click on the button counts when you let go on it, however long you hold it. If you move the arrow off the button
 before you let go, nothing happens. A press on the button never flies the ship.
 
-The button is blue. Under the arrow it turns brown and gold, like the game's own buttons, and its words turn white.
+It is the game's own button: the one LE1 shows in planet view, with the game's font. Under the arrow it turns brown
+and gold and its words turn white, as on the game's other buttons. A mod that changes the game's interface font, such as
+Myriad Pro Begone, changes the button's font too.
 
 #### Languages of the button
 
@@ -73,10 +75,11 @@ The words are the ones Mass Effect 2 uses in each language. The mod follows the 
 | German | System anfliegen | Umlaufbahn anfliegen | Scannen |
 | Italian | Entra nel sistema | Entra nell'orbita | Scansione |
 | Spanish | Entrar en el sistema | Entrar en órbita | Explorar |
-| Polish | Przejdz do ukladu | Wejdz na orbite | Skanuj |
+| Polish | Przejdź do układu | Wejdź na orbitę | Skanuj |
+| Russian | Вход в систему | Выход на орбиту | Сканирование |
+| Japanese | 星系に進入 | 軌道に入る | スキャン |
 
-The font that draws the button has Western European letters only. So the Polish words go without their accents, and
-Russian and Japanese games show the English words.
+The longest words, such as the French Entrer dans le système, make the button a little wider.
 
 ### Controller
 
@@ -158,7 +161,6 @@ Your choices apply the next time you open the galaxy map.
   moves under it. Mass Effect 2 keeps that view still.
 - What is selected follows the map cursor, which the mod hides. The ship eases after the cursor, so on a fast move the
   highlight can change a moment before the ship gets there.
-- In Russian and Japanese games the Enter Orbit button shows English words. In Polish games its words have no accents.
 - The mod has not been tested with other galaxy map mods.
 
 ## If something is wrong

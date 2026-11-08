@@ -333,39 +333,53 @@ Flight speed setting scales this too, through the game's cursor speed. With `bVi
 
 ### Enter Orbit button
 
-The button sits at the bottom centre of the screen. It shows when the ship is on something the map can enter, as the
-controller's A prompt does. It stays hidden while the game shows the controller prompts, and those stay until you
-click or press a key. Moving the mouse alone does not end them.
+The button is LE1's own galaxy map button, the Zoom Out button of the planet view. Each time the map opens, the
+director attaches a copy of it into the map's Flash movie and gives it its words. The movie draws it with its own art,
+hover look and font, so a mod that changes the game's interface font changes the button too. It shows when the ship is
+on something the map can enter, as the controller's A prompt does. It stays hidden while the game shows the controller
+prompts, and those stay until you click or press a key. Moving the mouse alone does not end them.
 
 | Value | Default | Unit | What it does |
 |---|---|---|---|
 | `bEnterButton` | `TRUE` | on or off | Shows the button |
-| `ButtonWidth` | `307.0` | pixels | Button width |
-| `ButtonHeight` | `49.0` | pixels | Button height |
-| `ButtonBottom` | `54.0` | pixels | Gap below the button |
-| `ButtonFadeTime` | `0.3` | seconds | Fade to the hover look and back |
-| `ButtonTextScale` | `0.5` | factor | Label size |
-| `ButtonTextOffset` | `8.0` | pixels | Moves the label right of centre |
-| `ButtonText` | `{R = 102, G = 204, B = 255, A = 255}` | colour | Label colour, light blue |
-| `ButtonTextHover` | `{R = 255, G = 255, B = 255, A = 255}` | colour | Label colour under the pointer, white |
-| `OrbitLabel` | `"Enter Orbit"` | text | Label in system view |
-| `SystemLabel` | `"Enter System"` | text | Label at cluster level |
-| `ScanLabel` | `"Scan"` | text | Label on something still to scan |
+| `ButtonCentreX` | `640.0` | stage units | Middle of the button, across |
+| `ButtonY` | `655.1` | stage units | Top of the button |
+| `ButtonDepth` | `999000` | depth | Layer in the movie |
+| `ButtonLabelRoom` | `135.0` | stage units | Widest label that fits the button |
+| `ButtonMaxWiden` | `1.25` | factor | Most the button widens for a longer label |
+| `ButtonAttachTries` | `3` | count | Tries to attach the button each time the map opens |
+| `ButtonAttachDelay` | `1.0` | seconds | Wait between two tries |
+| `ButtonShrinkTime` | `1.0` | seconds | Longest wait for the hover look to shrink back |
+| `ButtonHoverSound` | `"PCMouseHover"` | sound | Plays when the arrow moves onto the button |
+| `OrbitLabel` | `"Enter Orbit"` | text | Label in system view if the mod's strings do not load |
+| `SystemLabel` | `"Enter System"` | text | Label at cluster level if the mod's strings do not load |
+| `ScanLabel` | `"Scan"` | text | Label on something still to scan if the mod's strings do not load |
 
-The director turns `bEnterButton` off if the button's textures or its font do not load. It checks this the first
-time it makes the ship after the level loads.
+The movie's stage is 1280 by 720 units. The game shows it whole and centred on the screen, so at 1920 by 1080 a unit
+is 1.5 pixels. With `ButtonY` 655.1 the button sits just above the bottom edge.
+
+`ButtonDepth` 999000 puts the button under the map's labels and rings, as LE1's own buttons are. 1500000 puts it over
+them. The planet view's panel covers it either way. The director reads `ButtonDepth` when it attaches the button, so
+close the map and open it again to see a change. It places the button again each time it shows it, so a change to
+`ButtonCentreX` or `ButtonY` shows the next time the button appears.
+
+A label wider than `ButtonLabelRoom` makes the button wider, up to `ButtonMaxWiden` times, and squeezes the words
+into it if they are wider still. `ButtonMaxWiden` 1 keeps the button at its normal width.
+
+If the button is not in the movie after `ButtonAttachTries` tries, there is no button until the map opens again. The
+game log then has a line that starts with `Enter button:`.
 
 A press on the button counts only if you also release it on the button, however long you hold it. A click there does
 what the A prompt does. On something still to scan, it scans.
 
-The hover look is the brown and gold panel, and the normal look is blue. The label is drawn with the font
-`EngineFonts.LargeFont`, and `ButtonTextScale` scales it. `ButtonTextOffset` moves the label right, away from the
-button's cut corner at the bottom left.
+The words are the mod's strings 74220025 (Enter System), 74220026 (Enter Orbit) and 74220027 (Scan), in the game's text
+language. They hold Mass Effect 2's words for these buttons. The director reads them when it makes the ship.
+`OrbitLabel`, `SystemLabel` and `ScanLabel` are used only when a string does not load.
 
-The labels hold the English words. In French, German, Italian, Spanish and Polish games, the director replaces them
-with that language's words when it first makes the ship after the level loads. Russian and Japanese games keep the
-English words, because the font has Latin letters only. So a new default label shows only in English, Russian and
-Japanese games.
+The rest of the button's values describe LE1's movie: `ButtonSymbol`, `ButtonName`, `ButtonArtLeft`, `ButtonArtTop`,
+`ButtonArtWidth`, `ButtonArtHeight`, `ButtonYScale`, `ButtonFieldMid`, `ButtonFieldScale`, `ButtonMouseOffFrame` and
+`ButtonFadeBackFrames`. Leave them as they are. The comment above them in `src/GalaxyMapNormandyDirector.uc` says what
+each one is.
 
 ### Heading model (`bVirtualStick` off)
 

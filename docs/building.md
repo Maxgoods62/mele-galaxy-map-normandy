@@ -14,7 +14,7 @@ files. In this repo it writes only into `build/` and `dist/`, which git ignores.
 | .NET 8 runtime, x64, for Windows | Running lectool and mele-mcp |
 | vgmstream | Decoding the LE3 sounds |
 | A git clone of the toolkit, with its submodule | lectool and mele-mcp, the build's tools |
-| LE1, LE2 and LE3 in one Legendary Edition folder | The build reads files from all three games. |
+| LE1 and LE3 in one Legendary Edition folder | The build reads files from both games. |
 | LE1 Community Patch 2.0 or later, installed in LE1 | The settings pages are built on its Mod Settings Menu. |
 
 Python needs only its standard library, and ffmpeg needs the `libvorbis` encoder. The .NET 10 SDK does not include
@@ -23,8 +23,8 @@ the .NET 8 runtime. The first build downloads NuGet packages, so it needs networ
 
 ### Game files
 
-The build reads `BIOA_ICE20_11_LAY.pcc` and `snd_gui.pcc` from LE1, `Startup_INT.pcc` from LE2, and `SFXGame.pcc`,
-`Startup.pcc` and `BioA_Nor_203aGalaxyMap.pcc` from LE3. Each one is in `Game\ME<n>\BioGame\CookedPCConsole` in the
+The build reads `BIOA_ICE20_11_LAY.pcc` and `snd_gui.pcc` from LE1, and `SFXGame.pcc`, `Startup.pcc` and
+`BioA_Nor_203aGalaxyMap.pcc` from LE3. Each one is in `Game\ME<n>\BioGame\CookedPCConsole` in the
 Legendary Edition folder. From the Community Patch folder, `Game\ME1\BioGame\DLC\DLC_MOD_LE1CP`, it reads
 `CookedPCConsole\ModSettingsMenu.pcc` and `_metacmm.txt`. [ASSETS.md](ASSETS.md#files-the-build-reads) says what it does
 with each one.
@@ -98,10 +98,10 @@ time.
 | `== building <tool>` | `build/tools/lectool/`, `build/tools/mele-mcp/` | The two tools, when rebuilt |
 | `== classes` | `build/Startup_MOD_GalaxyMapNormandy.pcc` | The mod's classes, loaded at game start |
 | `== menu` | `build/ModSettings_Submenus_GalaxyMapNormandy.pcc` | The settings pages |
-| `== strings` | `build/tlk/` | The mod's name and the menu's text, 13 packages |
+| `== strings` | `build/tlk/` | The mod's name, the menu's text and the button's words, 13 packages |
 | `== level` | `build/GalaxyMapNormandy_NOR10.pcc` | A small level that holds the director |
 | `== sound` | `build/sound/` | The travel sound and the flight sound waves |
-| `== sfx` | `build/GalaxyMapNormandy_SFX.pcc` | The sound cues, the SR-1 model, the engine trail and the button art |
+| `== sfx` | `build/GalaxyMapNormandy_SFX.pcc` | The sound cues, the SR-1 model and the engine trail |
 | `== dist` | `dist/Galaxy Map Normandy/` | The M3 mod folder |
 | None, last | `dist/build.stamp` | What the build was made from |
 
@@ -112,7 +112,7 @@ each file must have exactly the ids of `INT.tsv`.
 
 The flight sound waves belong to the variant that `FlightSound` names. That value is in the defaultproperties block,
 the class defaults at the end of `src/GalaxyMapNormandyDirector.uc`. With `FlightSound = 0` the build makes none.
-[ASSETS.md](ASSETS.md#flight-sound-variants) says how the sounds, the model and the button art are made.
+[ASSETS.md](ASSETS.md#flight-sound-variants) says how the sounds and the model are made.
 
 `build/` also keeps each step's work files. `build/lectool.out` holds the output of the last lectool command that
 worked. The last command's raw output, even if it failed, is in `build/lectool.out.raw`, and its log in
@@ -211,7 +211,7 @@ are released, and how to check a download.
   or later in the game that `MELE_LE_DIR` names. If it is there, the lines above say why mele-mcp failed.
 - `note: no LE1 Community Patch version ...`: the build can't read `_metacmm.txt`, so the stamp says `le1cp=unknown`.
   Check the patch install.
-- `lectool wrote no <language> strings`, `lectool added no <texture>` or `lectool gave <cue> no wave of its own`: the
+- `lectool wrote no <language> strings` or `lectool gave <cue> no wave of its own`: the
   toolkit is older than the mod. Check out `TOOLKIT_COMMIT`.
 - `level_new failed`: mele-mcp's reply is printed above it and kept in `build/level_new.json`.
 - `SFXGame.pcc export 53327 is not the Wwise_Generic_Galaxy_Map bank` or `WEM <id> was not in the bank`: the build
