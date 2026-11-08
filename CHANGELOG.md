@@ -3,6 +3,15 @@
 The builds under "Development builds" were made for testing between 2026-10-28 and 2026-11-06. The last of them, v0.27,
 became v1.0 with the changes marked v1.0 in that list. The version number is `modver` in `mod/moddesc.ini`.
 
+## Unreleased
+
+Two small fixes.
+
+- The Enter Orbit button (Enter System or Scan) reacts to the arrow you see. Before, it went by where the arrow was one
+  frame earlier, so a click released just after the arrow left the button could still count.
+- The engine and drive sounds no longer cut out for a moment on a long flight with several quick slowdowns. They kept
+  playing while the ship slowed, but that time was not counted, so their next restart could come after the sound ended.
+
 ## v1.2 (2026-11-08)
 
 A volume setting for the flight sound.

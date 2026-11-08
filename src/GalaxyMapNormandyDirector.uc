@@ -425,6 +425,7 @@ public function UpdateFlightSound(float DeltaTime)
 {
     local float Alpha;
     local bool bSystem;
+    local bool bSlow;
 
     bSystem = GalaxyCam != None && GalaxyCam.m_nCurrentState == 3;
     if (!bFlying)
@@ -465,21 +466,30 @@ public function UpdateFlightSound(float DeltaTime)
         return;
     }
     RestTime = 0.0;
-    if (LastSpeed < MoveSpeedStop)
+    bSlow = LastSpeed < MoveSpeedStop;
+    if (bSlow)
     {
         SlowTime += DeltaTime;
         if (SlowTime >= StopDelay)
         {
             StopFlying();
+            return;
         }
-        return;
     }
-    SlowTime = 0.0;
-    // Like ME3's thrust RTPC: the loops get higher and louder as the ship goes faster.
+    else
+    {
+        SlowTime = 0.0;
+    }
+    // Like ME3's thrust RTPC: the loops get higher and louder as the ship goes faster. While the ship is slow they keep
+    // their pitch and volume, but they still play, so their age runs on: a restart left for later would come after the
+    // end of the wave.
     Alpha = SpeedAlpha(bSystem);
     if (LoopSound != None && PlayingLoopCue != None)
     {
-        ShapeLoop(LoopSound, LoopCurve, Alpha, LoopPitchMin, LoopPitchMax, LoopVolumeMin, LoopVolumeMax);
+        if (!bSlow)
+        {
+            ShapeLoop(LoopSound, LoopCurve, Alpha, LoopPitchMin, LoopPitchMax, LoopVolumeMin, LoopVolumeMax);
+        }
         LoopAge += DeltaTime * LoopSound.PitchMultiplier;
         if (bLoopRestart && LoopAge >= LoopRestartTime)
         {
@@ -489,7 +499,10 @@ public function UpdateFlightSound(float DeltaTime)
     }
     if (Loop2Sound != None && PlayingLoop2Cue != None)
     {
-        ShapeLoop(Loop2Sound, Loop2Curve, Alpha, Loop2PitchMin, Loop2PitchMax, Loop2VolumeMin, Loop2VolumeMax);
+        if (!bSlow)
+        {
+            ShapeLoop(Loop2Sound, Loop2Curve, Alpha, Loop2PitchMin, Loop2PitchMax, Loop2VolumeMin, Loop2VolumeMax);
+        }
         Loop2Age += DeltaTime * Loop2Sound.PitchMultiplier;
         if (bLoopRestart && Loop2Age >= LoopRestartTime)
         {
@@ -1046,6 +1059,8 @@ public function PlaneAxes(out Vector X, out Vector Y, out Vector Z)
 // Drawn by BioHUD.DrawHUD every frame (after the camera update): moves the pointer by the mouse counts on screen, keeps
 // it on screen and draws an arrow there, like a desktop pointer that only the mouse moves. The ship's target is the
 // spot under it on the cursor's plane, found again every frame, so it follows the view while the system camera moves.
+// The pointer moves before the Enter button tests it, so a press or release in the next Tick (UpdatePointer) counts
+// where the player saw the arrow; the arrow is drawn after the button, so it stays on top.
 public function DrawPointer(BioHUD H)
 {
     local Canvas C;
@@ -1060,34 +1075,43 @@ public function DrawPointer(BioHUD H)
     local float Scale;
     local float Denom;
     local float Limit;
+    local bool bArrow;
 
     C = H.Canvas;
-    if (C != None && EnterLabel != "")
-    {
-        DrawEnterButton(C);
-    }
-    if (C == None || GalaxyCam == None || Ring == None || !bPointerActive || GalaxyCam.m_nCurrentState < 2 || GalaxyCam.m_nCurrentState > 3)
+    if (C == None)
     {
         return;
     }
+    bArrow = GalaxyCam != None && Ring != None && bPointerActive && GalaxyCam.m_nCurrentState >= 2 && GalaxyCam.m_nCurrentState <= 3;
     Scale = float(C.SizeY) / 1080.0;
-    // Kept as a fraction of the screen, so a resolution change does not throw it off.
-    if (!bPointerPlaced)
+    if (bArrow)
     {
-        Screen = C.Project(Ring.Location);
-        PointerScreenX = Screen.X / float(C.SizeX);
-        PointerScreenY = Screen.Y / float(C.SizeY);
-        bPointerPlaced = TRUE;
+        // Kept as a fraction of the screen, so a resolution change does not throw it off.
+        if (!bPointerPlaced)
+        {
+            Screen = C.Project(Ring.Location);
+            PointerScreenX = Screen.X / float(C.SizeX);
+            PointerScreenY = Screen.Y / float(C.SizeY);
+            bPointerPlaced = TRUE;
+        }
+        // PointerGain 1 moves the arrow 1 pixel per raw count at 1080p, as a desktop pointer without acceleration.
+        Spot.X = PointerScreenX * float(C.SizeX) + PendingMouseX * PointerGain * PointerSignX * Scale;
+        Spot.Y = PointerScreenY * float(C.SizeY) + PendingMouseY * PointerGain * PointerSignY * Scale;
+        PendingMouseX = 0.0;
+        PendingMouseY = 0.0;
+        Spot.X = FClamp(Spot.X, PointerMargin * Scale, float(C.SizeX) - PointerMargin * Scale);
+        Spot.Y = FClamp(Spot.Y, PointerMargin * Scale, float(C.SizeY) - PointerMargin * Scale);
+        PointerScreenX = Spot.X / float(C.SizeX);
+        PointerScreenY = Spot.Y / float(C.SizeY);
     }
-    // PointerGain 1 moves the arrow 1 pixel per raw count at 1080p, as a desktop pointer without acceleration.
-    Spot.X = PointerScreenX * float(C.SizeX) + PendingMouseX * PointerGain * PointerSignX * Scale;
-    Spot.Y = PointerScreenY * float(C.SizeY) + PendingMouseY * PointerGain * PointerSignY * Scale;
-    PendingMouseX = 0.0;
-    PendingMouseY = 0.0;
-    Spot.X = FClamp(Spot.X, PointerMargin * Scale, float(C.SizeX) - PointerMargin * Scale);
-    Spot.Y = FClamp(Spot.Y, PointerMargin * Scale, float(C.SizeY) - PointerMargin * Scale);
-    PointerScreenX = Spot.X / float(C.SizeX);
-    PointerScreenY = Spot.Y / float(C.SizeY);
+    if (EnterLabel != "")
+    {
+        DrawEnterButton(C);
+    }
+    if (!bArrow)
+    {
+        return;
+    }
     DrawArrow(C, Spot.X, Spot.Y, PointerSize * Scale);
     // The virtual stick: a full pad deflection when the arrow is StickRadius pixels from the ship, more further out (up
     // to MouseStickCluster/System), less closer, so the ship slows into the arrow as with a stick eased back. Screen
@@ -1153,9 +1177,8 @@ public function UpdateEnterButton(float DeltaTime)
     }
 }
 
-// Drawn before the arrow, so the arrow stays on top; the arrow's own move this frame reaches the hover test next frame.
-// As in ME2 the button sits at the bottom centre. It fades from LE1's blue to the brown and gold of LE1's buttons under the
-// pointer.
+// Drawn by DrawPointer after this frame's pointer move and before the arrow. As in ME2 the button sits at the bottom
+// centre. It fades from LE1's blue to the brown and gold of LE1's buttons under the pointer.
 public function DrawEnterButton(Canvas C)
 {
     local Font OldFont;
