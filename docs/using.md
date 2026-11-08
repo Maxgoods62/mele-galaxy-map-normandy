@@ -99,7 +99,8 @@ mouse move alone does not.
 ## Sound
 
 A whoosh plays each time the ship sets off. While the ship flies, an engine and a drive play. They get higher and louder
-as the ship goes faster, and they fade out when it stops. When you close the map, all of the sound fades out.
+as the ship goes faster, and they fade out when it stops. When you close the map, all of the sound fades out. The
+Flight sound volume setting sets how loud all three are.
 
 ## Settings
 
@@ -110,12 +111,13 @@ Community Patch, and the mod's row is on its first page.
 
 ### The settings page
 
-The page has four settings for cluster level, the same four for system view, and Restore defaults. The rows carry the
-level in their names, such as Cluster: flight speed and System: flight speed. Each setting shows its value on the
-right, such as 100 %.
+The page has Flight sound volume first, then four settings for cluster level, the same four for system view, and
+Restore defaults. The rows carry the level in their names, such as Cluster: flight speed and System: flight speed. Each
+setting shows its value on the right, such as 100 %.
 
 | Setting | What it changes |
 |---|---|
+| Flight sound volume | how loud the whoosh, the engine and the drive are, at both levels |
 | Flight speed | how fast the ship and the map cursor move |
 | Turn rate | how fast the ship's nose turns toward where it flies |
 | Ship response | how closely the ship follows the map cursor |
@@ -132,7 +134,9 @@ Each setting opens a list of steps: 50 %, 75 %, 100 %, 125 %, 150 % and 200 %. 1
 marked (default). For the flight speed, 100 % is slower than in the normal game. The step in use is green and marked
 Current, and the list opens on it. Pick a step to use it. Back returns to the settings page.
 
-Restore defaults, the last row of the page, sets all eight settings back to 100 %.
+Flight sound volume has its own list, from 0 % to 140 % in steps of 10 %. 0 % turns the flight sound off.
+
+Restore defaults, the last row of the page, sets all nine settings back to 100 %.
 
 ### Languages of the pages
 

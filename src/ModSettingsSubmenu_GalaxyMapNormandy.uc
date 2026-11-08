@@ -17,6 +17,7 @@ public function bool OnRefreshMenu(Object outerMenu)
 
     S = Class'GalaxyMapNormandySettings';
     menuItems.Length = 0;
+    AddSetting(S.default.FlightVolumeId, $74220023, $74220024);
     AddSetting(S.default.ClusterSpeedId, $74220001, $74220002);
     AddSetting(S.default.ClusterTurnId, $74220003, $74220004);
     AddSetting(S.default.ClusterResponseId, $74220005, $74220006);

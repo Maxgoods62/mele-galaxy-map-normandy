@@ -21,4 +21,6 @@
 74220019	Zmiany widać po ponownym otwarciu mapy.
 74220020	(domyślne)
 74220021	Aktualne
-74220022	Prędkość lotu, szybkość obrotu, reakcja i rozmiar statku na mapie galaktyki, na poziomie gromady i w widoku systemu. Wspólne dla wszystkich zapisów.
+74220022	Prędkość lotu, szybkość obrotu, reakcja i rozmiar statku na mapie galaktyki, na poziomie gromady i w widoku systemu, oraz głośność dźwięku lotu. Wspólne dla wszystkich zapisów.
+74220023	Głośność dźwięku lotu
+74220024	Dostosowuje głośność dźwięku statku na mapie galaktyki, na obu poziomach: świst przy starcie, silnik i napęd. Przy 0 % dźwięk jest wyłączony.

@@ -24,8 +24,9 @@ to open Installation Information. Remove DLC_MOD_GalaxyMapNormandy from the
 list of installed DLC mods.
 
 Settings: pause the game, open Mod Settings and pick Galaxy Map Normandy. You
-can set the ship's flight speed, turn rate, response and size. Your choices
-hold for every save and apply the next time the map opens.
+can set the ship's flight speed, turn rate, response and size, and the volume
+of its flight sound. Your choices hold for every save and apply the next time
+the map opens.
 
 Source code and documentation:
 https://github.com/Maxgoods62/mele-galaxy-map-normandy

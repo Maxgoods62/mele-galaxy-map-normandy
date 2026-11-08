@@ -21,4 +21,6 @@
 74220019	Effet à la prochaine ouverture de la carte.
 74220020	(par défaut)
 74220021	Actuel
-74220022	Vitesse de vol et de rotation, réactivité et taille du vaisseau sur la carte de la galaxie, au niveau du secteur et du système. Paramètres communs à toutes les sauvegardes.
+74220022	Vitesse de vol et de rotation, réactivité et taille du vaisseau sur la carte de la galaxie, au niveau du secteur et du système, et volume du son de vol. Paramètres communs à toutes les sauvegardes.
+74220023	Volume du son de vol
+74220024	Règle le volume du son du vaisseau sur la carte de la galaxie, aux deux niveaux : le souffle, le moteur et la propulsion. À 0 %, le son est coupé.

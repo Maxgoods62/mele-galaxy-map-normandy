@@ -94,10 +94,12 @@ sound does. [tuning.md](tuning.md#engines) has the values.
 
 ## Settings
 
-Each choice is a percent of the director's default. `GalaxyMapNormandySettings` stores it in slots 100 to 107 of the
-gamer profile's `IntStats` list, a list of whole numbers. Slots 100 to 103 hold the cluster flight speed, turn rate,
-ship response and ship size, and slots 104 to 107 hold the same four for system view. The game has one profile, so a
-choice holds for every career and save. LE1CP keeps its FOV in slot 0. A slot that is 0 or missing means 100 %.
+Each choice is a percent of the director's default. `GalaxyMapNormandySettings` stores it in slots 100 to 107 and 109
+of the gamer profile's `IntStats` list, a list of whole numbers. Slots 100 to 103 hold the cluster flight speed, turn
+rate, ship response and ship size, and slots 104 to 107 hold the same four for system view. Slot 109 holds the flight
+sound volume plus 1, so that 0 % can be stored. Slot 108 held a setting of a test build: nothing reads it, and Restore
+defaults clears it. The game has one profile, so a choice holds for every career and save. LE1CP keeps its FOV in slot
+0. A slot that is 0 or missing means 100 %.
 
 The game writes the profile file only now and then, so the menu writes it after each change, as the Options screen
 does. It never saves a profile the game has not read from disk yet, as that would replace the player's options and
@@ -108,7 +110,7 @@ base class is LE1CP's `ModSettingsSubmenu`. The menu package carries a copy of i
 patch's own class ([ASSETS.md](ASSETS.md#the-community-patch-settings-page-class)).
 
 The strings are in [`src/tlk/`](../src/tlk), one file for each of the eight languages. Each line is a string id, a
-tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220022, and they
+tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220024, and they
 start with 7422, the mod's mount. Every file must have exactly the ids of `INT.tsv`, or the build stops. 74220000 is
 the mod's name, for `NameStrRef` in `AutoLoad.ini`. The page classes use a string as `$<id>`, and the row that the
 `.m3cd` adds uses 74220022 for its description. To add a string, give it the next free id in all eight files. The
@@ -122,7 +124,8 @@ The build makes LE1 sound cues from the ME3 galaxy map travel sound. It always m
 
 ME2 and ME3 play this sound through Wwise, which pitches and filters it live. LE1 plays sound through ISACT, so
 `flight_sounds.py` bakes the fixed pitch, filters and reverb into the variant's waves. The director sets pitch and
-volume from the ship's speed. If a variant's cue doesn't load, the director plays the original sound.
+volume from the ship's speed, and the Flight sound volume setting scales that volume. If a variant's cue doesn't
+load, the director plays the original sound.
 
 A flight starts with a whoosh. The loops rise with speed, and fade out once the ship stops or the map closes. ISACT
 plays a loop wave once, so the director restarts each loop with a crossfade. [tuning.md](tuning.md) has the values.

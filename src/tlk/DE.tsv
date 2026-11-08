@@ -21,4 +21,6 @@
 74220019	Gilt ab dem nächsten Öffnen der Karte.
 74220020	(Standard)
 74220021	Aktuell
-74220022	Fluggeschwindigkeit, Drehgeschwindigkeit, Reaktion und Größe des Schiffs auf der Galaxie-Karte, auf Cluster- und System-Ebene. Gilt für alle Spielstände.
+74220022	Fluggeschwindigkeit, Drehgeschwindigkeit, Reaktion und Größe des Schiffs auf der Galaxie-Karte, auf Cluster- und System-Ebene, und die Lautstärke seines Fluggeräuschs. Gilt für alle Spielstände.
+74220023	Fluggeräusch: Lautstärke
+74220024	Legt fest, wie laut das Fluggeräusch des Schiffs auf der Galaxie-Karte ist, auf beiden Ebenen: das Zischen beim Start, das Triebwerk und der Antrieb. Bei 0 % ist es aus.

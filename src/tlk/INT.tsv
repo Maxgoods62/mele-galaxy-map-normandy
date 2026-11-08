@@ -22,4 +22,6 @@
 74220019	Changes show the next time the map opens.
 74220020	(default)
 74220021	Current
-74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view. The same for every save.
+74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, and the volume of its flight sound. The same for every save.
+74220023	Flight sound volume
+74220024	How loud the ship's flight sound is on the galaxy map, at both levels: the whoosh, the engine and the drive. 0 % turns it off.

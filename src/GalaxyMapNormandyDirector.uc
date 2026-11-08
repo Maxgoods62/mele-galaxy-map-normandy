@@ -10,7 +10,8 @@ Class GalaxyMapNormandyDirector extends Actor
 // With the mouse it plays like ME2: an arrow pointer moves freely, and holding the left button flies the ship (the map
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
 // A mouse player also gets ME2's Enter Orbit button when the ship is on something the map can enter (UpdateEnterButton).
-// The player can scale speed, turn rate, response and size per level in LE1CP's Mod Settings Menu (ReadSettings).
+// The player can scale speed, turn rate, response and size per level, and the flight sound volume, in LE1CP's Mod
+// Settings Menu (ReadSettings).
 // The flight sound is the variant that FlightSound names, or the original sound if that variant does not load. build.sh
 // builds only these two (SetupFlightSound, LoadFlightSound).
 
@@ -87,6 +88,7 @@ var transient float SystemSpeedScale;
 var transient float SystemTurnScale;
 var transient float SystemResponseScale;
 var transient float SystemSizeScale;
+var transient float FlightVolumeScale;
 var transient float SpeedScale;
 var transient bool bMovementScaled;
 var transient float VanillaMovementScalar;
@@ -513,6 +515,7 @@ public function PlayWhoosh(bool bSystem)
         Pitch = WhooshSystemPitch;
         Volume = WhooshSystemVolume;
     }
+    Volume *= FlightVolumeScale;
     if (WhooshSound != None)
     {
         Ending = WhooshSound;
@@ -540,7 +543,10 @@ public function float SpeedAlpha(bool bSystem)
 }
 
 // Curve 0 is a straight line between the multipliers (the original sound). Curves 1 and 2 are Wwise's Log3 and Sine
-// curves, run on the pitch in cents and the volume in dB, as Wwise runs an RTPC curve.
+// curves, run on the pitch in cents and the volume in dB, as Wwise runs an RTPC curve. The player's flight sound volume
+// scales the result, never the tuning values, so 0 % gives a gain of 0 (silent) and the curve's log stays defined. LE1
+// caps cue volume times component volume at 1.0 per sound. At 140 % Bright thrusters (loop cues 0.5, whoosh 0.678) and
+// the original sound (0.5) stay under it; the whoosh of variant 2 reaches it at about 136 % and of variant 3 at 118 %.
 public function ShapeLoop(AudioComponent Sound, int Curve, float Alpha, float PitchMin, float PitchMax, float VolumeMin,
     float VolumeMax)
 {
@@ -549,7 +555,7 @@ public function ShapeLoop(AudioComponent Sound, int Curve, float Alpha, float Pi
     if (Curve == 0)
     {
         Sound.PitchMultiplier = Lerp(PitchMin, PitchMax, Alpha);
-        Sound.VolumeMultiplier = Lerp(VolumeMin, VolumeMax, Alpha);
+        Sound.VolumeMultiplier = Lerp(VolumeMin, VolumeMax, Alpha) * FlightVolumeScale;
         return;
     }
     T = Alpha;
@@ -562,11 +568,12 @@ public function ShapeLoop(AudioComponent Sound, int Curve, float Alpha, float Pi
         T = Sin(Alpha * 1.5707964);
     }
     Sound.PitchMultiplier = PitchMin * Exp(T * Loge(PitchMax / PitchMin));
-    Sound.VolumeMultiplier = VolumeMin * Exp(T * Loge(VolumeMax / VolumeMin));
+    Sound.VolumeMultiplier = VolumeMin * Exp(T * Loge(VolumeMax / VolumeMin)) * FlightVolumeScale;
 }
 
 // ISACT plays a loop wave once (neither the cue's SoundNodeLooping nor the loop flag of the wave's sound event makes
-// it repeat), so start it again on a second component and crossfade.
+// it repeat), so start it again on a second component and crossfade. Ending's VolumeMultiplier already holds the
+// player's flight sound volume (ShapeLoop), so it is copied as it is.
 public function RestartLoop(out AudioComponent Current, out AudioComponent Old, SoundCue Cue)
 {
     local AudioComponent Ending;
@@ -765,6 +772,7 @@ public function ReadSettings()
     SystemTurnScale = S.static.GetMultiplier(S.default.SystemTurnId);
     SystemResponseScale = S.static.GetMultiplier(S.default.SystemResponseId);
     SystemSizeScale = S.static.GetMultiplier(S.default.SystemSizeId);
+    FlightVolumeScale = float(S.static.GetShownPercent(S.default.FlightVolumeId)) / 100.0;
     SetupFlightSound(FlightSound);
     bSettingsRead = TRUE;
 }
@@ -1782,6 +1790,7 @@ defaultproperties
     WhooshSystemPitch = 1.0
     WhooshClusterVolume = 1.0
     WhooshSystemVolume = 1.0
+    FlightVolumeScale = 1.0
     Loop2PitchMin = 1.0
     Loop2PitchMax = 1.0
     Loop2VolumeMin = 1.0

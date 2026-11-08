@@ -21,4 +21,6 @@
 74220019	Verás los cambios al volver a abrir el mapa.
 74220020	(predeterminado)
 74220021	Actual
-74220022	Velocidad de vuelo y de giro, respuesta y tamaño de la nave en el mapa de la galaxia, en el nivel del cúmulo y en el del sistema. Para todas las partidas.
+74220022	Velocidad de vuelo y de giro, respuesta y tamaño de la nave en el mapa de la galaxia, en el nivel del cúmulo y en el del sistema, y volumen del sonido de vuelo. Para todas las partidas.
+74220023	Volumen del sonido de vuelo
+74220024	Volumen del sonido de la nave en el mapa de la galaxia, en ambos niveles: el silbido al arrancar, el motor y la propulsión. Al 0 % se desactiva.

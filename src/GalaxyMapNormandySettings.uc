@@ -3,8 +3,11 @@ Class GalaxyMapNormandySettings extends Object
 
 // The player's choices from the Galaxy Map Normandy page of LE1CP's Mod Settings Menu (pause wheel, Mod Settings). They
 // live in the gamer profile's IntStats list (saved in Save\ME1\PROFILE\GamerProfile.pcsav), so one choice holds for
-// every career and save. LE1CP keeps its FOV there, in slot 0; this mod uses slots 100 to 107, far from the low slots
-// LE1CP would take next. Each value is a percent of the director's default; 0 or no slot means 100.
+// every career and save. LE1CP keeps its FOV there, in slot 0; this mod uses slots 100 to 107 and 109, far from the low
+// slots LE1CP would take next. Each value is a percent of the director's default; 0 or no slot means 100. Slot 109, the
+// flight sound volume, holds its percent plus 1 so that 0 % can be stored (the Sound Settings mod stores its volumes the
+// same way): read and write it through GetShownPercent and SetShownPercent. Slot 108 held the flight sound pick of the
+// v0.25 test build; nothing reads it, and Restore defaults clears it.
 // Compiled into the startup package for the director, and copied into the menu package for its pages.
 
 var int ClusterSpeedId;
@@ -15,6 +18,8 @@ var int SystemSpeedId;
 var int SystemTurnId;
 var int SystemResponseId;
 var int SystemSizeId;
+var int FlightVolumeId;
+var int RetiredFlightSoundId;
 
 public static function BioGamerProfile GetProfile()
 {
@@ -61,6 +66,38 @@ public static function float GetMultiplier(int Id)
         return 1.0;
     }
     return float(Percent) / 100.0;
+}
+
+// The percent a setting shows and the director uses: 100 for no choice, and the flight sound volume decoded from its
+// percent + 1 (a value out of range also gives 100).
+public static function int GetShownPercent(int Id)
+{
+    local int Stored;
+
+    Stored = GetPercent(Id);
+    if (Id == default.FlightVolumeId)
+    {
+        if (Stored <= 0 || Stored > 201)
+        {
+            return 100;
+        }
+        return Stored - 1;
+    }
+    if (Stored <= 0)
+    {
+        return 100;
+    }
+    return Stored;
+}
+
+// Stores a percent as GetShownPercent reads it back.
+public static function bool SetShownPercent(int Id, int Percent)
+{
+    if (Id == default.FlightVolumeId)
+    {
+        return SetPercent(Id, Percent + 1);
+    }
+    return SetPercent(Id, Percent);
 }
 
 // A profile not read from disk yet has an empty IntStats list (LE1CP's LoadIntStats always leaves one slot) or no careers
@@ -135,7 +172,8 @@ public static function ResetAll()
     if (SetPercent(default.ClusterSpeedId, 0) && SetPercent(default.ClusterTurnId, 0)
         && SetPercent(default.ClusterResponseId, 0) && SetPercent(default.ClusterSizeId, 0)
         && SetPercent(default.SystemSpeedId, 0) && SetPercent(default.SystemTurnId, 0)
-        && SetPercent(default.SystemResponseId, 0) && SetPercent(default.SystemSizeId, 0))
+        && SetPercent(default.SystemResponseId, 0) && SetPercent(default.SystemSizeId, 0)
+        && SetPercent(default.FlightVolumeId, 0) && SetPercent(default.RetiredFlightSoundId, 0))
     {
         SaveProfile();
     }
@@ -151,4 +189,6 @@ defaultproperties
     SystemTurnId = 105
     SystemResponseId = 106
     SystemSizeId = 107
+    RetiredFlightSoundId = 108
+    FlightVolumeId = 109
 }

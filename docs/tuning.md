@@ -5,15 +5,15 @@ The director is the actor that runs the ship, its sound and the mouse while the 
 on this page is a property of that class, and its default is in the `defaultproperties` block at the end of the file.
 
 You can try a value in a running game, where the change lasts for a while. To keep it, you change its default and
-build the mod again. The eight in-game settings work on top of some of these values.
+build the mod again. The nine in-game settings work on top of some of these values.
 
 Speeds are in the game's distance units per second. Sizes in pixels are for a screen 1080 pixels high, and they scale
 with the height of your screen.
 
 ## In-game settings
 
-The Galaxy Map Normandy page of the Mod Settings Menu has four settings for each map level. Each one multiplies a
-director value.
+The Galaxy Map Normandy page of the Mod Settings Menu has four settings for each map level, and Flight sound volume for
+both. Each one multiplies a director value.
 
 | Setting | At cluster level | In system view |
 |---|---|---|
@@ -21,8 +21,10 @@ director value.
 | Turn rate | `TurnSpeed` | `SystemTurnSpeed` |
 | Ship response | `ChaseSpeed` | `SystemChaseSpeed` |
 | Ship size | `ShipScale` | `SystemShipScale` |
+| Flight sound volume | the flight sound's volume ([Sound](#sound)) | the same |
 
-Each setting is a percent of the default: 50, 75, 100, 125, 150 or 200. The director reads the eight settings once,
+Each setting is a percent of the default: 50, 75, 100, 125, 150 or 200, and Flight sound volume 0 to 140 in steps of
+10. The director reads the nine settings once,
 each time the map opens. It multiplies a value by its setting whenever it uses the value, and never writes the result
 back. So a value you change in a running game still gets the setting on top. [using.md](using.md) shows the settings
 pages and says where the game keeps them.
@@ -230,6 +232,12 @@ The loops and the whoosh start on every start of a flight. A whoosh still playin
 over `LoopFadeOut`. Set `RestBeforeSound` above 0 to play the whoosh only after the ship has rested that long.
 After the map changes level, the first start always plays it.
 
+The Flight sound volume setting, `FlightVolumeScale`, multiplies the volume the director gives the whoosh and the
+loops, after the speed curve. It never changes the values in these tables. LE1 plays no sound louder than its wave:
+the cue's volume times the sound's volume stops at 1.0. With Bright thrusters (loop cues 0.5, whoosh 0.678) and the
+original sound (cues 0.5), every step up to 140 % still makes each sound louder. Other variants have louder cues: the
+whoosh of variant 2 stops getting louder at about 136 % at cluster level, and that of variant 3 at about 118 %.
+
 The loops follow the ship's speed as a share of full speed. The speed scale multiplies `FullSpeed`. In system view,
 `SystemFullSpeed` takes its place when it is above 0. Variants 1 to 5 set it to `FlightSystemFullSpeed`, because the
 ship flies far slower in system view. They copy it when the map opens, so a live change to `FlightSystemFullSpeed`
@@ -404,6 +412,7 @@ its level loads again.
 | `SpeedScale` | The speed scale of the current map level |
 | `ClusterSpeedScale`, `ClusterTurnScale`, `ClusterResponseScale`, `ClusterSizeScale` | The cluster settings as multipliers |
 | `SystemSpeedScale`, `SystemTurnScale`, `SystemResponseScale`, `SystemSizeScale` | The system settings as multipliers |
+| `FlightVolumeScale` | The flight sound volume as a multiplier, 0.0 to 1.4 |
 | `bFlying` | `true` while the ship counts as flying |
 | `FlySpeed` | Speed of the heading model, in units/s |
 | `VirtualStickX`, `VirtualStickY` | The virtual stick before its cap (1 is a full stick) |
