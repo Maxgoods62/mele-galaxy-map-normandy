@@ -3,7 +3,9 @@
 The builds under "Development builds" were made for testing between 2026-10-28 and 2026-11-06. The last of them, v0.27,
 became v1.0 with the changes marked v1.0 in that list. The version number is `modver` in `mod/moddesc.ini`.
 
-## Unreleased
+## v1.5 (2026-11-10)
+
+Picking another cluster is now the jump, and the ship takes far less memory.
 
 - At galaxy level, picking another cluster is now the jump. The Normandy leaves dock if it is docked, the mass relay
   movie plays, and the map comes back at cluster level with the ship at that cluster's relay system. There is no travel
