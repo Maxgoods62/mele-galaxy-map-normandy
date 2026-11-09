@@ -109,7 +109,7 @@ The `.uc` files in `src/` are UnrealScript, the game's script language. mele-mcp
 from your installed Community Patch into `build/ModSettingsSubmenu.uc`
 ([ASSETS.md](ASSETS.md#the-community-patch-settings-page-class)). The strings come from `src/tlk/<language>.tsv`, and
 each file must have exactly the ids of `INT.tsv`. Each package holds the talk tables `GlobalTlk_tlk` and
-`GlobalTlk_tlk_M`, both with every id ([how-it-works.md](how-it-works.md#translate-the-mod)).
+`GlobalTlk_tlk_M`, both with every id ([translating.md](translating.md)).
 
 The flight sound waves belong to the variant that `FlightSound` names. That value is in the defaultproperties block,
 the class defaults at the end of `src/GalaxyMapNormandyDirector.uc`. With `FlightSound = 0` the build makes none.

@@ -17,8 +17,8 @@ became v1.0 with the changes marked v1.0 in that list. The version number is `mo
   same way. String 74220020 is no longer used.
 - If the Enter Orbit button's words are missing from the strings, the game log says so when the English words stand
   in.
-- The docs list every string id and the files for each language code, for translation mods
-  ([docs/how-it-works.md](docs/how-it-works.md#translate-the-mod)).
+- A new page for translators, [docs/translating.md](docs/translating.md), tells how to make a mod that translates this
+  one: the string ids, the files for each language code and the mount to beat.
 
 ## v1.3 (2026-11-08)
 

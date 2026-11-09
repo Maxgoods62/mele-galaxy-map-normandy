@@ -149,7 +149,7 @@ translation of it yet, so it reads Galaxy Map Normandy. The percents follow the 
 French shows 100 %, the other languages 100%. No native speaker has reviewed the translations.
 
 A translation mod can replace every word of the pages and of the Enter button. The string ids and the files are in
-[how-it-works.md](how-it-works.md#translate-the-mod).
+[translating.md](translating.md).
 
 ### Where your choices are kept
 
