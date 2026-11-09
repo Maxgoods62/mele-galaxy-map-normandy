@@ -4,41 +4,28 @@ This page is for modders who want Galaxy Map Normandy in their own language. Eve
 name included, is a string in its talk files, so a translation needs no change to the mod. A translation is your own
 mod: you ship it, and this mod never includes your text.
 
-## What a translation mod holds
+[Translating my mods](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/docs/translating.md) says how to
+build that mod in LE1. Galaxy Map Normandy is a mod with talk files: your mod holds copies of its files for your
+language, under the same names, at a mount above 7422 that no other mod uses.
 
-The mod has one file of talk tables per language code. A translation mod holds new copies of the files of its
-language, with the same names, in a DLC folder of its own that LE1 mounts above this mod. When two DLC folders hold a
-file of the same name, LE1 loads the copy from the higher mount.
+## What a translation mod holds
 
 1. Take this mod's files for your language from `DLC_MOD_GalaxyMapNormandy/CookedPCConsole`, in the mod's download or
    in your game's `BioGame/DLC` folder ([the files](#the-files)).
 2. Open each file in Legendary Explorer and replace the text of the ids you translate, in both of its talk tables,
    `GlobalTlk_tlk` and `GlobalTlk_tlk_M`.
-3. Make a DLC folder `DLC_MOD_<Name>`, where `<Name>` is your mod's name without spaces (M3's Starter Kit can make it).
-   Its `AutoLoad.ini` needs:
-
-   ```ini
-   [ME1DLCMOUNT]
-   ModName=<Name>
-   ModMount=<mount>
-   ```
-
-   `<mount>` is a number above 7422, this mod's mount, that no other mod uses. With a lower mount the game keeps this
-   mod's text, and nothing says so.
-4. Put your files in its `CookedPCConsole`, with exactly the names of the files they replace.
-5. Install your mod with M3, with the game closed. Galaxy Map Normandy stays installed.
-
-Your file replaces this mod's file whole: a string you leave out shows the text of your file, not this mod's. So start
-from this mod's file, and change only the strings you translate.
+3. Make a DLC folder of your own ([the DLC folder](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/docs/translating.md#the-dlc-folder)), whose mount is above 7422, this
+   mod's mount, and used by no other mod. Put your files in its `CookedPCConsole`, with exactly the names of the files
+   they replace.
+4. Install your mod with M3, with the game closed. Galaxy Map Normandy stays installed.
 
 ## The files
 
-The game reads the file of its text language. Some languages have two codes, and their two files are copies: ship
-both.
+The game reads the file of its text language.
 
 | Language | Code | File |
 |---|---|---|
-| English | INT | `DLC_MOD_GalaxyMapNormandy_GlobalTlk.pcc` |
+| English | none | `DLC_MOD_GalaxyMapNormandy_GlobalTlk.pcc` |
 | French | FR, FE | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_FR.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_FE.pcc` |
 | German | DE, GE | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_DE.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_GE.pcc` |
 | Italian | IT, IE | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_IT.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_IE.pcc` |
@@ -47,9 +34,8 @@ both.
 | Russian | RU, RA | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_RU.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_RA.pcc` |
 | Japanese | JA | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_JA.pcc` |
 
-Each file holds two talk tables, `GlobalTlk_tlk` and `GlobalTlk_tlk_M`. The game reads the first for a female
-Shepard and the second for a male one, so both need every id. This mod's build makes the files from
-`src/tlk/<code>.tsv` with the toolkit's `lectool tlkpackage`, which writes both tables.
+This mod's build makes the files from one `src/tlk/<language>.tsv` per language (`INT.tsv` for English, `FR.tsv` for
+both French files) with the toolkit's `lectool tlkpackage`, which writes both talk tables.
 
 ## The string ids
 
@@ -94,13 +80,18 @@ and as the title of its step page. The description shows in the pane on the righ
 
 In 74220028 and 74220029, `{0}` is the number. Write a percent as the game does in your language: English writes 100%,
 French 100 % with a no-break space (U+00A0) before the %. Never use U+202F, the narrow no-break space: the game's fonts
-lack it. The mod's name is the subtitle of each step page, a line that fits about 459 pixels, so keep it about as long
-as "Galaxy Map Normandy".
+lack it.
+
+The mod's name is also the subtitle of each step page, a line about 459 pixels wide: keep it about as long as "Galaxy
+Map Normandy".
 
 Ids 74220030 to 74229999 are kept for this mod's later strings, and 74220020 is retired: leave them out of your
 files.
 
 ## When a string is missing
+
+The game log below is `Logs\DebugLogger.log` in `Binaries\Win64`, written when a logger ASI such as LE1DebugLogger is
+installed.
 
 If 74220028 or 74220029 has no `{0}`, the pages use the English pattern, and the game log has a line that starts with
 `Percent pattern`. If 74220025, 74220026 or 74220027 is empty, the button shows the English word, and the game log has
@@ -108,7 +99,13 @@ a line that starts with `Enter button: strings`.
 
 ## What has been tested
 
-On 2026-11-09, in LE1: a test text for the mod's name in this mod's own Russian files showed on its row in Mod
-Settings, in the pane on the right and on the titles of its pages. The French and Japanese files showed their own
-percents and words. Still untested: a translation mod in a DLC folder of its own, as described above, and a DLC that
-defines the same ids in files of other names.
+On 2026-11-09, in LE1:
+
+- A translation mod built as above, at mount 7480 with a test copy of the English file, replaced the mod's name, a
+  setting's name and the percents in an English game. A French game kept this mod's French text, since the
+  translation mod had no French file.
+- A test text for the mod's name in this mod's own Russian files showed on its row in Mod Settings, in the pane on the
+  right and on the titles of its pages. The French and Japanese files showed their own percents and words.
+
+Still untested: two translation mods for the same language, a lower mount, and a DLC that defines the same ids in
+files of other names.
