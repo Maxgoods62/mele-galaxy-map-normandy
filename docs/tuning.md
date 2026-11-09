@@ -428,12 +428,13 @@ how.
 | `TravelScenePath` | the `TravelScene` sequence | object path | Where the Mass relay movie setting changes the links |
 
 `ClusterHosts` has one number per cluster, in the order of the cluster numbers, counted from 0: the number at index
-8 is for `Cluster08`. Each number is the system the Normandy arrives at, the 02 of `System02`, and 0 means none. The
-defaults are the systems that hold the clusters' mass relays: the first system of most clusters, and another one in six
-clusters, such as system 7 in cluster 9. A pick of a cluster with no entry, or with 0, only zooms in, and the game log
-gets a line that contains `No relay system known`. A cluster that another mod adds is in that case. The director checks
-that the system has a row in the map's tables, not that the map shows it: in the normal game and with LE1CP every relay
-system shows when its cluster does.
+8 is for `Cluster08`. Each number is the system the Normandy arrives at, the 02 of `System02`. The defaults are the
+systems that hold the clusters' mass relays: the first system of most clusters, and another one in six clusters, such
+as system 7 in cluster 9. For a cluster with no entry, or with 0, the director takes the cluster's first system from the
+map's tables. A cluster that another mod adds is in that case. An entry of -1 turns the jump off for that cluster: a
+pick only zooms in. So does a cluster with no system in the tables, and the game log then gets a line that contains
+`No system to arrive at`. The director checks that the system has a row in the map's tables, not that the map shows
+it: in the normal game and with LE1CP every relay system shows when its cluster does.
 
 The director reads `bClusterJump` each frame and `ClusterHosts` at each pick, so a live change shows at the next pick.
 It reads `TravelScenePath` when the map opens. The timeout counts seconds of open map. When it runs out, the jump is

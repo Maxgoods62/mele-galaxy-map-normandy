@@ -24,8 +24,8 @@ with the ship at the cluster's relay system. The cluster does not show before th
 prompt. Picking your own cluster still just zooms in, and moves between systems of one cluster work as in the normal
 game. The Mass relay movie setting turns the movie off.
 
-A cluster added by another mod has no relay system the mod knows of. Picking it zooms in as in the normal game, and
-the movie plays when you pick a system there.
+A cluster added by another mod is a jump too. The mod does not know which of its systems holds the relay, so the
+ship arrives at the cluster's first system.
 
 ## Controls
 

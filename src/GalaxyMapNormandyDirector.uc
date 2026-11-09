@@ -274,7 +274,7 @@ var array<int> ButtonFadeBackFrames;
 var float StageWidth;
 var float StageHeight;
 // The jump to another cluster (UpdateJump). ClusterHosts gives, for each cluster number (the 08 of Cluster08), the system
-// number of its relay system, 0 for none. JumpSentTimeout is the longest wait, in seconds of open map, for the map to
+// number of its relay system; 0, or no entry, means the cluster's first system in the map's tables, and -1 no jump. JumpSentTimeout is the longest wait, in seconds of open map, for the map to
 // pause for the travel.
 var bool bClusterJump;
 var array<int> ClusterHosts;
@@ -1934,9 +1934,7 @@ public function InterpActor FindSystemActor(int ActiveWorld)
 // missing.
 public function int SystemNameRef(int ActiveWorld)
 {
-    local Bio2DA Clusters;
     local Bio2DA Systems;
-    local string RowClusterLabel;
     local string RowSystemLabel;
     local name Label;
     local int ClusterRow;
@@ -1944,23 +1942,13 @@ public function int SystemNameRef(int ActiveWorld)
     local int Cluster;
     local int NameRef;
 
-    Clusters = GalaxyCam.m_pClusterTable;
     Systems = GalaxyCam.m_pSystemTable;
-    if (Clusters == None || Systems == None || (ActiveWorld / 100) % 100 == 0)
+    if (Systems == None || (ActiveWorld / 100) % 100 == 0)
     {
         return 0;
     }
-    RowClusterLabel = "Cluster" $ TwoDigits(ActiveWorld / 10000);
+    ClusterRow = ClusterRowOf(ActiveWorld / 10000);
     RowSystemLabel = "System" $ TwoDigits((ActiveWorld / 100) % 100);
-    ClusterRow = -1;
-    for (Row = 0; Row < Clusters.GetNumRows(); Row++)
-    {
-        if (Clusters.GetNameEntryIN(Row, 'Label', Label) && string(Label) ~= RowClusterLabel)
-        {
-            ClusterRow = Clusters.GetRowNumber(Row);
-            break;
-        }
-    }
     for (Row = 0; ClusterRow >= 0 && Row < Systems.GetNumRows(); Row++)
     {
         if (Systems.GetNameEntryIN(Row, 'Label', Label) && string(Label) ~= RowSystemLabel
@@ -2105,13 +2093,16 @@ public function bool EndGalaxyZoom(float DeltaTime)
     return TRUE;
 }
 
-// The Active_World of Cluster's relay system, or 0 for the Normandy's own cluster, a cluster with no relay system in
-// ClusterHosts (one added by a mod), or anything else. Cluster actors are tagged with their table Label, Cluster08.
+// The Active_World of the system the Normandy arrives at in Cluster, or 0 for the Normandy's own cluster, a cluster with
+// no system, or anything that is not a cluster. Cluster actors are tagged with their table Label, Cluster08. The system
+// is the cluster's relay system in ClusterHosts; for a cluster with no entry there, or with 0, as one another mod adds,
+// it is the cluster's first system in the map's tables (FirstSystemOf). A negative entry means no jump.
 public function int ClusterJumpWorld(Actor Cluster)
 {
     local BioWorldInfo BioWorld;
     local string Tag;
     local int Number;
+    local int Host;
 
     BioWorld = BioWorldInfo(WorldInfo);
     if (Cluster == None || BioWorld == None || BioWorld.GetGlobalVariables() == None)
@@ -2128,17 +2119,86 @@ public function int ClusterJumpWorld(Actor Cluster)
     {
         return 0;
     }
-    if (Number >= ClusterHosts.Length || ClusterHosts[Number] <= 0)
+    if (Number < ClusterHosts.Length)
+    {
+        Host = ClusterHosts[Number];
+    }
+    if (Host == 0)
+    {
+        Host = FirstSystemOf(Number);
+    }
+    if (Host <= 0)
     {
         if (Number != LoggedNoHost)
         {
             LoggedNoHost = Number;
-            LogInternal("No relay system known for " $ Tag $ ": no jump, the game zooms into the cluster",
+            LogInternal("No system to arrive at known for " $ Tag $ ": no jump, the game zooms into the cluster",
                 'GalaxyMapNormandy');
         }
         return 0;
     }
-    return Number * 10000 + ClusterHosts[Number] * 100;
+    return Number * 10000 + Host * 100;
+}
+
+// The lowest system number (the 02 of System02) among the rows of the map's system table that belong to cluster Number,
+// 0 when the tables have no such cluster or it has no system. It is the system the game's own zoom into a cluster puts
+// the cursor on.
+public function int FirstSystemOf(int Number)
+{
+    local Bio2DA Systems;
+    local name Label;
+    local string Text;
+    local int ClusterRow;
+    local int Row;
+    local int Cluster;
+    local int SystemNumber;
+    local int First;
+
+    Systems = GalaxyCam.m_pSystemTable;
+    ClusterRow = ClusterRowOf(Number);
+    if (Systems == None || ClusterRow < 0)
+    {
+        return 0;
+    }
+    for (Row = 0; Row < Systems.GetNumRows(); Row++)
+    {
+        if (Systems.GetIntEntryIN(Row, 'Cluster', Cluster) && Cluster == ClusterRow && Systems.GetNameEntryIN(Row, 'Label', Label))
+        {
+            Text = string(Label);
+            if (Left(Text, 6) ~= "System")
+            {
+                SystemNumber = int(Mid(Text, 6));
+                if (SystemNumber > 0 && (First == 0 || SystemNumber < First))
+                {
+                    First = SystemNumber;
+                }
+            }
+        }
+    }
+    return First;
+}
+
+// The row number, in the map's cluster table, of the cluster with this number (the 08 of Cluster08), -1 for none. The
+// system table names a system's cluster by that row number.
+public function int ClusterRowOf(int Number)
+{
+    local Bio2DA Clusters;
+    local name Label;
+    local int Row;
+
+    Clusters = GalaxyCam.m_pClusterTable;
+    if (Clusters == None)
+    {
+        return -1;
+    }
+    for (Row = 0; Row < Clusters.GetNumRows(); Row++)
+    {
+        if (Clusters.GetNameEntryIN(Row, 'Label', Label) && string(Label) ~= ("Cluster" $ TwoDigits(Number)))
+        {
+            return Clusters.GetRowNumber(Row);
+        }
+    }
+    return -1;
 }
 
 // The zoom from galaxy level into the cluster under the cursor (m_pSelectedObject) has just started: when it is another

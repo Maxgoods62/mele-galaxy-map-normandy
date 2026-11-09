@@ -9,7 +9,7 @@ became v1.0 with the changes marked v1.0 in that list. The version number is `mo
   movie plays, and the map comes back at cluster level with the ship at that cluster's relay system. There is no travel
   prompt. Before, as in the normal game, the pick only zoomed in, and the movie played later, at
   the pick of a system there. Picking your own cluster and moves inside a cluster work as before. A cluster that
-  another mod adds still works as in the normal game.
+  another mod adds is a jump too: the ship arrives at that cluster's first system.
 - The settings page no longer writes the profile file when the game in play has no career in the profile, as with a
   game loaded from a developer save: the game's own save could crash there. The choice then holds until the game closes.
 - A new setting, Mass relay movie, turns the relay movie off: the jump still happens, without the movie. It is on by

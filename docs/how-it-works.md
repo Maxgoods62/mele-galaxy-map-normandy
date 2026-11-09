@@ -99,8 +99,10 @@ the game loses focus in the single frame between the send and the pause, it stop
 events run when it has focus again.
 
 The director finds the event as the game does: it walks the game sequence, the sequences in it and the streamed levels'
-sequences. A cluster with no entry in `ClusterHosts`, such as one that another mod adds, logs a line once and stays as
-in the normal game.
+sequences. For a cluster with no entry in `ClusterHosts`, such as one that another mod adds, the director takes the
+cluster's first system from the map's tables: the lowest system number among the system rows of that cluster, which is
+also where the game's own zoom puts the cursor. A cluster with no system row logs a line once and stays as in the
+normal game.
 
 The Mass relay movie setting rewires `TravelScene` each time the map opens. Off, the two outputs of
 `SeqCond_CompareInt_1` that lead to the movie (`BioSeqAct_BioToggleCinematicMode_1`) go to `BioSeqAct_BlackScreen_2`,
