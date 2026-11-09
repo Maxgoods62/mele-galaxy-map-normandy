@@ -286,7 +286,21 @@ on, reports a broken material.
 
 In a build from the current game files, most of the ship's textures name one of LE1's texture cache files, such as
 `Textures1` or `CharTextures3`. LE1 keeps most texture images in these TFC files, and the ship's full-size images stay
-there. The star cube map that comes with the materials, `StarsCube01_Tex`, is copied whole: six faces of 4 MB each.
+there. The star cube map that comes with the materials, `StarsCube01_Tex`, is copied whole: six uncompressed faces of
+1024x1024, 4 MB each. The first material draws it only on the window strips. `build.sh` then shrinks it with
+`lectool cubeshrink` to 256x256 DXT1 faces with mips, 44 KB each: the size its LOD group
+(`TEXTUREGROUP_Environment_64`, at most 256) asks for. This takes the package from about 28 MB to 3 MB once loaded.
+
+The ship's materials and textures keep the game's own paths, such as `BIOG_NOR.Base.VEH_NOR_Diff_Stack`: after
+`portfx`, `build.sh` runs `lectool forcepackage` on `BIOG_NOR`, which marks them as forced exports, the way the game's
+levels store them. When the game already has its own copy in memory, it uses that one. At a dock (Citadel, Feros,
+Noveria), opening the map loads the departure scene, which brings the game's copy first. A Normandy retexture that
+works by M3 texture override (a `.m3to` file, such as Alliance Vehicle Consistency's blue decals) matches textures by
+their full path, so it reaches this ship too. Tested in LE1 with Alliance Vehicle Consistency 1.1, Normandy module, at
+Noveria's dock and in space. The shrunk cube map moves out of `BIOG_NOR` to the top level of the package, under the
+file's name, so it never stands in for the game's own cube. A level that loads the ship's materials while the map is
+open would get ours, with the smaller cube; no level did that in testing. A retexture that replaces level files instead
+of using an override reaches the ship only at a dock.
 
 The ship keeps its own materials. At run time the director lights it with its own sky light, and raises the nozzle
 glow on its own copy of the first material ([how-it-works.md](how-it-works.md#the-engines)).

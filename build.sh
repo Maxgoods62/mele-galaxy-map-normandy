@@ -14,7 +14,7 @@ if [[ -f "$HERE/build.env" ]]; then . "$HERE/build.env"; fi
 TOOLKIT="${MELE_TOOLKIT:-$HERE/../../mele-maxgoods-toolkit}"
 # The toolkit commit a release is built with: scripts/release.sh refuses a build from any other. A test build at another
 # commit only gets a note. It is set here, so build.env can't change it.
-TOOLKIT_COMMIT=080866d559b62e085133e0be8f280f1a8d60a277
+TOOLKIT_COMMIT=177b44870437538df30531edfe0866598ef09104
 DOTNET="${MELE_DOTNET:-dotnet.exe}"
 VGMSTREAM="${MELE_VGMSTREAM:-vgmstream-cli}"
 LE_DIR="${MELE_LE_DIR:?set MELE_LE_DIR to the Legendary Edition folder, as a Windows path}"
@@ -283,10 +283,23 @@ lectool buildsound "$LE1\\snd_gui.pcc" c_galaxymap_enter "$(win "$S/travel_loop.
 grep -E '^wave' "$OUT" || true
 lectool portmesh "$LE1\\BIOA_ICE20_11_LAY.pcc" "$SR1_UINDEX" "$SFX" SR1_Normandy
 if grep -E 'BROKEN' "$OUT"; then die "broken material in the SR-1 port"; fi
+# The port copies the SR-1's star cube map whole: six 1024x1024 uncompressed faces, 25 MB once loaded, for a reflection
+# its material draws only on the window strips. 256 DXT1 with mips is what the cube's own LOD group asks for
+# (TEXTUREGROUP_Environment_64: MaxLODSize 256), about 266 KB.
+lectool cubeshrink "$SFX" BIOG_NOR.StarsCube01_Tex 256 DXT1
+# The last line cubeshrink prints, once it has read the package back.
+grep -E '^BIOG_NOR\.StarsCube01_Tex	6 faces 256x256 PF_DXT1' "$OUT" || die "the star cube map is still whole: the toolkit needs cubeshrink"
 # The engine trail of ME3's galaxy map Normandy (ME2's look), with its LE3 materials, textures and shaders. portfx stops
 # with ERROR on a broken material or on anything LE1 can't load.
 lectool portfx "$LE3\\BioA_Nor_203aGalaxyMap.pcc" "$TRAIL_UINDEX" "$SFX" EngineTrail
 grep -E '^[0-9]+	ParticleSystem	EngineTrail	' "$OUT" || die "no EngineTrail: the toolkit needs portfx, or export $TRAIL_UINDEX is not Normandy_Engine_Trails"
+# The ship's materials and textures load under the game's own paths (BIOG_NOR.Base.VEH_NOR_Diff_Stack), as forced
+# exports, the way the game's levels store them. The game then uses its own copy when one is in memory, and a texture
+# override that repaints the Normandy (M3's .m3to, matched by full path, as in Alliance Vehicle Consistency) reaches
+# ours too. The cube map is ours (smaller), so it moves out to the top level, under the file's name. This comes after
+# portfx, which clears ForcedExport on every export of the file.
+lectool forcepackage "$SFX" BIOG_NOR --move-out BIOG_NOR.StarsCube01_Tex
+grep -E '^top	[0-9]+	Package	BIOG_NOR	forced	' "$OUT" || die "the SR-1's materials are not under the game's paths: the toolkit needs forcepackage"
 # 7. The M3 mod folder: the files of mod/ that git sees, the packages, and LICENSE and NOTICE in a LICENSE folder.
 # moddesc.ini's [UPDATES] section makes M3's deployment put the LICENSE folder and README.txt in the 7z beside the mod;
 # M3 never installs them into the game, and it refuses to load the mod when one is missing.

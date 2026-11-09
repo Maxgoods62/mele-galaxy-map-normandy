@@ -5,8 +5,12 @@ became v1.0 with the changes marked v1.0 in that list. The version number is `mo
 
 ## Unreleased
 
-- The ship, its engine trail and its flight sounds (about 28 MB once loaded) stay in memory only while the galaxy map is
-  open. Before, they stayed loaded after the map closed, until the player left the Normandy.
+- The ship, its engine trail and its flight sounds stay in memory only while the galaxy map is open. Before, they stayed
+  loaded after the map closed, until the player left the Normandy.
+- They take about 3 MB of memory instead of 28 MB. The starfield the ship's windows reflect is now compressed, 256 pixels
+  a side, the size BioWare's own settings give it, instead of six uncompressed 1024-pixel images. It looks the same.
+- The ship now shows Normandy retextures that use M3 texture overrides, such as the blue Alliance decals of Alliance
+  Vehicle Consistency. Before, it kept the red decals.
 
 ## v1.4 (2026-11-09)
 
