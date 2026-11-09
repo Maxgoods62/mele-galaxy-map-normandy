@@ -212,8 +212,9 @@ are released, and how to check a download.
   or later in the game that `MELE_LE_DIR` names. If it is there, the lines above say why mele-mcp failed.
 - `note: no LE1 Community Patch version ...`: the build can't read `_metacmm.txt`, so the stamp says `le1cp=unknown`.
   Check the patch install.
-- `lectool wrote no <language> strings` or `lectool gave <cue> no wave of its own`: the
-  toolkit is older than the mod. Check out `TOOLKIT_COMMIT`.
+- `lectool wrote no <language> strings`, `lectool gave <cue> no wave of its own`, `the star cube map is still whole`
+  or `the SR-1's materials are not under the game's paths`: the toolkit is older than the mod. Check out
+  `TOOLKIT_COMMIT`.
 - `level_new failed`: mele-mcp's reply is printed above it and kept in `build/level_new.json`.
 - `SFXGame.pcc export 53327 is not the Wwise_Generic_Galaxy_Map bank` or `WEM <id> was not in the bank`: the build
   finds the sound bank by its export number, its place in the package. Another game version, or a mod that changed

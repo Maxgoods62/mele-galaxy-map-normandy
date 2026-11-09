@@ -30,7 +30,7 @@ enum EEnterButtonState
     EBS_Shrinking
 };
 
-// What the director holds of GalaxyMapNormandy_SFX, about 28 MB once loaded (DataSize): the ship's mesh, the engine
+// What the director holds of GalaxyMapNormandy_SFX, about 3 MB once loaded (DataSize): the ship's mesh, the engine
 // trail, the flight sound's cues, and the audio components that play those cues. SetSFXState makes each change.
 enum ESFXState
 {

@@ -14,18 +14,19 @@ levels:
 - The mouse works as in Mass Effect 2, with an arrow pointer and the Enter Orbit button.
 
 The game's 2D "you are here" marker, a small ship outline in a ring, is gone at cluster and system level, where the
-ship flies. The name labels stay. At galaxy level and in planet view, there is no ship and the map works as in the
-normal game: the marker shows at galaxy level, and the game draws none in planet view.
+ship flies. The name labels stay. At galaxy level and in planet view, there is no ship: the marker shows at galaxy
+level, and the game draws none in planet view.
 
 The mod also moves the jump to another cluster. In the normal game, picking another cluster at galaxy level only
 zooms in, and the mass relay movie plays later, when you pick a system there. With the mod, picking another cluster is
 the jump: the Normandy leaves dock if it is docked, the relay movie plays, and the map comes back at cluster level
 with the ship at the cluster's relay system. The cluster does not show before the movie. There is no travel
-prompt. Picking your own cluster still just zooms in, and moves between systems of one cluster work as in the normal
-game. The Mass relay movie setting turns the movie off.
+prompt, so you cannot look into another cluster without going there. Picking your own cluster still just zooms in,
+and moves between systems of one cluster work as in the normal game. The Mass relay movie setting turns the movie
+off. The jump was tested from Noveria's dock and in space. The Citadel and Feros docks were not run.
 
 A cluster added by another mod is a jump too. The mod does not know which of its systems holds the relay, so the
-ship arrives at the cluster's first system.
+ship arrives at the cluster's first system. Tested with two clusters of the Spectre Expansion Mod.
 
 ## Controls
 
@@ -170,7 +171,9 @@ A translation mod can replace every word of the pages and of the Enter button. T
 
 The mod keeps your choices in the game's gamer profile. This is the file `Save\ME1\PROFILE\GamerProfile.pcsav` in
 `Documents\BioWare\Mass Effect Legendary Edition`. So your choices are the same for every career and every save. The
-mod writes the file as soon as you pick a step, the Mass relay movie row or Restore defaults.
+mod writes the file as soon as you pick a step, the Mass relay movie row or Restore defaults. It does not write it
+when the game in play has no career in the profile, as with a game loaded from a developer save: the choice then holds
+until the game closes.
 
 Your choices apply the next time you open the galaxy map.
 
@@ -180,7 +183,8 @@ Your choices apply the next time you open the galaxy map.
   moves under it. Mass Effect 2 keeps that view still.
 - What is selected follows the map cursor, which the mod hides. The ship eases after the cursor, so on a fast move the
   highlight can change a moment before the ship gets there.
-- The mod has not been tested with other galaxy map mods.
+- The mod was run with two clusters of the Spectre Expansion Mod. Galaxy Map Trackers (LE1) worked before v1.5 and was
+  not run again with the jump. Other galaxy map mods have not been tested.
 
 ## If something is wrong
 
@@ -207,6 +211,11 @@ Your choices apply the next time the map opens. Close the map and open it again.
 Move the mouse to bring the arrow back. After you use the controller, click or press a key to bring the button back.
 The button shows only when the ship is on something you can enter. Both hide while another window, such as the travel
 prompt, is open on the map.
+
+### Picking a cluster only zoomed in
+
+The jump did not start, and the map works as in the normal game: pick a system there to travel, with the game's
+prompt. With a logger ASI, the game log has a line that contains `Jump to Active_World` or `No system to arrive at`.
 
 ### Report a problem
 

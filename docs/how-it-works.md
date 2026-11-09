@@ -64,16 +64,16 @@ travel: pause the map, the undock scene when docked, the relay movie in `TravelS
 The director starts that same travel at the cluster pick. The pick starts the game's zoom into the cluster: half a
 second at galaxy level, then the game builds the cluster and the zoom goes on at cluster level. On the first frame of
 that zoom, when the cluster does not hold the Normandy, the director sets plot int 13 to the cluster's relay system
-(`ClusterHosts` in [tuning.md](tuning.md#the-jump)) and plot int 105 (the cluster being viewed) to the cluster. As the
-game does for a system pick, it then turns `WorldInfo.bPlayersOnly` off and activates the `SystemTransition` event.
+(`ClusterHosts` in [tuning.md](tuning.md#the-jump)) and plot int 105 (`Current_Galaxy_Viewing`) to the same cluster
+and system. As the game does for a system pick, it then turns `WorldInfo.bPlayersOnly` off and activates the `SystemTransition` event.
 The map pauses on the next frame, still at galaxy level, so the cluster does not show before the undock scene or the
 movie. The pause keeps the zoom where it was: when the travel ends, the map is back at galaxy level with the rest of
 the zoom to run. The director ends that half at once. It sets the camera's zoom time to almost nothing and runs the
 camera's tick, which builds the cluster and starts the zoom at cluster level, so the first picture after the travel is
 the cluster, which now holds the Normandy. The ring and the ship land on the relay system, as after any zoom into the
 Normandy's cluster. A cluster's own event, such as the call on the first visit to the Armstrong Nebula, starts one
-frame after the cluster shows. With the movie off, undocked and with no arrival event, nothing pauses the map and the
-zoom runs unbroken, as in the normal game.
+frame after the cluster shows. With the movie off, undocked and with no arrival event, the travel pauses and resumes
+the map within one frame, and the zoom runs unbroken, as in the normal game.
 
 The game blurs its zoom with a Matinee of 1.09 s that the pick starts (the `ZoomTransition` event of
 `BIOA_NOR10_03_GM_LAY`): the blur is strongest in the middle, where the cluster replaces the galaxy. Kismet goes on

@@ -20,8 +20,8 @@ language, under the same names, at a mount above 7422 that no other mod uses.
 4. Install your mod with M3, with the game closed. Galaxy Map Normandy stays installed.
 
 A new version of this mod can add ids or change their English text, and its entry in the
-[CHANGELOG](../CHANGELOG.md) lists them. Your files replace this mod's files whole, so an id they lack loses its text:
-build your files again from the new version's files.
+[CHANGELOG](../CHANGELOG.md) lists them. Your files replace this mod's files whole, so an id they lack should lose its
+text (not tested): build your files again from the new version's files.
 
 ## The files
 
@@ -70,7 +70,7 @@ and 184268 in your language's game files. The description, 74220031, names the O
 | 74220014 | its description | How closely the ship follows the map cursor in system view. Lower values let it glide behind; higher values keep it on the cursor. |
 | 74220015 | a setting's name | System: ship size |
 | 74220016 | its description | Size of the ship in system view. |
-| 74220017 | the last row of the settings page | Restore defaults |
+| 74220017 | the last row of the settings page, and the title of the pane on the right for that row | Restore defaults |
 | 74220018 | its description | Sets every setting on this page back to its default. |
 | 74220019 | the subtitle of the settings page | Changes show the next time the map opens. |
 | 74220020 | no longer used: leave it out, and never give the number to a new string | |
@@ -81,7 +81,7 @@ and 184268 in your language's game files. The description, 74220031, names the O
 | 74220025 | the Enter button at cluster level | Enter System |
 | 74220026 | the Enter button in system view | Enter Orbit |
 | 74220027 | the Enter button on something still to scan | Scan |
-| 74220028 | a percent: each setting's value and each step | {0}% |
+| 74220028 | a percent: the value of each setting that has steps, and each step | {0}% |
 | 74220029 | the 100% step, the default | {0}% (default) |
 | 74220030 | a setting's name | Mass relay movie |
 | 74220031 | its description | Plays the mass relay movie when you pick another cluster on the galaxy map. Off: the ship jumps there without it. |
@@ -118,5 +118,10 @@ On 2026-11-09, in LE1:
 - A test text for the mod's name in this mod's own Russian files showed on its row in Mod Settings, in the pane on the
   right and on the titles of its pages. The French and Japanese files showed their own percents and words.
 
-Still untested: two translation mods for the same language, a lower mount, a DLC that defines the same ids in files
-of other names, and the two cases under [When a string is missing](#when-a-string-is-missing).
+On 2026-11-10, in a French game, the Mass relay movie row showed its French name, its description and its two
+values, and the mod's row in Mod Settings showed its new French description.
+
+Still untested: this mod at a newer version under a translation mod built from an older version's files, the Mass
+relay movie row in languages other than English and French, two translation mods for the same language, a lower
+mount, a DLC that defines the same ids in files of other names, and the two cases under
+[When a string is missing](#when-a-string-is-missing).

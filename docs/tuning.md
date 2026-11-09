@@ -438,7 +438,7 @@ it: in the normal game and with LE1CP every relay system shows when its cluster 
 
 The director reads `bClusterJump` each frame and `ClusterHosts` at each pick, so a live change shows at the next pick.
 It reads `TravelScenePath` when the map opens. The timeout counts seconds of open map. When it runs out, the jump is
-dropped, the game zooms into the cluster as in the normal game, and the game log gets a line that starts with
+dropped, the game zooms into the cluster as in the normal game, and the game log gets a line that contains
 `Jump to Active_World`.
 
 ## Values to read
@@ -459,7 +459,7 @@ its level loads again.
 | `bFlying` | `true` while the ship counts as flying |
 | `FlySpeed` | Speed of the heading model, in units/s |
 | `VirtualStickX`, `VirtualStickY` | The virtual stick before its cap (1 is a full stick) |
-| `LoadedFlightSound` | The flight sound now loaded, -1 before the first |
+| `LoadedFlightSound` | The flight sound now loaded, -1 while the map is closed |
 | `JumpState` | Where a jump is: `EJS_None`, `EJS_Sent` or `EJS_Away` |
 | `bRelayMovie` | `true` when the Mass relay movie setting is on, read when the map opens |
 

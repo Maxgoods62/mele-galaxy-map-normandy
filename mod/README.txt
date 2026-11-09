@@ -41,6 +41,7 @@ https://github.com/Maxgoods62/mele-galaxy-map-normandy/releases
 All controls, settings and known issues:
 https://github.com/Maxgoods62/mele-galaxy-map-normandy/blob/main/docs/using.md
 
-All of the code was written by an LLM, Claude Opus 5.5, from my instructions.
+All of the code was written by LLMs, Claude Opus 5.5 and Claude Fable 5.2,
+from my instructions.
 
 The LICENSE folder holds the licence texts.

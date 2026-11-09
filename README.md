@@ -10,8 +10,8 @@ Download the 7z file from the
 [Nexus Mods page](https://www.nexusmods.com/masseffectlegendaryedition/mods/3538). You can also build the mod from this
 repo with your own game files ([docs/building.md](docs/building.md)).
 
-All of the code here was written by an LLM, Claude Opus 5.5, through Claude Code, from my instructions. I decide what
-to build and I test the results in the game.
+All of the code here was written by LLMs, Claude Opus 5.5 and Claude Fable 5.2, through Claude Code, from my
+instructions. I decide what to build and I test the results in the game.
 
 ## Requirements
 
@@ -45,8 +45,8 @@ At cluster and system level:
 
 A click is a press shorter than 0.25 s. When the ship is on something to select, it waits that long before it flies.
 Any press counts on the Enter Orbit button, which shows at the bottom of the screen when the ship is on something you
-can enter. At galaxy level and in planet view, the map works as in the normal game, and the 2D "you are here" marker
-shows at galaxy level. At cluster and system level the ship takes its place, and the name labels stay. All controls:
+can enter. At galaxy level and in planet view there is no ship, and the 2D "you are here" marker shows at galaxy
+level. At cluster and system level the ship takes its place, and the name labels stay. All controls:
 [docs/using.md](docs/using.md#controls).
 
 At galaxy level, picking another cluster is the jump: the mass relay movie plays, and the map comes back at cluster
@@ -64,7 +64,7 @@ happens, with no movie. Your choices hold for every save and apply the next time
 
 - The mod adds the DLC folder `DLC_MOD_GalaxyMapNormandy`, with mount priority 7422.
 - It leaves alone the galaxy map files that the Community Patch changes, such as `BIOA_NOR10_03_GM_LAY`.
-- It works with Galaxy Map Trackers (LE1).
+- It worked with Galaxy Map Trackers (LE1) before v1.5. That mod was not run again with the jump.
 - The DLC folder name and the mount priority are not registered with ME3Tweaks yet.
 
 ## Known issues

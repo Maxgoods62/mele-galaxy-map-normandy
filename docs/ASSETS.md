@@ -302,8 +302,8 @@ file's name, so it never stands in for the game's own cube. A level that loads t
 open would get ours, with the smaller cube; no level did that in testing. A retexture that replaces level files instead
 of using an override reaches the ship only at a dock.
 
-The ship keeps its own materials. At run time the director lights it with its own sky light, and raises the nozzle
-glow on its own copy of the first material ([how-it-works.md](how-it-works.md#the-engines)).
+At run time the director lights the ship with its own sky light, and raises the nozzle glow on its own copy of the
+first material ([how-it-works.md](how-it-works.md#the-engines)).
 
 ## The engine trail: `EngineTrail`
 

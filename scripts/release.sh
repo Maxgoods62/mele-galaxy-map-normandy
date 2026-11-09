@@ -14,8 +14,8 @@
 # that build the mod to be public: publish refuses otherwise.
 #
 # The steps for a version. The tag is v and modver from mod/moddesc.ini, as in v1.0.
-#  1. Create the Nexus page. Set modsite in mod/moddesc.ini to its URL, and put that URL in place of NEXUS_PAGE_URL in
-#     README.md. Date the version's heading in CHANGELOG.md with the day you publish: ## v<modver> (YYYY-MM-DD). Set
+#  1. Set modver in mod/moddesc.ini to the new version. For the first release, create the Nexus page, set modsite in
+#     mod/moddesc.ini to its URL, and put that URL in place of NEXUS_PAGE_URL in README.md. Date the version's heading in CHANGELOG.md with the day you publish: ## v<modver> (YYYY-MM-DD). Set
 #     TOOLKIT_COMMIT in build.sh to the toolkit commit you build with, which must be on the toolkit's main on GitHub.
 #     Commit and push main.
 #  2. Run ./build.sh, then scripts/release.sh check v<modver>.
