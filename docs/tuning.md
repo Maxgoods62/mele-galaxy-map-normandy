@@ -368,7 +368,7 @@ A label wider than `ButtonLabelRoom` makes the button wider, up to `ButtonMaxWid
 into it if they are wider still. `ButtonMaxWiden` 1 keeps the button at its normal width.
 
 If the button is not in the movie after `ButtonAttachTries` tries, there is no button until the map opens again. The
-game log then has a line that starts with `Enter button:`.
+game log then has a line that contains `Enter button:`.
 
 A press on the button counts only if you also release it on the button, however long you hold it. A click there does
 what the A prompt does. On something still to scan, it scans.
@@ -376,7 +376,7 @@ what the A prompt does. On something still to scan, it scans.
 The words are the mod's strings 74220025 (Enter System), 74220026 (Enter Orbit) and 74220027 (Scan), in the game's text
 language. They hold Mass Effect 2's words for these buttons. The director reads them when it makes the ship.
 `OrbitLabel`, `SystemLabel` and `ScanLabel` are used only when a string gives nothing. The game log then has a line
-that starts with `Enter button: strings`.
+that contains `Enter button: strings`.
 
 The rest of the button's values describe LE1's movie: `ButtonSymbol`, `ButtonName`, `ButtonArtLeft`, `ButtonArtTop`,
 `ButtonArtWidth`, `ButtonArtHeight`, `ButtonYScale`, `ButtonFieldMid`, `ButtonFieldScale`, `ButtonMouseOffFrame` and

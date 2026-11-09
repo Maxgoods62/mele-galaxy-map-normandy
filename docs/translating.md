@@ -93,9 +93,10 @@ files.
 The game log below is `Logs\DebugLogger.log` in `Binaries\Win64`, written when a logger ASI such as LE1DebugLogger is
 installed.
 
-If 74220028 or 74220029 has no `{0}`, the pages use the English pattern, and the game log has a line that starts with
-`Percent pattern`. If 74220025, 74220026 or 74220027 is empty, the button shows the English word, and the game log has
-a line that starts with `Enter button: strings`.
+These two cases come from the code and have not been tested in the game. If 74220028 or 74220029 has no `{0}`, the
+pages use the English pattern, and the game log has a line that contains `Percent pattern`. If 74220025, 74220026 or
+74220027 is empty, the button shows the English word, and the game log has a line that contains
+`Enter button: strings`.
 
 ## What has been tested
 
@@ -107,5 +108,5 @@ On 2026-11-09, in LE1:
 - A test text for the mod's name in this mod's own Russian files showed on its row in Mod Settings, in the pane on the
   right and on the titles of its pages. The French and Japanese files showed their own percents and words.
 
-Still untested: two translation mods for the same language, a lower mount, and a DLC that defines the same ids in
-files of other names.
+Still untested: two translation mods for the same language, a lower mount, a DLC that defines the same ids in files
+of other names, and the two cases under [When a string is missing](#when-a-string-is-missing).
