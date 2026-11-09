@@ -11,8 +11,9 @@ Class GalaxyMapNormandyDirector extends Actor
 // cursor) toward it; a short click selects what the ship is on. The pad keeps LE1's own control (UpdatePointer).
 // A mouse player also gets ME2's Enter System, Enter Orbit and Scan button when the ship is on something the map can
 // enter. It is LE1's own button, the Back button's symbol, put into the map's movie (UpdateEnterButton).
-// A pick of another cluster at galaxy level is the jump there, as in ME2 and ME3: the mass relay cinematic plays right
-// after the zoom, and the map comes back at cluster level with the Normandy at that cluster's relay system (UpdateJump).
+// A pick of another cluster at galaxy level is the jump there, as in ME2 and ME3: the mass relay cinematic plays as the
+// zoom starts, before the cluster shows, and the map comes back at cluster level, with the Normandy at that cluster's
+// relay system (UpdateJump).
 // The player can scale speed, turn rate, response and size per level, set the flight sound volume and turn the relay
 // cinematic off, in LE1CP's Mod Settings Menu (ReadSettings, UpdateRelayLinks).
 // The flight sound is the variant that FlightSound names, or the original sound if that variant does not load. build.sh
@@ -38,12 +39,11 @@ enum ESFXState
     ESS_Fading
 };
 
-// A jump to another cluster (UpdateJump): the zoom into it, the travel event sent to the map's Kismet, the Kismet's pause
-// for the cutscene and the cinematic. SetJumpState makes each change.
+// A jump to another cluster (UpdateJump): the travel event sent to the map's Kismet, then the Kismet's pause for the
+// cutscene and the cinematic. SetJumpState makes each change.
 enum EJumpState
 {
     EJS_None,
-    EJS_Zooming,
     EJS_Sent,
     EJS_Away
 };
@@ -145,12 +145,13 @@ var transient bool bPointerOnButton;
 var transient bool bButtonPressed;
 var transient EJumpState JumpState;
 var transient float JumpTime;
-var transient float JumpSettledTime;
-var transient int PrevMapState;
+var transient bool bPrevZoomingIn;
 var transient int JumpWorld;
 var transient int JumpOldWorld;
 var transient int JumpOldViewing;
 var transient int JumpOldPrevious;
+var transient Actor JumpCluster;
+var transient Actor JumpOldCluster;
 var transient BioSFPanel JumpPanel;
 var transient bool bRelayMovie;
 var transient bool bRelayLinksLogged;
@@ -273,13 +274,10 @@ var array<int> ButtonFadeBackFrames;
 var float StageWidth;
 var float StageHeight;
 // The jump to another cluster (UpdateJump). ClusterHosts gives, for each cluster number (the 08 of Cluster08), the system
-// number of its relay system, 0 for none. JumpSettleTime is how long the map stays still after the zoom before the jump;
-// JumpZoomTimeout and JumpSentTimeout are the longest waits, in seconds of open map, for the zoom to end and for the map
-// to pause for the travel.
+// number of its relay system, 0 for none. JumpSentTimeout is the longest wait, in seconds of open map, for the map to
+// pause for the travel.
 var bool bClusterJump;
 var array<int> ClusterHosts;
-var float JumpSettleTime;
-var float JumpZoomTimeout;
 var float JumpSentTimeout;
 var string TravelScenePath;
 
@@ -1905,27 +1903,52 @@ public function bool IsNormandyCluster(Actor Cluster)
 // Plot int 13 (Active_World) is cluster * 10000 + system * 100 + planet. Those numbers are the Label of the cluster row
 // (Cluster08) and of the system row (System02) in the galaxy map tables, which hold the DLC rows too (Asgard, row 2009,
 // is Exodus Cluster's System02). The system row names its actor: an InterpActor of the map level named after the row's
-// Name string id (Strenuus 135810, a DLC one may carry a suffix, 176126_243) and tagged with its Label. None when a row
-// or the actor is missing.
+// Name string id (Strenuus 135810, a DLC one may carry a suffix, 176126_243) and tagged with its Label. The game makes
+// the system actors of a cluster when it builds that cluster: a cluster the map has not built yet has none. None when a
+// row or the actor is missing.
 public function InterpActor FindSystemActor(int ActiveWorld)
+{
+    local string RowSystemLabel;
+    local string ActorName;
+    local int NameRef;
+    local InterpActor SystemItem;
+
+    NameRef = SystemNameRef(ActiveWorld);
+    if (NameRef == 0)
+    {
+        return None;
+    }
+    RowSystemLabel = "System" $ TwoDigits((ActiveWorld / 100) % 100);
+    foreach DynamicActors(Class'InterpActor', SystemItem)
+    {
+        ActorName = string(SystemItem.Name);
+        if (string(SystemItem.Tag) ~= RowSystemLabel && (ActorName == string(NameRef) || Left(ActorName, Len(string(NameRef)) + 1) == (string(NameRef) $ "_")))
+        {
+            return SystemItem;
+        }
+    }
+    return None;
+}
+
+// The Name string id of ActiveWorld's system row in the galaxy map tables, 0 when the cluster row or the system row is
+// missing.
+public function int SystemNameRef(int ActiveWorld)
 {
     local Bio2DA Clusters;
     local Bio2DA Systems;
     local string RowClusterLabel;
     local string RowSystemLabel;
-    local string ActorName;
     local name Label;
     local int ClusterRow;
     local int Row;
     local int Cluster;
     local int NameRef;
-    local InterpActor SystemItem;
 
     Clusters = GalaxyCam.m_pClusterTable;
     Systems = GalaxyCam.m_pSystemTable;
     if (Clusters == None || Systems == None || (ActiveWorld / 100) % 100 == 0)
     {
-        return None;
+        return 0;
     }
     RowClusterLabel = "Cluster" $ TwoDigits(ActiveWorld / 10000);
     RowSystemLabel = "System" $ TwoDigits((ActiveWorld / 100) % 100);
@@ -1943,26 +1966,14 @@ public function InterpActor FindSystemActor(int ActiveWorld)
         if (Systems.GetNameEntryIN(Row, 'Label', Label) && string(Label) ~= RowSystemLabel
             && Systems.GetIntEntryIN(Row, 'Cluster', Cluster) && Cluster == ClusterRow)
         {
-            if (!Systems.GetIntEntryIN(Row, 'Name', NameRef))
+            if (Systems.GetIntEntryIN(Row, 'Name', NameRef))
             {
-                return None;
+                return NameRef;
             }
-            break;
+            return 0;
         }
     }
-    if (ClusterRow < 0 || Row >= Systems.GetNumRows())
-    {
-        return None;
-    }
-    foreach DynamicActors(Class'InterpActor', SystemItem)
-    {
-        ActorName = string(SystemItem.Name);
-        if (string(SystemItem.Tag) ~= RowSystemLabel && (ActorName == string(NameRef) || Left(ActorName, Len(string(NameRef)) + 1) == (string(NameRef) $ "_")))
-        {
-            return SystemItem;
-        }
-    }
-    return None;
+    return 0;
 }
 
 // After a zoom into the Normandy's cluster, the cursor must sit on the Normandy's system, where the game laid it out. It
@@ -2006,65 +2017,53 @@ public function CheckZoomEnd()
     }
 }
 
-// A pick of another cluster at galaxy level is the jump there, as in ME2 and ME3. The game zooms into the cluster (its
-// ClusterTransition Kismet pauses and resumes the map on the way); once the zoom is over, this sets Active_World (plot int
-// 13) to the cluster's relay system (ClusterHosts) and starts the map's own SystemTransition event, the one a vanilla
-// system pick in another cluster starts. Its Kismet runs as in the normal game: the map pauses, the undocking cutscene
-// plays when docked, then the relay cinematic (TravelScene compares the clusters of ints 13 and 45), the arrival events,
-// and the map comes back at cluster level. ParkAfterJump then puts the cursor and the ship on the relay system. Plot int
-// 105 (Current_Galaxy_Viewing) is set with 13 so the arrival events keyed on it fire; the map's rebuild sets it again.
-// A pick of the Normandy's own cluster only zooms in, as before. Anything unexpected leaves the vanilla map: the player
-// browses the cluster, and a system pick there travels with the prompt. Route tested live (2026-11-09): docked and
-// undocked, with and without the cinematic; closing the map after it loads nothing. Returns TRUE while the event is
-// sent and the map has not paused yet: the ship waits.
+// A pick of another cluster at galaxy level is the jump there, as in ME2 and ME3. The pick starts the game's zoom into
+// the cluster: its first half runs at galaxy level (m_bFirstStage, 0.5 s), then the game builds the cluster and the
+// zoom goes on at cluster level. On the first tick of that zoom, this sets Active_World (plot int 13) to the cluster's
+// relay system (ClusterHosts) and starts the map's own SystemTransition event, the one a vanilla system pick in another
+// cluster starts. Its Kismet runs as in the normal game: the map pauses on the next frame, with the zoom stopped where it
+// was, at galaxy level, so the cluster does not show before the travel; the undocking cutscene plays when docked, then
+// the relay cinematic (TravelScene compares the clusters of ints 13 and 45), the arrival events, and the map resumes,
+// still at galaxy level with the rest of the zoom to run. EndGalaxyZoom then ends that half at once, so the map comes
+// back on the cluster, which now holds the Normandy: SelectCurrentSystem and CheckZoomEnd put the cursor and the ship on
+// the relay system, as after any zoom into the Normandy's cluster. Plot int 105 (Current_Galaxy_Viewing) is set with 13
+// so the arrival events keyed on it fire; the map's rebuild sets it again.
+// A pick of the Normandy's own cluster only zooms in, as before. Anything unexpected leaves the vanilla map: the game
+// zooms into the cluster, the player browses it, and a system pick there travels with the prompt.
+// Returns TRUE when it has moved the map to another level in this tick: the director takes the new level up on its
+// next tick, as after a change the game makes.
 public function bool UpdateJump(float DeltaTime)
 {
-    local int MapState;
+    local bool bZoomingIn;
+    local bool bLevelChanged;
 
-    MapState = GalaxyCam.m_nCurrentState;
+    // The first half of the game's zoom from galaxy level into the cluster under the cursor.
+    bZoomingIn = GalaxyCam.m_nCurrentState == 1 && GalaxyCam.m_fZoomTime != 0.0 && GalaxyCam.m_bTransitionDown
+        && GalaxyCam.m_bFirstStage;
     if (JumpState == EJumpState.EJS_Away)
     {
-        // The first active tick after the travel's pause, in the same opening of the map.
-        if (Handler != None && Handler.oPanel == JumpPanel && MapState == 2)
+        // The first active tick after the pause. It was the travel's pause when the travel's Kismet got to its end; a
+        // pause of something else (the cluster's own event, the map closed) with the travel never run gets the plot back.
+        if (JumpTravelDone() || JumpOldPrevious == JumpWorld)
         {
-            ParkAfterJump();
+            LogJumpBack();
+            if (bZoomingIn && Handler != None && Handler.oPanel == JumpPanel)
+            {
+                bLevelChanged = EndGalaxyZoom(DeltaTime);
+            }
+        }
+        else
+        {
+            RevertJump("the map paused, but the travel did not run");
         }
         SetJumpState(EJumpState.EJS_None);
     }
     if (JumpState == EJumpState.EJS_None)
     {
-        if (bClusterJump && MapState == 2 && PrevMapState == 1)
+        // Once per zoom, on its first tick: a zoom the travel has paused and resumed is not a new one.
+        if (bClusterJump && bZoomingIn && !bPrevZoomingIn)
         {
-            StartJump();
-        }
-    }
-    else if (JumpState == EJumpState.EJS_Zooming)
-    {
-        JumpTime += DeltaTime;
-        if (MapState != 2 || Handler == None || Handler.oPanel != JumpPanel
-            || ClusterJumpWorld(GalaxyCam.m_pSelectedCluster) != JumpWorld)
-        {
-            LogInternal("Jump to Active_World " $ JumpWorld $ " dropped: the map left that cluster (state " $ MapState $ ")",
-                'GalaxyMapNormandy');
-            SetJumpState(EJumpState.EJS_None);
-        }
-        else if (Handler.m_bWaitingForMsgBox || JumpTime > JumpZoomTimeout)
-        {
-            LogInternal("Jump to Active_World " $ JumpWorld $ " dropped: a message box is open or the zoom took over "
-                $ JumpZoomTimeout $ " s", 'GalaxyMapNormandy');
-            SetJumpState(EJumpState.EJS_None);
-        }
-        else if (GalaxyCam.m_fZoomTime != 0.0 || GalaxyCam.m_bPaused)
-        {
-            JumpSettledTime = 0.0;
-        }
-        else
-        {
-            JumpSettledTime += DeltaTime;
-            if (JumpSettledTime >= JumpSettleTime)
-            {
-                FireJump();
-            }
+            FireJump(DeltaTime);
         }
     }
     else if (JumpState == EJumpState.EJS_Sent)
@@ -2073,11 +2072,8 @@ public function bool UpdateJump(float DeltaTime)
         if (JumpTravelDone())
         {
             // With no cutscene to play (undocked, cinematic off, no arrival event), the travel's Kismet pauses and resumes
-            // the map within one frame: the director never sees it paused.
-            if (MapState == 2)
-            {
-                ParkAfterJump();
-            }
+            // the map within one frame: the director never sees it paused, and the zoom goes on unbroken.
+            LogJumpBack();
             SetJumpState(EJumpState.EJS_None);
         }
         else if (JumpTime > JumpSentTimeout)
@@ -2086,28 +2082,27 @@ public function bool UpdateJump(float DeltaTime)
             SetJumpState(EJumpState.EJS_None);
         }
     }
-    PrevMapState = MapState;
-    return JumpState == EJumpState.EJS_Sent;
+    bPrevZoomingIn = bZoomingIn;
+    return bLevelChanged;
 }
 
-// The zoom from galaxy level just ended in a cluster: a jump starts when it is another cluster with a relay system.
-public function StartJump()
+// The travel is over and the map is back, at galaxy level with the first half of the zoom still to run. The player has
+// seen the travel: the map goes straight to the cluster. A zoom time of almost nothing makes the camera's tick end that
+// half: it builds the cluster and starts the half at cluster level (tested live 2026-11-09). That tick is run here, at
+// once, so the game's own camera tick of this frame, which comes after the director's, already moves the camera into the
+// cluster, and no frame shows the galaxy. TRUE when the map is at cluster level now.
+public function bool EndGalaxyZoom(float DeltaTime)
 {
-    local int Target;
-
-    Target = ClusterJumpWorld(GalaxyCam.m_pSelectedCluster);
-    if (Target == 0)
+    GalaxyCam.m_fZoomTime = 0.0001;
+    GalaxyCam.Tick(DeltaTime);
+    if (GalaxyCam.m_nCurrentState != 2)
     {
-        return;
+        LogInternal("Jump: the camera did not end the galaxy half of the zoom at once (level " $ GalaxyCam.m_nCurrentState
+            $ "); the zoom goes on", 'GalaxyMapNormandy');
+        return FALSE;
     }
-    if (Handler == None || Handler.oPanel == None)
-    {
-        LogInternal("Jump to Active_World " $ Target $ " not made: no galaxy map movie", 'GalaxyMapNormandy');
-        return;
-    }
-    JumpWorld = Target;
-    JumpPanel = Handler.oPanel;
-    SetJumpState(EJumpState.EJS_Zooming);
+    UpdateLocationMarker(2);
+    return TRUE;
 }
 
 // The Active_World of Cluster's relay system, or 0 for the Normandy's own cluster, a cluster with no relay system in
@@ -2138,7 +2133,7 @@ public function int ClusterJumpWorld(Actor Cluster)
         if (Number != LoggedNoHost)
         {
             LoggedNoHost = Number;
-            LogInternal("No relay system known for " $ Tag $ ": no jump, the map stays at cluster level",
+            LogInternal("No relay system known for " $ Tag $ ": no jump, the game zooms into the cluster",
                 'GalaxyMapNormandy');
         }
         return 0;
@@ -2146,27 +2141,43 @@ public function int ClusterJumpWorld(Actor Cluster)
     return Number * 10000 + ClusterHosts[Number] * 100;
 }
 
-// Sends the map's travel event, as native code does for a system pick (FireEvt): Active_World first, then bPlayersOnly
-// cleared, then CheckActivate on the event. BuildSystem would write Active_World back from m_pSelectedSystem when the map
-// rebuilds after the travel, so that has to be None, as it is after a zoom into another cluster (SelectCurrentSystem).
-public function FireJump()
+// The zoom from galaxy level into the cluster under the cursor (m_pSelectedObject) has just started: when it is another
+// cluster with a relay system, sends the map's travel event, as native code does for a system pick (FireEvt):
+// Active_World first, then bPlayersOnly cleared, then CheckActivate on the event. The map's rebuild after the travel
+// writes Active_World back from the camera's cluster and system when they do not match it. So m_pSelectedCluster, which
+// the game sets to the picked cluster only at the end of this half of the zoom, is set to it now, and m_pSelectedSystem
+// has to be None, as SelectCurrentSystem leaves it on another cluster. The relay system may have no actor yet (the game
+// makes a cluster's systems when it builds the cluster), so only its row in the map's tables is checked.
+// The camera ticks after the director, and ends this half of the zoom in the frame where m_fZoomTime is no more than
+// its DeltaTime: it then builds the cluster and starts the ClusterTransition event, whose Kismet would run with the
+// travel's and resume the map under it. The first tick of the zoom has the whole half (0.5 s) left; with two frames or
+// less, no jump.
+public function FireJump(float DeltaTime)
 {
     local BioGlobalVariableTable Globals;
     local BioSeqEvt_GalaxyMap Travel;
-    local InterpActor Host;
+    local Actor Cluster;
     local Pawn Player;
     local string Missing;
+    local int Target;
+    local int HostName;
 
+    Cluster = GalaxyCam.m_pSelectedObject;
+    Target = ClusterJumpWorld(Cluster);
+    if (Target == 0)
+    {
+        return;
+    }
     Globals = BioWorldInfo(WorldInfo).GetGlobalVariables();
     Travel = FindMapEvent("SystemTransition");
-    Host = FindSystemActor(JumpWorld);
+    HostName = SystemNameRef(Target);
     if (GetALocalPlayerController() != None)
     {
         Player = GetALocalPlayerController().Pawn;
     }
-    if (Globals == None)
+    if (Handler == None || Handler.oPanel == None)
     {
-        Missing = "plot table";
+        Missing = "galaxy map movie";
     }
     else if (Travel == None)
     {
@@ -2176,36 +2187,44 @@ public function FireJump()
     {
         Missing = "player pawn";
     }
-    else if (Host == None || Host.bHidden)
+    else if (HostName == 0)
     {
-        Missing = "shown relay system";
+        Missing = "relay system in the map's tables";
     }
     else if (GalaxyCam.m_pSelectedSystem != None)
     {
         Missing = "empty system selection";
     }
+    else if (GalaxyCam.m_fZoomTime <= 2.0 * DeltaTime)
+    {
+        Missing = "time left in the zoom at galaxy level";
+    }
     if (Missing != "")
     {
-        LogInternal("Jump to Active_World " $ JumpWorld $ " not made: no " $ Missing $ "; the map stays at cluster level",
+        LogInternal("Jump to Active_World " $ Target $ " not made: no " $ Missing $ "; the game zooms into the cluster",
             'GalaxyMapNormandy');
-        SetJumpState(EJumpState.EJS_None);
         return;
     }
+    JumpWorld = Target;
+    JumpPanel = Handler.oPanel;
+    JumpCluster = Cluster;
+    JumpOldCluster = GalaxyCam.m_pSelectedCluster;
     JumpOldWorld = Globals.GetInt(13);
     JumpOldViewing = Globals.GetInt(105);
     JumpOldPrevious = Globals.GetInt(45);
+    GalaxyCam.m_pSelectedCluster = Cluster;
     Globals.SetInt(13, JumpWorld);
     Globals.SetInt(105, JumpWorld / 100 * 100);
     WorldInfo.bPlayersOnly = FALSE;
+    SetJumpState(EJumpState.EJS_Sent);
     if (!Travel.CheckActivate(Player, Player))
     {
         RevertJump("the SystemTransition event did not start");
         SetJumpState(EJumpState.EJS_None);
         return;
     }
-    LogInternal("Jump: Active_World " $ JumpOldWorld $ " to " $ JumpWorld $ " (" $ Host.Name $ "), relay cinematic "
+    LogInternal("Jump: Active_World " $ JumpOldWorld $ " to " $ JumpWorld $ " (" $ HostName $ "), relay cinematic "
         $ (bRelayMovie ? "on" : "off"), 'GalaxyMapNormandy');
-    SetJumpState(EJumpState.EJS_Sent);
 }
 
 // Whether the travel's Kismet has run to its end: it sets Previous_Active_World (int 45) to Active_World there. Unknown
@@ -2218,8 +2237,12 @@ public function bool JumpTravelDone()
     return Globals != None && JumpOldPrevious != JumpWorld && Globals.GetInt(45) == JumpWorld;
 }
 
-// Puts ints 13 and 105 back when the travel did not run, unless the Kismet got as far as Previous_Active_World (int 45),
-// which it sets at the end.
+// Puts back what FireJump wrote when the travel did not run, unless the Kismet got as far as Previous_Active_World (int
+// 45), which it sets at the end. Int 13 always, and with it the camera's copy of it (m_nActiveWorld, which a rebuild of
+// the map takes from int 13 and the travel prompt reads). Int 105 while the map is still at galaxy level and holds
+// FireJump's value: past it, the game has written it for the cluster it built. The camera's cluster while the jump is
+// Sent (the cluster actors are kept until then) and the first half of the zoom still runs: past it, the game has set the
+// picked cluster itself.
 public function RevertJump(string Why)
 {
     local BioGlobalVariableTable Globals;
@@ -2231,18 +2254,33 @@ public function RevertJump(string Why)
         return;
     }
     Globals.SetInt(13, JumpOldWorld);
-    Globals.SetInt(105, JumpOldViewing);
+    if (GalaxyCam != None)
+    {
+        if (GalaxyCam.m_nActiveWorld == JumpWorld)
+        {
+            GalaxyCam.m_nActiveWorld = JumpOldWorld;
+        }
+        if (GalaxyCam.m_nCurrentState == 1 && Globals.GetInt(105) == JumpWorld / 100 * 100)
+        {
+            Globals.SetInt(105, JumpOldViewing);
+        }
+        if (JumpCluster != None && GalaxyCam.m_nCurrentState == 1 && GalaxyCam.m_fZoomTime != 0.0 && GalaxyCam.m_bFirstStage
+            && GalaxyCam.m_bTransitionDown && GalaxyCam.m_pSelectedCluster == JumpCluster)
+        {
+            GalaxyCam.m_pSelectedCluster = JumpOldCluster;
+        }
+    }
     LogInternal("Jump to Active_World " $ JumpWorld $ ": " $ Why $ "; Active_World set back to " $ JumpOldWorld,
         'GalaxyMapNormandy');
 }
 
-// The map's rebuild after the travel keeps the cursor where it was, on the cluster's first system: the cursor and the
-// ship go to the relay system, where the Normandy now is (CheckZoomEnd, once the map is still).
-public function ParkAfterJump()
+// The travel is over and the map is back. The zoom then ends at cluster level, where the cursor and the ship go to the
+// relay system (CheckZoomEnd).
+public function LogJumpBack()
 {
-    bCheckZoomEnd = IsNormandyCluster(GalaxyCam.m_pSelectedCluster);
-    LogInternal("Jump: back at cluster level, Active_World " $ SystemWorld $ (bCheckZoomEnd ? "" : ", cursor left as it is"),
-        'GalaxyMapNormandy');
+    LogInternal("Jump: the map is back at level " $ GalaxyCam.m_nCurrentState $ ", Active_World "
+        $ BioWorldInfo(WorldInfo).GetGlobalVariables().GetInt(13)
+        $ (Handler != None && Handler.oPanel == JumpPanel ? "" : ", in another opening of the map"), 'GalaxyMapNormandy');
 }
 
 // The travel's Kismet paused the map (the galaxy mode is no longer active): the jump is under way.
@@ -2251,13 +2289,43 @@ public function JumpMapInactive()
     if (JumpState == EJumpState.EJS_Sent)
     {
         SetJumpState(EJumpState.EJS_Away);
+        SkipZoomBlur();
     }
 }
 
-// None, then Zooming from the zoom into another cluster until it is over, Sent once the event is sent, Away once the map
-// has paused for it, None again at the first tick the map is back (or straight from Sent when the travel ran within one
-// frame, JumpTravelDone). Zooming survives the ClusterTransition pause, and Away the travel's pause: Cleanup leaves them
-// alone.
+// The game's zoom starts its ZoomTransition event, whose Kismet (BIOA_NOR10_03_GM_LAY) is one Matinee of 1.09 s: it
+// blurs the picture up to the middle of the zoom, where the cluster replaces the galaxy, and back. Kismet runs on while
+// the map is paused, so with the travel sent on the zoom's first tick the blur lay over the start of the undocking
+// cutscene (seen 2026-11-09). None when the event or its Matinee is not there.
+public function SeqAct_Interp FindZoomMatinee()
+{
+    local BioSeqEvt_GalaxyMap Zoom;
+
+    Zoom = FindMapEvent("ZoomTransition");
+    if (Zoom == None || Zoom.OutputLinks.Length == 0 || Zoom.OutputLinks[0].Links.Length == 0)
+    {
+        return None;
+    }
+    return SeqAct_Interp(Zoom.OutputLinks[0].Links[0].LinkedOp);
+}
+
+// The map has paused for the travel: the zoom's Matinee goes to its end, and the keys on the way take the blur off. A
+// position past the end is clamped to it (tested live 2026-11-09: no blur on the rest of a zoom).
+public function SkipZoomBlur()
+{
+    local SeqAct_Interp Matinee;
+
+    Matinee = FindZoomMatinee();
+    if (Matinee != None && Matinee.bIsPlaying)
+    {
+        Matinee.SetPosition(1000.0, FALSE);
+    }
+}
+
+// None, then Sent once the event is sent, on the first tick of the zoom into another cluster, Away once the map has
+// paused for it, None again at the first tick the map is back (or straight from Sent when the travel ran within one
+// frame, JumpTravelDone). Away outlasts the travel's pause: Cleanup leaves it alone. The camera's cluster actors are
+// kept while Sent only, for RevertJump: they are the map level's.
 public function SetJumpState(EJumpState NewState)
 {
     if (NewState == JumpState)
@@ -2265,7 +2333,11 @@ public function SetJumpState(EJumpState NewState)
         return;
     }
     JumpTime = 0.0;
-    JumpSettledTime = 0.0;
+    if (NewState != EJumpState.EJS_Sent)
+    {
+        JumpCluster = None;
+        JumpOldCluster = None;
+    }
     if (NewState == EJumpState.EJS_None)
     {
         JumpWorld = 0;
@@ -2751,8 +2823,6 @@ defaultproperties
     StageHeight = 720.0
     bClusterJump = TRUE
     ClusterHosts = (0, 1, 0, 1, 0, 0, 0, 1, 1, 7, 1, 3, 1, 1, 4, 5, 2, 2, 1, 1, 1, 1)
-    JumpSettleTime = 0.1
-    JumpZoomTimeout = 5.0
     JumpSentTimeout = 2.0
     TravelScenePath = "BIOA_NOR10_03_DSG.TheWorld.PersistentLevel.Main_Sequence.GalaxyMap.TravelScene."
     ButtonWiden = 1.0

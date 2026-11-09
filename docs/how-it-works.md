@@ -61,18 +61,42 @@ through the galaxy map's Kismet (`BIOA_NOR10_03_DSG`, sequence `GalaxyMap`). Its
 travel: pause the map, the undock scene when docked, the relay movie in `TravelScene`, plot int 45
 (`Previous_Active_World`) := 13, the arrival events, and the map rebuilt.
 
-The director starts that same travel at the cluster pick. When the zoom from galaxy level ends in a cluster that does
-not hold the Normandy, and the zoom has settled, it sets plot int 13 to the cluster's relay system (`ClusterHosts` in
-[tuning.md](tuning.md#the-jump)) and plot int 105 (the cluster being viewed) to the cluster. As the game does for a
-system pick, it then turns `WorldInfo.bPlayersOnly` off and activates the `SystemTransition` event. The camera's
-selected system stays empty, or the map's rebuild after the travel would write plot int 13 back from it. The map comes
-back at cluster level, and the director parks the ring and the ship on the relay system.
+The director starts that same travel at the cluster pick. The pick starts the game's zoom into the cluster: half a
+second at galaxy level, then the game builds the cluster and the zoom goes on at cluster level. On the first frame of
+that zoom, when the cluster does not hold the Normandy, the director sets plot int 13 to the cluster's relay system
+(`ClusterHosts` in [tuning.md](tuning.md#the-jump)) and plot int 105 (the cluster being viewed) to the cluster. As the
+game does for a system pick, it then turns `WorldInfo.bPlayersOnly` off and activates the `SystemTransition` event.
+The map pauses on the next frame, still at galaxy level, so the cluster does not show before the undock scene or the
+movie. The pause keeps the zoom where it was: when the travel ends, the map is back at galaxy level with the rest of
+the zoom to run. The director ends that half at once. It sets the camera's zoom time to almost nothing and runs the
+camera's tick, which builds the cluster and starts the zoom at cluster level, so the first picture after the travel is
+the cluster, which now holds the Normandy. The ring and the ship land on the relay system, as after any zoom into the
+Normandy's cluster. A cluster's own event, such as the call on the first visit to the Armstrong Nebula, starts one
+frame after the cluster shows. With the movie off, undocked and with no arrival event, nothing pauses the map and the
+zoom runs unbroken, as in the normal game.
 
-The director tracks the jump in one state: none, zooming (waiting for the zoom to settle), sent (the event was
-activated) and away (the travel closed the map). It drops the jump when the zoom changes target, the map leaves cluster
-level, a message box opens or a timeout runs out. If the travel never started, it puts plot ints 13 and 105 back. The
-travel is done when plot int 45 changes to the target: with the movie off, undocked and with no arrival event, the
-Kismet pauses and resumes the map in one frame, so the director never sees it closed.
+The game blurs its zoom with a Matinee of 1.09 s that the pick starts (the `ZoomTransition` event of
+`BIOA_NOR10_03_GM_LAY`): the blur is strongest in the middle, where the cluster replaces the galaxy. Kismet goes on
+while the map is paused, so that blur would lie over the start of the undock scene. Once the travel has paused the map,
+the director moves the Matinee to its end, which takes the blur off.
+
+The map's rebuild after the travel writes plot int 13 back from the camera's cluster and system when they do not match
+it. So the director also sets the camera's cluster (`m_pSelectedCluster`) to the picked one, which the game does itself
+only half a second later, and the camera's selected system stays empty. The relay system may have no actor yet (the
+game makes a cluster's systems when it builds the cluster), so the director checks only that the map's tables have its
+row.
+
+The director tracks the jump in one state: none, sent (the event was activated) and away (the map paused). If the map
+does not pause within `JumpSentTimeout`, or it paused for something else and the travel never ran, the director puts
+plot int 13 back, with the camera's copy of it. While the map is still at galaxy level it also puts back plot int 105
+and, during the first half of the zoom, the camera's cluster: past that, the game has written them itself. The travel
+is done
+when plot int 45 changes to the target: with the movie off, undocked and with no arrival event, the Kismet pauses and
+resumes the map in one frame, so the director never sees it closed. The event is not sent when two frames or less are
+left of the zoom's first half: the game would build the cluster in that same frame and start its `ClusterTransition`
+event, and the two events would run together (read in the game's code, not seen in game). One case is not covered: if
+the game loses focus in the single frame between the send and the pause, it stops its Kismet but not the zoom, and both
+events run when it has focus again.
 
 The director finds the event as the game does: it walks the game sequence, the sequences in it and the streamed levels'
 sequences. A cluster with no entry in `ClusterHosts`, such as one that another mod adds, logs a line once and stays as
@@ -137,7 +161,10 @@ The game has one profile, so a choice holds for every career and save.
 
 The game writes the profile file only now and then, so the menu writes it after each change, as the Options screen
 does. It never saves a profile the game has not read from disk yet, as that would replace the player's options and
-careers. The director reads the settings each time the map opens.
+careers. It also makes no save when the game in play has no career in the profile, which is the case of a game loaded
+from a developer slot (`BioLoadGame`): the game's own save then reads the career list without finding the character, and
+it crashed once that way (2026-11-09). The choice then holds until the game closes. The director reads the settings
+each time the map opens.
 
 The `.m3cd` adds a row to the root page of LE1CP's Mod Settings Menu, and the row names the page class. The pages'
 base class is LE1CP's `ModSettingsSubmenu`. The menu package carries a copy of it, and the game still uses the

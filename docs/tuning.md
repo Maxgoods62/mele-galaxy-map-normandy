@@ -424,8 +424,6 @@ how.
 |---|---|---|---|
 | `bClusterJump` | `TRUE` | on or off | Makes a pick of another cluster the jump. Off, the pick only zooms in |
 | `ClusterHosts` | 22 numbers | system numbers | The relay system of each cluster |
-| `JumpSettleTime` | `0.1` | seconds | How long the map stays still after the zoom before the jump |
-| `JumpZoomTimeout` | `5.0` | seconds | Longest wait for the zoom to end |
 | `JumpSentTimeout` | `2.0` | seconds | Longest wait for the travel to start |
 | `TravelScenePath` | the `TravelScene` sequence | object path | Where the Mass relay movie setting changes the links |
 
@@ -433,11 +431,13 @@ how.
 8 is for `Cluster08`. Each number is the system the Normandy arrives at, the 02 of `System02`, and 0 means none. The
 defaults are the systems that hold the clusters' mass relays: the first system of most clusters, and another one in six
 clusters, such as system 7 in cluster 9. A pick of a cluster with no entry, or with 0, only zooms in, and the game log
-gets a line that contains `No relay system known`. A cluster that another mod adds is in that case.
+gets a line that contains `No relay system known`. A cluster that another mod adds is in that case. The director checks
+that the system has a row in the map's tables, not that the map shows it: in the normal game and with LE1CP every relay
+system shows when its cluster does.
 
 The director reads `bClusterJump` each frame and `ClusterHosts` at each pick, so a live change shows at the next pick.
-It reads `TravelScenePath` when the map opens. The timeouts count seconds of open map. When one runs out, the jump is
-dropped, the map stays at cluster level as in the normal game, and the game log gets a line that starts with
+It reads `TravelScenePath` when the map opens. The timeout counts seconds of open map. When it runs out, the jump is
+dropped, the game zooms into the cluster as in the normal game, and the game log gets a line that starts with
 `Jump to Active_World`.
 
 ## Values to read
@@ -459,7 +459,7 @@ its level loads again.
 | `FlySpeed` | Speed of the heading model, in units/s |
 | `VirtualStickX`, `VirtualStickY` | The virtual stick before its cap (1 is a full stick) |
 | `LoadedFlightSound` | The flight sound now loaded, -1 before the first |
-| `JumpState` | Where a jump is: `EJS_None`, `EJS_Zooming`, `EJS_Sent` or `EJS_Away` |
+| `JumpState` | Where a jump is: `EJS_None`, `EJS_Sent` or `EJS_Away` |
 | `bRelayMovie` | `true` when the Mass relay movie setting is on, read when the map opens |
 
 A setting multiplier is the stored percent divided by 100, so 1.0 is 100%. `PeakSpeed` and `PeakMouseRate` keep

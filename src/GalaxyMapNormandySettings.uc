@@ -174,19 +174,51 @@ public static function bool SetPercent(int Id, int Percent)
 // Writes the profile file now, as the Options screen does when it applies a change (LE1CP's FOV slider too). A handler
 // made here works without the screen (tested live 2026-10-30). The game writes the file on its own only now and then,
 // not on every exit, and SFXEngine.QueueSaveGameCommand(SaveGame_SaveGamerProfile) only fills the save system's record.
+// No save when the game's own save would crash (CanSaveProfile): the choice then holds until the game closes.
 public static function SaveProfile()
 {
     local BioSFHandler_PCOptions Handler;
-    local WorldInfo WI;
+    local BioWorldInfo WI;
 
-    WI = Class'WorldInfo'.static.GetWorldInfo();
+    WI = BioWorldInfo(Class'WorldInfo'.static.GetWorldInfo());
     if (WI == None)
     {
+        return;
+    }
+    if (!CanSaveProfile(WI))
+    {
+        LogInternal("Profile not saved: the game in play has no career in the profile (a developer save); the setting holds until the game closes",
+            'GalaxyMapNormandy');
         return;
     }
     Handler = new Class'BioSFHandler_PCOptions';
     Handler.oWorldInfo = WI;
     Handler.SaveProfile();
+}
+
+// The game's profile save also writes the launcher's file (Save\ME1\Launcher_Profile) when the profile names a last
+// save. For that it looks the character in play (CurrentGame.m_sCharacterID) up in the profile's career list and uses
+// the entry without checking that it found one. A game loaded from a developer slot (BioLoadGame) has an empty character
+// id and no career: the save then read what lay before the list, and crashed the game (2026-11-09, MassEffect1.exe
+// +0xa09574; earlier saves from a developer slot had not crashed). A career's game has its entry.
+public static function bool CanSaveProfile(BioWorldInfo WI)
+{
+    local BioGamerProfile Profile;
+    local int I;
+
+    Profile = WI.GetBioGamerProfile();
+    if (Profile == None || WI.CurrentGame == None || Profile.m_sLastSaveGame == "")
+    {
+        return TRUE;
+    }
+    for (I = 0; I < Profile.lstCharacterProfiles.Length; I++)
+    {
+        if (Profile.lstCharacterProfiles[I].sCharacterID ~= WI.CurrentGame.m_sCharacterID)
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 public static function ResetAll()

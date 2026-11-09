@@ -19,10 +19,10 @@ normal game: the marker shows at galaxy level, and the game draws none in planet
 
 The mod also moves the jump to another cluster. In the normal game, picking another cluster at galaxy level only
 zooms in, and the mass relay movie plays later, when you pick a system there. With the mod, picking another cluster is
-the jump: the map zooms in, the Normandy leaves dock if it is docked, the relay movie plays, and the map comes back at
-cluster level with the ship at the cluster's relay system. There is no travel prompt. Picking your own cluster still
-just zooms in, and moves between systems of one cluster work as in the normal game. The Mass relay movie setting
-turns the movie off.
+the jump: the Normandy leaves dock if it is docked, the relay movie plays, and the map comes back at cluster level
+with the ship at the cluster's relay system. The cluster does not show before the movie. There is no travel
+prompt. Picking your own cluster still just zooms in, and moves between systems of one cluster work as in the normal
+game. The Mass relay movie setting turns the movie off.
 
 A cluster added by another mod has no relay system the mod knows of. Picking it zooms in as in the normal game, and
 the movie plays when you pick a system there.
