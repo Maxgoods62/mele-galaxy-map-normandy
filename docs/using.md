@@ -144,8 +144,8 @@ Restore defaults, the last row of the page, sets all nine settings back to 100 %
 ### Languages of the pages
 
 The pages follow the game's text language: English, French, German, Italian, Spanish, Polish, Russian or Japanese. The
-page title and the row on the first page of Mod Settings read Galaxy Map Normandy in every language. No native speaker
-has reviewed the translations.
+mod's name, on its row in Mod Settings and at the top of its pages, follows the language too, but no language has a
+translation of it yet, so it reads Galaxy Map Normandy. No native speaker has reviewed the translations.
 
 ### Where your choices are kept
 

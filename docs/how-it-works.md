@@ -114,11 +114,18 @@ base class is LE1CP's `ModSettingsSubmenu`. The menu package carries a copy of i
 patch's own class ([ASSETS.md](ASSETS.md#the-community-patch-settings-page-class)).
 
 The strings are in [`src/tlk/`](../src/tlk), one file for each of the eight languages. Each line is a string id, a
-tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220024, and they
-start with 7422, the mod's mount. Every file must have exactly the ids of `INT.tsv`, or the build stops. 74220000 is
-the mod's name, for `NameStrRef` in `AutoLoad.ini`. The page classes use a string as `$<id>`, and the row that the
-`.m3cd` adds uses 74220022 for its description. To add a string, give it the next free id in all eight files. The
-game's other language codes FE, GE, IE, RA and PLPC get copies of FR, DE, IT, RU and PL.
+tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220027, and they
+start with 7422, the mod's mount. Every file must have exactly the ids of `INT.tsv`, or the build stops.
+
+74220000 is the mod's name. The menu shows it on the row that the `.m3cd` adds, as that row's description title, as
+the page title and as the subtitle of each step page. `NameStrRef` in `AutoLoad.ini` points at it too, and only M3
+reads that. The subtitle is one line that fits about 459 pixels, so a translated name should be about as long as
+"Galaxy Map Normandy".
+
+The page classes use a string as `$<id>`, and the `.m3cd` row uses 74220000 for its name and 74220022 for its
+description. When a field has literal text, the menu shows it instead of the string id, so a word that should follow
+the language must not be a literal. To add a string, give it the next free id in all eight files. The game's other
+language codes FE, GE, IE, RA and PLPC get copies of FR, DE, IT, RU and PL.
 
 ## Sound
 

@@ -3,6 +3,13 @@
 The builds under "Development builds" were made for testing between 2026-10-28 and 2026-11-06. The last of them, v0.27,
 became v1.0 with the changes marked v1.0 in that list. The version number is `modver` in `mod/moddesc.ini`.
 
+## Unreleased
+
+- The mod's name in Mod Settings (its row on the first page, the right pane's title for that row, the title of the mod's
+  page and the subtitle of each setting's page) comes from the mod's strings, id 74220000, like the rest of its text.
+  Before, it was fixed English text, so a translated name in the language files never showed. Reported by a
+  translator.
+
 ## v1.3 (2026-11-08)
 
 The game's own Enter Orbit button, and two small fixes.

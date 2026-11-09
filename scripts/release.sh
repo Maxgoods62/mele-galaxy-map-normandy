@@ -31,8 +31,8 @@
 #     the release and its tag on the commit you pushed. If GitHub refuses, no tag is left behind.
 #  8. Once the Nexus page is public, register the DLC folder name and the mount priority with M3: Mod Utils > Submit mod
 #     information to ME3Tweaks. Then update the Compatibility section of README.md. The form lists the DLC folder only
-#     if AutoLoad.ini has a NameStrRef in its [GUI] section. This mod's is 74220000, the id of the string "Galaxy Map
-#     Normandy" in every src/tlk/*.tsv file. The form sends modname from mod/moddesc.ini as the mod's name.
+#     if AutoLoad.ini has a NameStrRef in its [GUI] section. This mod's is 74220000, the mod's name in src/tlk/*.tsv.
+#     The form sends modname from mod/moddesc.ini as the mod's name.
 set -euo pipefail
 
 REPO=Maxgoods62/mele-galaxy-map-normandy

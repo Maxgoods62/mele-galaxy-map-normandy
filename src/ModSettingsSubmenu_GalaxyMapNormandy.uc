@@ -6,7 +6,9 @@ Class ModSettingsSubmenu_GalaxyMapNormandy extends ModSettingsSubmenu
 // the setting's step page. The menu calls OnRefreshMenu before it lists a page's menuItems (on opening the page, after
 // every action, on coming back from a step page), so the rows are rebuilt there from the stored values. The words are
 // strings of the mod's GlobalTlk, one file per language in src/tlk/. The menu shows a row's s field if it has text, else
-// its sr field. The page title, the mod's name, stays a plain string in every language.
+// its sr field, so a word that should follow the language is never a literal in an s field: it goes in the sr field, or
+// in the s field as string($id). The mod's name is $74220000: the page title, each step page's subtitle, and the root
+// row in the .m3cd.
 
 var transient int RestoreRow;
 
@@ -43,7 +45,7 @@ public function AddSetting(int Id, stringref Label, stringref Description)
     Page.SettingId = Id;
     Page.SettingDescription = Description;
     Page.srTitle = Label;
-    Page.sSubtitle = sTitle;
+    Page.srSubtitle = srTitle;
     Item.srLeftText = Label;
     Item.sRightText = Class'ModSettingsSubmenu_GalaxyMapNormandyStep'.static.PercentText(Id);
     Item.srDescriptionTitleText = Label;
@@ -64,6 +66,6 @@ public function bool OnActionButtonPressed(Object outerMenu, int selectionIndex)
 
 defaultproperties
 {
-    sTitle = "Galaxy Map Normandy"
+    srTitle = $74220000
     srSubtitle = $74220019
 }

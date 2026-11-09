@@ -2,4 +2,4 @@
 +Levels=(LevelName="GalaxyMapNormandy_NOR10", LoadIfPrefix=("BIOA_NOR10"))
 
 [BioUI.ini ModSettings_Submenus_LE1CP.ModSettingsSubmenu_Root]
-+menuItems=(sCenterText="Galaxy Map Normandy", sDescriptionTitleText="Galaxy Map Normandy", srDescriptionText=74220022, SubMenuClassName="ModSettings_Submenus_GalaxyMapNormandy.GalaxyMapNormandyMenu.ModSettingsSubmenu_GalaxyMapNormandy")
++menuItems=(srCenterText=74220000, srDescriptionTitleText=74220000, srDescriptionText=74220022, SubMenuClassName="ModSettings_Submenus_GalaxyMapNormandy.GalaxyMapNormandyMenu.ModSettingsSubmenu_GalaxyMapNormandy")
