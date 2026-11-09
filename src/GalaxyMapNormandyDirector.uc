@@ -27,6 +27,15 @@ enum EEnterButtonState
     EBS_Shrinking
 };
 
+// What the director holds of GalaxyMapNormandy_SFX, about 28 MB once loaded (DataSize): the ship's mesh, the engine
+// trail, the flight sound's cues, and the audio components that play those cues. SetSFXState makes each change.
+enum ESFXState
+{
+    ESS_Released,
+    ESS_Held,
+    ESS_Fading
+};
+
 var transient BioCameraBehaviorGalaxy GalaxyCam;
 var transient BioSFHandler_GalaxyMap Handler;
 var transient Actor Ring;
@@ -57,6 +66,8 @@ var transient bool bWhooshPlaying;
 // this value from defaultproperties and builds only that variant's cues.
 var int FlightSound;
 var transient int LoadedFlightSound;
+var transient ESFXState SFXState;
+var transient float SFXReleaseTime;
 var transient bool bFlying;
 var transient float SlowTime;
 var transient float PeakSpeed;
@@ -771,8 +782,9 @@ public function SetupFlightSound(int Variant)
     }
 }
 
-// The cues of FlightSound, loaded once and held here (a cue nobody references is collected about a minute after
-// DynamicLoadObject). A variant that does not load falls back to the original sound.
+// The cues of FlightSound, loaded by SpawnShip (the first tick at cluster or system level of each opening of the map)
+// and held here until the map closes (a cue nobody references is collected about a minute after DynamicLoadObject;
+// SetSFXState lets go). A variant that does not load falls back to the original sound.
 public function LoadFlightSound()
 {
     local string Prefix;
@@ -2005,6 +2017,7 @@ public function bool SpawnShip()
 {
     local LightingChannelContainer Channels;
 
+    SetSFXState(ESFXState.ESS_Held);
     if (ShipMesh == None)
     {
         ShipMesh = StaticMesh(DynamicLoadObject("GalaxyMapNormandy_SFX.SR1_Normandy", Class'StaticMesh'));
@@ -2147,6 +2160,67 @@ public function Cleanup()
     if (ShipLight != None && ShipLight.bAttached)
     {
         DetachComponent(ShipLight);
+    }
+    UpdateSFX();
+}
+
+// The map is closed (Cleanup, every tick): let go of what SpawnShip loaded from GalaxyMapNormandy_SFX, so the next
+// garbage collection frees the package (LE1 collects what nothing references). The audio components keep their cues
+// until the fades Cleanup started have ended, then they let go too. The next SpawnShip loads it again.
+public function UpdateSFX()
+{
+    if (SFXState == ESFXState.ESS_Held)
+    {
+        SetSFXState(ESFXState.ESS_Fading);
+    }
+    if (SFXState == ESFXState.ESS_Fading && WorldInfo.TimeSeconds >= SFXReleaseTime)
+    {
+        SetSFXState(ESFXState.ESS_Released);
+    }
+}
+
+// Held from SpawnShip on; Fading once the map closes, with only the audio components' cues left, until the longest fade
+// (LoopFadeOut, or a loop's LoopCrossfade) and half a second more have passed; then Released.
+public function SetSFXState(ESFXState NewState)
+{
+    if (NewState == SFXState)
+    {
+        return;
+    }
+    if (NewState == ESFXState.ESS_Fading)
+    {
+        ShipMesh = None;
+        EngineFX = None;
+        WhooshCue = None;
+        LoopCue = None;
+        LoopSystemCue = None;
+        Loop2Cue = None;
+        Loop2SystemCue = None;
+        PlayingLoopCue = None;
+        PlayingLoop2Cue = None;
+        LoadedFlightSound = -1;
+        SFXReleaseTime = WorldInfo.TimeSeconds + FMax(LoopFadeOut, LoopCrossfade) + 0.5;
+    }
+    else if (NewState == ESFXState.ESS_Released)
+    {
+        ReleaseSound(WhooshSound);
+        ReleaseSound(OldWhooshSound);
+        ReleaseSound(LoopSound);
+        ReleaseSound(OldLoopSound);
+        ReleaseSound(Loop2Sound);
+        ReleaseSound(OldLoop2Sound);
+        LogInternal("SFX package let go: the next garbage collection frees it", 'GalaxyMapNormandy');
+    }
+    SFXState = NewState;
+}
+
+// A stopped component still holds its cue, and the cue its waves. PlayCue sets the cue again at the next play.
+public function ReleaseSound(AudioComponent Sound)
+{
+    if (Sound != None)
+    {
+        Sound.Stop();
+        Sound.SoundCue = None;
     }
 }
 

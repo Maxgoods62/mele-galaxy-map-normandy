@@ -3,6 +3,11 @@
 The builds under "Development builds" were made for testing between 2026-10-28 and 2026-11-06. The last of them, v0.27,
 became v1.0 with the changes marked v1.0 in that list. The version number is `modver` in `mod/moddesc.ini`.
 
+## Unreleased
+
+- The ship, its engine trail and its flight sounds (about 28 MB once loaded) stay in memory only while the galaxy map is
+  open. Before, they stayed loaded after the map closed, until the player left the Normandy.
+
 ## v1.4 (2026-11-09)
 
 Every word the mod shows can now be translated, and translators get a page of their own.

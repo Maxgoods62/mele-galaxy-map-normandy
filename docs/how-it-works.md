@@ -14,7 +14,7 @@ The build makes these packages (`.pcc` files, which hold the game's objects):
 | `Startup_MOD_GalaxyMapNormandy` | the director, the ship light, the settings helper | at startup |
 | `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the mod's name, the settings strings, the number patterns and the button's words, one per language code, with two talk tables each (`GlobalTlk_tlk` and `GlobalTlk_tlk_M`) | at startup |
 | `GalaxyMapNormandy_NOR10` | an empty level with one director actor | with the Normandy's levels |
-| `GalaxyMapNormandy_SFX` | the SR-1 mesh, the engine trail, the sound cues | by the director |
+| `GalaxyMapNormandy_SFX` | the SR-1 mesh, the engine trail, the sound cues | by the director, while the galaxy map is open: it lets go when the map closes, once the flight sounds have faded, and the game frees the package at its next garbage collection |
 | `ModSettings_Submenus_GalaxyMapNormandy` | the settings pages | when the player opens them |
 
 `AutoLoad.ini` names the startup package and the talk table, the game's string table. Its `NameStrRef` is 74220000,
