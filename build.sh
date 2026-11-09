@@ -171,9 +171,11 @@ lectool compileclass "$(win "$BUILD/ModSettings_Submenus_GalaxyMapNormandy.pcc")
     --unforce=GalaxyMapNormandyMenu --no-referencer
 grep -E '^log:|\sClass\s' "$OUT" || true
 
-# 3. DLC_MOD_GalaxyMapNormandy_GlobalTlk*.pcc: the menu's words, a package per file name the game looks for. Each text
-# language has its own src/tlk/<language>.tsv, and every one must have the ids of INT.tsv. The file without a suffix is
-# English. The game's FE, GE, IE, RA and PLPC show the text of FR, DE, IT, RU and PL: copies, as in LE1CP.
+# 3. DLC_MOD_GalaxyMapNormandy_GlobalTlk*.pcc: the mod's name, the menu's words, the number patterns and the button's
+# words, a package per file name the game looks for. Each text language has its own src/tlk/<language>.tsv, and every
+# one must have the ids of INT.tsv. The file without a suffix is English. The game's FE, GE, IE, RA and PLPC show the
+# text of FR, DE, IT, RU and PL: copies, as in LE1CP. Each package holds GlobalTlk_tlk and GlobalTlk_tlk_M, both with
+# every id.
 echo "== strings"
 TLK="$BUILD/tlk"
 rm -rf "$TLK"

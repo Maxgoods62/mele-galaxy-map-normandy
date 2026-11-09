@@ -17,13 +17,15 @@
 74220015	Sistema: dimensioni nave
 74220016	Regola le dimensioni della nave nella visuale sistema.
 74220017	Ripristina predefiniti
-74220018	Riporta tutte le impostazioni di questa pagina al 100 %.
+74220018	Riporta tutte le impostazioni di questa pagina al 100%.
 74220019	Attive dalla prossima apertura della mappa.
-74220020	(predefinito)
 74220021	Attuale
 74220022	Velocità di volo e di rotazione, reattività e dimensioni della nave sulla mappa galattica, nella visuale ammasso e nella visuale sistema, e volume del suono di volo. Valide per tutti i salvataggi.
 74220023	Volume suono di volo
-74220024	Regola il volume del suono della nave sulla mappa galattica, in entrambe le visuali: il soffio alla partenza, il motore e la propulsione. Allo 0 % il suono è disattivato.
+74220024	Regola il volume del suono della nave sulla mappa galattica, in entrambe le visuali: il soffio alla partenza, il motore e la propulsione. Allo 0% il suono è disattivato.
 74220025	Entra nel sistema
 74220026	Entra nell'orbita
 74220027	Scansione
+# Number patterns: {0} is the number, which the code puts in. 74220028 is a percent, 74220029 the default step.
+74220028	{0}%
+74220029	{0}% (predefinito)

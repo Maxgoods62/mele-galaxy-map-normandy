@@ -84,9 +84,9 @@ The longest words, such as the French Entrer dans le système, make the button a
 ### Controller
 
 The controller keeps the normal game's controls. The stick moves the map cursor, and the ship follows it. The Flight
-speed setting changes how fast the stick moves the cursor. At 100 %, the map cursor moves at a little over half its
-speed in the normal game at cluster level, and at about three quarters of it in system view. 200 % at cluster level
-and 125 % in system view are close to the normal speed.
+speed setting changes how fast the stick moves the cursor. At 100%, the map cursor moves at a little over half its
+speed in the normal game at cluster level, and at about three quarters of it in system view. 200% at cluster level
+and 125% in system view are close to the normal speed.
 
 When you move the stick, the arrow hides until you move the mouse again. As soon as you touch the controller, the game
 shows its controller prompts and the Enter Orbit button hides. A click or a key press brings the button back, but a
@@ -116,7 +116,7 @@ Community Patch, and the mod's row is on its first page.
 
 The page has Flight sound volume first, then four settings for cluster level, the same four for system view, and
 Restore defaults. The rows carry the level in their names, such as Cluster: flight speed and System: flight speed. Each
-setting shows its value on the right, such as 100 %.
+setting shows its value on the right, such as 100%.
 
 | Setting | What it changes |
 |---|---|
@@ -133,19 +133,23 @@ With a low ship response, the ship glides behind the map cursor. With a high one
 
 ### Steps and Restore defaults
 
-Each setting opens a list of steps: 50 %, 75 %, 100 %, 125 %, 150 % and 200 %. 100 % is the mod's default and is
-marked (default). For the flight speed, 100 % is slower than in the normal game. The step in use is green and marked
+Each setting opens a list of steps: 50%, 75%, 100%, 125%, 150% and 200%. 100% is the mod's default and is
+marked (default). For the flight speed, 100% is slower than in the normal game. The step in use is green and marked
 Current, and the list opens on it. Pick a step to use it. Back returns to the settings page.
 
-Flight sound volume has its own list, from 0 % to 140 % in steps of 10 %. 0 % turns the flight sound off.
+Flight sound volume has its own list, from 0% to 140% in steps of 10%. 0% turns the flight sound off.
 
-Restore defaults, the last row of the page, sets all nine settings back to 100 %.
+Restore defaults, the last row of the page, sets all nine settings back to 100%.
 
 ### Languages of the pages
 
 The pages follow the game's text language: English, French, German, Italian, Spanish, Polish, Russian or Japanese. The
 mod's name, on its row in Mod Settings and at the top of its pages, follows the language too, but no language has a
-translation of it yet, so it reads Galaxy Map Normandy. No native speaker has reviewed the translations.
+translation of it yet, so it reads Galaxy Map Normandy. The percents follow the language as the game writes them:
+French shows 100 %, the other languages 100%. No native speaker has reviewed the translations.
+
+A translation mod can replace every word of the pages and of the Enter button. The string ids and the files are in
+[how-it-works.md](how-it-works.md#translate-the-mod).
 
 ### Where your choices are kept
 

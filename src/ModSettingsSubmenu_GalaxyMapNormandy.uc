@@ -8,7 +8,8 @@ Class ModSettingsSubmenu_GalaxyMapNormandy extends ModSettingsSubmenu
 // strings of the mod's GlobalTlk, one file per language in src/tlk/. The menu shows a row's s field if it has text, else
 // its sr field, so a word that should follow the language is never a literal in an s field: it goes in the sr field, or
 // in the s field as string($id). The mod's name is $74220000: the page title, each step page's subtitle, and the root
-// row in the .m3cd.
+// row in the .m3cd. A row's value on the right is the percent pattern $74220028 with the digits put in (PercentPattern,
+// PercentText), so a language writes its percent its own way.
 
 var transient int RestoreRow;
 
@@ -16,18 +17,20 @@ public function bool OnRefreshMenu(Object outerMenu)
 {
     local Class<GalaxyMapNormandySettings> S;
     local ModSettingItemData Item;
+    local string Pattern;
 
     S = Class'GalaxyMapNormandySettings';
+    Pattern = Class'ModSettingsSubmenu_GalaxyMapNormandyStep'.static.PercentPattern();
     menuItems.Length = 0;
-    AddSetting(S.default.FlightVolumeId, $74220023, $74220024);
-    AddSetting(S.default.ClusterSpeedId, $74220001, $74220002);
-    AddSetting(S.default.ClusterTurnId, $74220003, $74220004);
-    AddSetting(S.default.ClusterResponseId, $74220005, $74220006);
-    AddSetting(S.default.ClusterSizeId, $74220007, $74220008);
-    AddSetting(S.default.SystemSpeedId, $74220009, $74220010);
-    AddSetting(S.default.SystemTurnId, $74220011, $74220012);
-    AddSetting(S.default.SystemResponseId, $74220013, $74220014);
-    AddSetting(S.default.SystemSizeId, $74220015, $74220016);
+    AddSetting(S.default.FlightVolumeId, $74220023, $74220024, Pattern);
+    AddSetting(S.default.ClusterSpeedId, $74220001, $74220002, Pattern);
+    AddSetting(S.default.ClusterTurnId, $74220003, $74220004, Pattern);
+    AddSetting(S.default.ClusterResponseId, $74220005, $74220006, Pattern);
+    AddSetting(S.default.ClusterSizeId, $74220007, $74220008, Pattern);
+    AddSetting(S.default.SystemSpeedId, $74220009, $74220010, Pattern);
+    AddSetting(S.default.SystemTurnId, $74220011, $74220012, Pattern);
+    AddSetting(S.default.SystemResponseId, $74220013, $74220014, Pattern);
+    AddSetting(S.default.SystemSizeId, $74220015, $74220016, Pattern);
     RestoreRow = menuItems.Length;
     Item.srLeftText = $74220017;
     Item.srDescriptionTitleText = $74220017;
@@ -36,7 +39,8 @@ public function bool OnRefreshMenu(Object outerMenu)
     return FALSE;
 }
 
-public function AddSetting(int Id, stringref Label, stringref Description)
+// Pattern is the percent pattern, read once per refresh (PercentPattern).
+public function AddSetting(int Id, stringref Label, stringref Description, string Pattern)
 {
     local ModSettingItemData Item;
     local ModSettingsSubmenu_GalaxyMapNormandyStep Page;
@@ -47,7 +51,8 @@ public function AddSetting(int Id, stringref Label, stringref Description)
     Page.srTitle = Label;
     Page.srSubtitle = srTitle;
     Item.srLeftText = Label;
-    Item.sRightText = Class'ModSettingsSubmenu_GalaxyMapNormandyStep'.static.PercentText(Id);
+    Item.sRightText = Class'ModSettingsSubmenu_GalaxyMapNormandyStep'.static.PercentText(Pattern,
+        Class'GalaxyMapNormandySettings'.static.GetShownPercent(Id));
     Item.srDescriptionTitleText = Label;
     Item.srDescriptionText = Description;
     Item.submenuInstance = Page;

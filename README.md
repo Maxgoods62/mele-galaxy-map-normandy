@@ -52,7 +52,7 @@ shows at galaxy level. At cluster and system level the ship takes its place, and
 ## Settings
 
 Pause the game, open Mod Settings and pick Galaxy Map Normandy. You can set the ship's flight speed, turn rate,
-response and size, from 50 % to 200 %, and the volume of its flight sound, from 0 % to 140 %. Cluster level and system
+response and size, from 50% to 200%, and the volume of its flight sound, from 0% to 140%. Cluster level and system
 view have separate settings, except for the volume. Your choices hold for
 every save and apply the next time the map opens. Details: [docs/using.md](docs/using.md#settings).
 
@@ -78,6 +78,7 @@ every save and apply the next time the map opens. Details: [docs/using.md](docs/
 | [docs/building.md](docs/building.md) | how to build the mod |
 | [docs/tuning.md](docs/tuning.md) | the values beyond the in-game settings |
 | [docs/how-it-works.md](docs/how-it-works.md) | how the mod works, and its files |
+| [Translate the mod](docs/how-it-works.md#translate-the-mod) | the string ids and the files, for translations |
 | [docs/ASSETS.md](docs/ASSETS.md) | the game files the build reads |
 | [Releasing my mods](https://github.com/Maxgoods62/mele-maxgoods-toolkit/blob/main/docs/releasing.md) | how releases are made, and how to check a download |
 | [CHANGELOG.md](CHANGELOG.md) | the changes in each version |

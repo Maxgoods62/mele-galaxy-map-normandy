@@ -235,8 +235,8 @@ After the map changes level, the first start always plays it.
 The Flight sound volume setting, `FlightVolumeScale`, multiplies the volume the director gives the whoosh and the
 loops, after the speed curve. It never changes the values in these tables. LE1 plays no sound louder than its wave:
 the cue's volume times the sound's volume stops at 1.0. With Bright thrusters (loop cues 0.5, whoosh 0.678) and the
-original sound (cues 0.5), every step up to 140 % still makes each sound louder. Other variants have louder cues: the
-whoosh of variant 2 stops getting louder at about 136 % at cluster level, and that of variant 3 at about 118 %.
+original sound (cues 0.5), every step up to 140% still makes each sound louder. Other variants have louder cues: the
+whoosh of variant 2 stops getting louder at about 136% at cluster level, and that of variant 3 at about 118%.
 
 The loops follow the ship's speed as a share of full speed. The speed scale multiplies `FullSpeed`. In system view,
 `SystemFullSpeed` takes its place when it is above 0. Variants 1 to 5 set it to `FlightSystemFullSpeed`, because the
@@ -352,9 +352,9 @@ key. Moving the mouse alone does not end them.
 | `ButtonAttachDelay` | `1.0` | seconds | Wait between two tries |
 | `ButtonShrinkTime` | `1.0` | seconds | Longest wait for the hover look to shrink back |
 | `ButtonHoverSound` | `"PCMouseHover"` | sound | Plays when the arrow moves onto the button |
-| `OrbitLabel` | `"Enter Orbit"` | text | Label in system view if the mod's strings do not load |
-| `SystemLabel` | `"Enter System"` | text | Label at cluster level if the mod's strings do not load |
-| `ScanLabel` | `"Scan"` | text | Label on something still to scan if the mod's strings do not load |
+| `OrbitLabel` | `"Enter Orbit"` | text | Label in system view if the mod's string is empty |
+| `SystemLabel` | `"Enter System"` | text | Label at cluster level if the mod's string is empty |
+| `ScanLabel` | `"Scan"` | text | Label on something still to scan if the mod's string is empty |
 
 The movie's stage is 1280 by 720 units. The game shows it whole and centred on the screen, so at 1920 by 1080 a unit
 is 1.5 pixels. With `ButtonY` 655.1 the button sits just above the bottom edge.
@@ -375,7 +375,8 @@ what the A prompt does. On something still to scan, it scans.
 
 The words are the mod's strings 74220025 (Enter System), 74220026 (Enter Orbit) and 74220027 (Scan), in the game's text
 language. They hold Mass Effect 2's words for these buttons. The director reads them when it makes the ship.
-`OrbitLabel`, `SystemLabel` and `ScanLabel` are used only when a string does not load.
+`OrbitLabel`, `SystemLabel` and `ScanLabel` are used only when a string gives nothing. The game log then has a line
+that starts with `Enter button: strings`.
 
 The rest of the button's values describe LE1's movie: `ButtonSymbol`, `ButtonName`, `ButtonArtLeft`, `ButtonArtTop`,
 `ButtonArtWidth`, `ButtonArtHeight`, `ButtonYScale`, `ButtonFieldMid`, `ButtonFieldScale`, `ButtonMouseOffFrame` and
@@ -433,6 +434,6 @@ its level loads again.
 | `VirtualStickX`, `VirtualStickY` | The virtual stick before its cap (1 is a full stick) |
 | `LoadedFlightSound` | The flight sound now loaded, -1 before the first |
 
-A setting multiplier is the stored percent divided by 100, so 1.0 is 100 %. `PeakSpeed` and `PeakMouseRate` keep
+A setting multiplier is the stored percent divided by 100, so 1.0 is 100%. `PeakSpeed` and `PeakMouseRate` keep
 their highest value. Set one to 0 with `live_set` to measure again.
 `PeakMouseRate` grows only while the limiter runs, with `bMousePointer` off and `bLimitMouse` on.

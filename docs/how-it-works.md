@@ -12,7 +12,7 @@ The build makes these packages (`.pcc` files, which hold the game's objects):
 | Package | Holds | Loaded |
 |---|---|---|
 | `Startup_MOD_GalaxyMapNormandy` | the director, the ship light, the settings helper | at startup |
-| `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the mod's name, the settings strings and the button's words, one per language code | at startup |
+| `DLC_MOD_GalaxyMapNormandy_GlobalTlk*` | the mod's name, the settings strings, the number patterns and the button's words, one per language code, with two talk tables each (`GlobalTlk_tlk` and `GlobalTlk_tlk_M`) | at startup |
 | `GalaxyMapNormandy_NOR10` | an empty level with one director actor | with the Normandy's levels |
 | `GalaxyMapNormandy_SFX` | the SR-1 mesh, the engine trail, the sound cues | by the director |
 | `ModSettings_Submenus_GalaxyMapNormandy` | the settings pages | when the player opens them |
@@ -101,9 +101,9 @@ sound does. [tuning.md](tuning.md#engines) has the values.
 Each choice is a percent of the director's default. `GalaxyMapNormandySettings` stores it in slots 100 to 107 and 109
 of the gamer profile's `IntStats` list, a list of whole numbers. Slots 100 to 103 hold the cluster flight speed, turn
 rate, ship response and ship size, and slots 104 to 107 hold the same four for system view. Slot 109 holds the flight
-sound volume plus 1, so that 0 % can be stored. Slot 108 held a setting of a test build: nothing reads it, and Restore
+sound volume plus 1, so that 0% can be stored. Slot 108 held a setting of a test build: nothing reads it, and Restore
 defaults clears it. The game has one profile, so a choice holds for every career and save. LE1CP keeps its FOV in slot
-0. A slot that is 0 or missing means 100 %.
+0. A slot that is 0 or missing means 100%.
 
 The game writes the profile file only now and then, so the menu writes it after each change, as the Options screen
 does. It never saves a profile the game has not read from disk yet, as that would replace the player's options and
@@ -114,18 +114,98 @@ base class is LE1CP's `ModSettingsSubmenu`. The menu package carries a copy of i
 patch's own class ([ASSETS.md](ASSETS.md#the-community-patch-settings-page-class)).
 
 The strings are in [`src/tlk/`](../src/tlk), one file for each of the eight languages. Each line is a string id, a
-tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220027, and they
-start with 7422, the mod's mount. Every file must have exactly the ids of `INT.tsv`, or the build stops.
-
-74220000 is the mod's name. The menu shows it on the row that the `.m3cd` adds, as that row's description title, as
-the page title and as the subtitle of each step page. `NameStrRef` in `AutoLoad.ini` points at it too, and only M3
-reads that. The subtitle is one line that fits about 459 pixels, so a translated name should be about as long as
-"Galaxy Map Normandy".
+tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220029, and they
+start with 7422, the mod's mount. 74220020 is no longer used. Every file must have exactly the ids of `INT.tsv`, or the
+build stops.
 
 The page classes use a string as `$<id>`, and the `.m3cd` row uses 74220000 for its name and 74220022 for its
 description. When a field has literal text, the menu shows it instead of the string id, so a word that should follow
-the language must not be a literal. To add a string, give it the next free id in all eight files. The game's other
-language codes FE, GE, IE, RA and PLPC get copies of FR, DE, IT, RU and PL.
+the language must not be a literal. The code writes only digits. A percent comes from the patterns 74220028 and
+74220029, and the page classes put the number in with `Repl`. To add a string, give it the next free id in all eight
+files.
+
+## Translate the mod
+
+Every word the mod shows in game is a string in its talk tables, so a translation needs no change to the code. Ship
+the translation as your own mod, with its own DLC folder (`DLC_MOD_<name>`). Its `AutoLoad.ini` needs a
+`[ME1DLCMOUNT]` section with a `ModMount` above 7422, this mod's mount. Its `CookedPCConsole` holds the files for your
+language, with exactly the names in the table below.
+
+When two DLC folders hold a file of the same name, LE1 loads the copy from the higher mount. With a mount below 7422,
+the game keeps this mod's text, and nothing says so.
+
+### The files
+
+The files are in `DLC_MOD_GalaxyMapNormandy/CookedPCConsole`. The game reads the file of its text language. Some
+languages have two codes, and their two files are copies: replace both.
+
+| Language | Code | File |
+|---|---|---|
+| English | INT | `DLC_MOD_GalaxyMapNormandy_GlobalTlk.pcc` |
+| French | FR, FE | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_FR.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_FE.pcc` |
+| German | DE, GE | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_DE.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_GE.pcc` |
+| Italian | IT, IE | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_IT.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_IE.pcc` |
+| Spanish | ES | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_ES.pcc` |
+| Polish | PL, PLPC | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_PL.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_PLPC.pcc` |
+| Russian | RU, RA | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_RU.pcc`, `DLC_MOD_GalaxyMapNormandy_GlobalTlk_RA.pcc` |
+| Japanese | JA | `DLC_MOD_GalaxyMapNormandy_GlobalTlk_JA.pcc` |
+
+Each file holds two talk tables, `GlobalTlk_tlk` and `GlobalTlk_tlk_M`. The game reads the first for a female
+Shepard and the second for a male one, so both need every id below. The build makes the files from
+`src/tlk/<code>.tsv` with the toolkit's `lectool tlkpackage`, which writes both tables.
+
+Your file replaces this mod's file whole, so a string it leaves out does not come from this mod's file. Nobody has
+tested a translation mod in game yet. A DLC that defines the same ids in files of other names has not been tested
+either.
+
+### The strings
+
+Each setting has a name and a description. The name shows on the setting's row, as the title of the pane on the right
+and as the title of its step page. The description shows in the pane on the right.
+
+| Id | Where it shows | English |
+|---|---|---|
+| 74220000 | the mod's name: its row in Mod Settings, the title of the pane on the right for that row, the title of the mod's page, the subtitle of each step page | Galaxy Map Normandy |
+| 74220001 | a setting's name | Cluster: flight speed |
+| 74220002 | its description | How fast the ship flies at cluster level, with the controller and with the mouse. The map cursor, and so what is selected, moves at the same speed. |
+| 74220003 | a setting's name | Cluster: turn rate |
+| 74220004 | its description | How fast the ship's nose turns toward where it flies at cluster level. |
+| 74220005 | a setting's name | Cluster: ship response |
+| 74220006 | its description | How closely the ship follows the map cursor at cluster level. Lower values let it glide behind; higher values keep it on the cursor. |
+| 74220007 | a setting's name | Cluster: ship size |
+| 74220008 | its description | Size of the ship at cluster level. |
+| 74220009 | a setting's name | System: flight speed |
+| 74220010 | its description | How fast the ship flies in system view, with the controller and with the mouse. The camera follows the ship there, so the view moves faster too. |
+| 74220011 | a setting's name | System: turn rate |
+| 74220012 | its description | How fast the ship's nose turns toward where it flies in system view. |
+| 74220013 | a setting's name | System: ship response |
+| 74220014 | its description | How closely the ship follows the map cursor in system view. Lower values let it glide behind; higher values keep it on the cursor. |
+| 74220015 | a setting's name | System: ship size |
+| 74220016 | its description | Size of the ship in system view. |
+| 74220017 | the last row of the settings page | Restore defaults |
+| 74220018 | its description | Sets every setting on this page back to 100%. |
+| 74220019 | the subtitle of the settings page | Changes show the next time the map opens. |
+| 74220020 | no longer used: leave it out, and never give the number to a new string | |
+| 74220021 | right of the step in use | Current |
+| 74220022 | the description of the mod's row in Mod Settings | Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, and the volume of its flight sound. The same for every save. |
+| 74220023 | a setting's name | Flight sound volume |
+| 74220024 | its description | How loud the ship's flight sound is on the galaxy map, at both levels: the whoosh, the engine and the drive. 0% turns it off. |
+| 74220025 | the Enter button at cluster level | Enter System |
+| 74220026 | the Enter button in system view | Enter Orbit |
+| 74220027 | the Enter button on something still to scan | Scan |
+| 74220028 | a percent: each setting's value and each step | {0}% |
+| 74220029 | the 100% step, the default | {0}% (default) |
+
+In 74220028 and 74220029, `{0}` is the number. Write a percent as the game does in your language: English writes 100%,
+French 100 % with a no-break space (U+00A0) before the %. Never use U+202F, the narrow no-break space: the game's fonts
+lack it. The mod's name is the subtitle of each step page, a line that fits about 459 pixels, so keep it about as long
+as "Galaxy Map Normandy".
+
+### When a string is missing
+
+If 74220028 or 74220029 has no `{0}`, the pages use the English pattern, and the game log has a line that starts with
+`Percent pattern`. If 74220025, 74220026 or 74220027 is empty, the button shows the English word, and the game log has
+a line that starts with `Enter button: strings`.
 
 ## Sound
 
@@ -150,7 +230,7 @@ plays a loop wave once, so the director restarts each loop with a crossfade. [tu
 | `src/GalaxyMapNormandySettings.uc` | the settings in the gamer profile | |
 | `src/ModSettingsSubmenu_*.uc` | the settings page, and the steps of one setting | |
 | `src/sound/flight_sounds.py` | the waves of the flight sound variants | [ASSETS.md](ASSETS.md#flight-sound-variants) |
-| `src/tlk/*.tsv` | the mod's name and the settings strings, one file per language | |
+| `src/tlk/*.tsv` | the mod's name, the settings strings, the number patterns and the button's words, one file per language | [Translate the mod](#translate-the-mod) |
 | `mod/moddesc.ini` | the mod's description for M3 | [building.md](building.md) |
 | `mod/README.txt` | the read-me in the download | |
 | `mod/.../AutoLoad.ini` | the startup package, the talk table, the mod's name, the mount | |

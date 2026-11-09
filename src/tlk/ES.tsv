@@ -17,13 +17,15 @@
 74220015	Sistema: tamaño de la nave
 74220016	Tamaño de la nave en el nivel del sistema.
 74220017	Valores predeterminados
-74220018	Todos los ajustes de esta página vuelven al 100 %.
+74220018	Todos los ajustes de esta página vuelven al 100%.
 74220019	Verás los cambios al volver a abrir el mapa.
-74220020	(predeterminado)
 74220021	Actual
 74220022	Velocidad de vuelo y de giro, respuesta y tamaño de la nave en el mapa de la galaxia, en el nivel del cúmulo y en el del sistema, y volumen del sonido de vuelo. Para todas las partidas.
 74220023	Volumen del sonido de vuelo
-74220024	Volumen del sonido de la nave en el mapa de la galaxia, en ambos niveles: el silbido al arrancar, el motor y la propulsión. Al 0 % se desactiva.
+74220024	Volumen del sonido de la nave en el mapa de la galaxia, en ambos niveles: el silbido al arrancar, el motor y la propulsión. Al 0% se desactiva.
 74220025	Entrar en el sistema
 74220026	Entrar en órbita
 74220027	Explorar
+# Number patterns: {0} is the number, which the code puts in. 74220028 is a percent, 74220029 the default step.
+74220028	{0}%
+74220029	{0}% (predeterminado)

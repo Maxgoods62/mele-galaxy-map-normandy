@@ -211,7 +211,7 @@ var float ButtonAttachDelay;
 // The longest wait, in seconds, for the shrink back from the hover look to end.
 var float ButtonShrinkTime;
 var string ButtonHoverSound;
-// English words for when the mod's strings do not load (ReadLabels).
+// English words for when the mod's strings give nothing; ReadLabels logs it.
 var string OrbitLabel;
 var string SystemLabel;
 var string ScanLabel;
@@ -1619,12 +1619,17 @@ public function bool PointerOnEnterButton(Canvas C, float PointerX, float Pointe
 }
 
 // The button's words are Mass Effect 2's own, from the mod's strings (src/tlk), so the game's language picks them and
-// the movie's font draws every one of them. The English defaults stand in if the strings did not load.
+// the movie's font draws every one of them. An empty string gets the English default, and the log says so.
 public function ReadLabels()
 {
     SystemText = string($74220025);
     OrbitText = string($74220026);
     ScanText = string($74220027);
+    if (SystemText == "" || OrbitText == "" || ScanText == "")
+    {
+        LogInternal("Enter button: strings 74220025-74220027 gave '" $ SystemText $ "', '" $ OrbitText $ "', '"
+            $ ScanText $ "': English stands in for each empty one", 'GalaxyMapNormandy');
+    }
     if (SystemText == "")
     {
         SystemText = SystemLabel;

@@ -9,6 +9,16 @@ became v1.0 with the changes marked v1.0 in that list. The version number is `mo
   page and the subtitle of each setting's page) comes from the mod's strings, id 74220000, like the rest of its text.
   Before, it was fixed English text, so a translated name in the language files never showed. Reported by a
   translator.
+- The percents on the settings pages take their form from the mod's strings: 74220028 holds the percent ({0}% in
+  English, {0} % in French) and 74220029 the default step ({0}% (default)). Before, the code wrote 100 % in every
+  language and added (default) after it, so a translation could change neither. English, German, Italian, Spanish,
+  Polish, Russian and Japanese now show 100%, as the game writes a percent in those languages. French keeps 100 %, with
+  a space that does not break. The descriptions of Restore defaults and Flight sound volume write their percents the
+  same way. String 74220020 is no longer used.
+- If the Enter Orbit button's words are missing from the strings, the game log says so when the English words stand
+  in.
+- The docs list every string id and the files for each language code, for translation mods
+  ([docs/how-it-works.md](docs/how-it-works.md#translate-the-mod)).
 
 ## v1.3 (2026-11-08)
 

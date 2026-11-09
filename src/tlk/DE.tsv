@@ -17,13 +17,15 @@
 74220015	System: Schiffsgröße
 74220016	Größe des Schiffs auf System-Ebene.
 74220017	Standard wiederherstellen
-74220018	Setzt alle Einstellungen dieser Seite auf 100 % zurück.
+74220018	Setzt alle Einstellungen dieser Seite auf 100% zurück.
 74220019	Gilt ab dem nächsten Öffnen der Karte.
-74220020	(Standard)
 74220021	Aktuell
 74220022	Fluggeschwindigkeit, Drehgeschwindigkeit, Reaktion und Größe des Schiffs auf der Galaxie-Karte, auf Cluster- und System-Ebene, und die Lautstärke seines Fluggeräuschs. Gilt für alle Spielstände.
 74220023	Fluggeräusch: Lautstärke
-74220024	Legt fest, wie laut das Fluggeräusch des Schiffs auf der Galaxie-Karte ist, auf beiden Ebenen: das Zischen beim Start, das Triebwerk und der Antrieb. Bei 0 % ist es aus.
+74220024	Legt fest, wie laut das Fluggeräusch des Schiffs auf der Galaxie-Karte ist, auf beiden Ebenen: das Zischen beim Start, das Triebwerk und der Antrieb. Bei 0% ist es aus.
 74220025	System anfliegen
 74220026	Umlaufbahn anfliegen
 74220027	Scannen
+# Number patterns: {0} is the number, which the code puts in. 74220028 is a percent, 74220029 the default step.
+74220028	{0}%
+74220029	{0}% (Standard)
