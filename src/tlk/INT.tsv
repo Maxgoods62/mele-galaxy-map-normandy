@@ -20,12 +20,12 @@
 74220015	System: ship size
 74220016	Size of the ship in system view.
 74220017	Restore defaults
-74220018	Sets every setting on this page back to 100%.
+74220018	Sets every setting on this page back to its default.
 74220019	Changes show the next time the map opens.
 # 74220020 held "(default)" in v1.3 and earlier. 74220029 holds that word now, with its number. The id is retired:
 # no file has it, and no new string may take it.
 74220021	Current
-74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, and the volume of its flight sound. The same for every save.
+74220022	Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, the volume of its flight sound, and the mass relay movie. The same for every save.
 74220023	Flight sound volume
 74220024	How loud the ship's flight sound is on the galaxy map, at both levels: the whoosh, the engine and the drive. 0% turns it off.
 # The Enter button on the galaxy map: Mass Effect 2's own words in every language (LE2's strings 136218,
@@ -36,3 +36,9 @@
 # Number patterns: {0} is the number, which the code puts in. 74220028 is a percent, 74220029 the default step.
 74220028	{0}%
 74220029	{0}% (default)
+# The mass relay movie row of the settings page: its name, its description, and its value On or Off (the game's
+# own words, strings 184267 and 184268).
+74220030	Mass relay movie
+74220031	Plays the mass relay movie when you pick another cluster on the galaxy map. Off: the ship jumps there without it.
+74220032	On
+74220033	Off

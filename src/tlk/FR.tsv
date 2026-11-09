@@ -17,10 +17,10 @@
 74220015	Système : taille du vaisseau
 74220016	Règle la taille du vaisseau au niveau du système.
 74220017	Paramètres par défaut
-74220018	Rétablit tous les paramètres de cette page à 100 %.
+74220018	Rétablit tous les paramètres de cette page à leur valeur par défaut.
 74220019	Effet à la prochaine ouverture de la carte.
 74220021	Actuel
-74220022	Vitesse de vol et de rotation, réactivité et taille du vaisseau sur la carte de la galaxie, au niveau du secteur et du système, et volume du son de vol. Paramètres communs à toutes les sauvegardes.
+74220022	Vitesse de vol et de rotation, réactivité et taille du vaisseau sur la carte de la galaxie, au niveau du secteur et du système, volume du son de vol et cinématique du relais cosmodésique. Paramètres communs à toutes les sauvegardes.
 74220023	Volume du son de vol
 74220024	Règle le volume du son du vaisseau sur la carte de la galaxie, aux deux niveaux : le souffle, le moteur et la propulsion. À 0 %, le son est coupé.
 74220025	Entrer dans le système
@@ -29,3 +29,7 @@
 # Number patterns: {0} is the number, which the code puts in. 74220028 is a percent, 74220029 the default step.
 74220028	{0} %
 74220029	{0} % (par défaut)
+74220030	Cinématique du relais cosmodésique
+74220031	Lance la cinématique du relais cosmodésique quand un autre secteur est choisi sur la carte de la galaxie. Sur Non, le vaisseau s'y rend sans elle.
+74220032	Oui
+74220033	Non

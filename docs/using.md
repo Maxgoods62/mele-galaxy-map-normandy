@@ -17,6 +17,16 @@ The game's 2D "you are here" marker, a small ship outline in a ring, is gone at 
 ship flies. The name labels stay. At galaxy level and in planet view, there is no ship and the map works as in the
 normal game: the marker shows at galaxy level, and the game draws none in planet view.
 
+The mod also moves the jump to another cluster. In the normal game, picking another cluster at galaxy level only
+zooms in, and the mass relay movie plays later, when you pick a system there. With the mod, picking another cluster is
+the jump: the map zooms in, the Normandy leaves dock if it is docked, the relay movie plays, and the map comes back at
+cluster level with the ship at the cluster's relay system. There is no travel prompt. Picking your own cluster still
+just zooms in, and moves between systems of one cluster work as in the normal game. The Mass relay movie setting
+turns the movie off.
+
+A cluster added by another mod has no relay system the mod knows of. Picking it zooms in as in the normal game, and
+the movie plays when you pick a system there.
+
 ## Controls
 
 These controls work at cluster level and in system view.
@@ -114,13 +124,14 @@ Community Patch, and the mod's row is on its first page.
 
 ### The settings page
 
-The page has Flight sound volume first, then four settings for cluster level, the same four for system view, and
-Restore defaults. The rows carry the level in their names, such as Cluster: flight speed and System: flight speed. Each
-setting shows its value on the right, such as 100%.
+The page has Flight sound volume first, then Mass relay movie, four settings for cluster level, the same four for
+system view, and Restore defaults. The rows carry the level in their names, such as Cluster: flight speed and System:
+flight speed. Each setting shows its value on the right, such as 100% or On.
 
 | Setting | What it changes |
 |---|---|
 | Flight sound volume | how loud the whoosh, the engine and the drive are, at both levels |
+| Mass relay movie | On or Off: whether the relay movie plays when you pick another cluster |
 | Flight speed | how fast the ship and the map cursor move |
 | Turn rate | how fast the ship's nose turns toward where it flies |
 | Ship response | how closely the ship follows the map cursor |
@@ -139,7 +150,11 @@ Current, and the list opens on it. Pick a step to use it. Back returns to the se
 
 Flight sound volume has its own list, from 0% to 140% in steps of 10%. 0% turns the flight sound off.
 
-Restore defaults, the last row of the page, sets all nine settings back to 100%.
+Mass relay movie has no list: pick the row to switch it between On and Off. Off, the jump still happens, without the
+movie. If the Normandy is docked, the scene of it leaving dock still plays.
+
+Restore defaults, the last row of the page, sets the nine percent settings back to 100% and turns the mass relay movie
+back on.
 
 ### Languages of the pages
 
@@ -155,7 +170,7 @@ A translation mod can replace every word of the pages and of the Enter button. T
 
 The mod keeps your choices in the game's gamer profile. This is the file `Save\ME1\PROFILE\GamerProfile.pcsav` in
 `Documents\BioWare\Mass Effect Legendary Edition`. So your choices are the same for every career and every save. The
-mod writes the file as soon as you pick a step or Restore defaults.
+mod writes the file as soon as you pick a step, the Mass relay movie row or Restore defaults.
 
 Your choices apply the next time you open the galaxy map.
 

@@ -17,10 +17,10 @@
 74220015	System: rozmiar statku
 74220016	Dostosowuje rozmiar statku w widoku systemu.
 74220017	Przywróć ustawienia domyślne
-74220018	Przywraca wszystkie ustawienia na tej stronie do 100%.
+74220018	Przywraca wszystkie ustawienia na tej stronie do wartości domyślnych.
 74220019	Zmiany widać po ponownym otwarciu mapy.
 74220021	Aktualne
-74220022	Prędkość lotu, szybkość obrotu, reakcja i rozmiar statku na mapie galaktyki, na poziomie gromady i w widoku systemu, oraz głośność dźwięku lotu. Wspólne dla wszystkich zapisów.
+74220022	Prędkość lotu, szybkość obrotu, reakcja i rozmiar statku na mapie galaktyki, na poziomie gromady i w widoku systemu, głośność dźwięku lotu oraz film przekaźnika masy. Wspólne dla wszystkich zapisów.
 74220023	Głośność dźwięku lotu
 74220024	Dostosowuje głośność dźwięku statku na mapie galaktyki, na obu poziomach: świst przy starcie, silnik i napęd. Przy 0% dźwięk jest wyłączony.
 74220025	Przejdź do układu
@@ -29,3 +29,7 @@
 # Number patterns: {0} is the number, which the code puts in. 74220028 is a percent, 74220029 the default step.
 74220028	{0}%
 74220029	{0}% (domyślne)
+74220030	Film przekaźnika masy
+74220031	Odtwarza film przekaźnika masy po wybraniu innej gromady na mapie galaktyki. Przy Wył. statek przelatuje tam bez filmu.
+74220032	Wł.
+74220033	Wył.

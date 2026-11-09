@@ -54,6 +54,36 @@ planet view it is set back to 100, the value of a new movie. The map's interface
 clip is the 2D "you are here" marker. The movie keeps setting the clip's visibility, but never its alpha. The name
 labels are another clip, so they stay.
 
+### The jump to another cluster
+
+In the normal game, a pick at galaxy level only zooms in, and the travel to another cluster starts at the system pick,
+through the galaxy map's Kismet (`BIOA_NOR10_03_DSG`, sequence `GalaxyMap`). Its `SystemTransition` event runs the
+travel: pause the map, the undock scene when docked, the relay movie in `TravelScene`, plot int 45
+(`Previous_Active_World`) := 13, the arrival events, and the map rebuilt.
+
+The director starts that same travel at the cluster pick. When the zoom from galaxy level ends in a cluster that does
+not hold the Normandy, and the zoom has settled, it sets plot int 13 to the cluster's relay system (`ClusterHosts` in
+[tuning.md](tuning.md#the-jump)) and plot int 105 (the cluster being viewed) to the cluster. As the game does for a
+system pick, it then turns `WorldInfo.bPlayersOnly` off and activates the `SystemTransition` event. The camera's
+selected system stays empty, or the map's rebuild after the travel would write plot int 13 back from it. The map comes
+back at cluster level, and the director parks the ring and the ship on the relay system.
+
+The director tracks the jump in one state: none, zooming (waiting for the zoom to settle), sent (the event was
+activated) and away (the travel closed the map). It drops the jump when the zoom changes target, the map leaves cluster
+level, a message box opens or a timeout runs out. If the travel never started, it puts plot ints 13 and 105 back. The
+travel is done when plot int 45 changes to the target: with the movie off, undocked and with no arrival event, the
+Kismet pauses and resumes the map in one frame, so the director never sees it closed.
+
+The director finds the event as the game does: it walks the game sequence, the sequences in it and the streamed levels'
+sequences. A cluster with no entry in `ClusterHosts`, such as one that another mod adds, logs a line once and stays as
+in the normal game.
+
+The Mass relay movie setting rewires `TravelScene` each time the map opens. Off, the two outputs of
+`SeqCond_CompareInt_1` that lead to the movie (`BioSeqAct_BioToggleCinematicMode_1`) go to `BioSeqAct_BlackScreen_2`,
+the step after the movie, which turns off the black screen an undock leaves on; on, they go back. They never go to the
+sequence's end, which would leave the screen black for good after an undock. Loading the level restores the links. If
+another mod has changed those links, the director leaves them and logs a line.
+
 ### Mouse and controller
 
 The controller keeps the game's own control, and a stick move hides the arrow. Mouse movement goes to the director's
@@ -98,12 +128,12 @@ sound does. [tuning.md](tuning.md#engines) has the values.
 
 ## Settings
 
-Each choice is a percent of the director's default. `GalaxyMapNormandySettings` stores it in slots 100 to 107 and 109
-of the gamer profile's `IntStats` list, a list of whole numbers. Slots 100 to 103 hold the cluster flight speed, turn
-rate, ship response and ship size, and slots 104 to 107 hold the same four for system view. Slot 109 holds the flight
-sound volume plus 1, so that 0% can be stored. Slot 108 held a setting of a test build: nothing reads it, and Restore
-defaults clears it. The game has one profile, so a choice holds for every career and save. LE1CP keeps its FOV in slot
-0. A slot that is 0 or missing means 100%.
+`GalaxyMapNormandySettings` stores the choices in the gamer profile's `IntStats` list, a list of whole numbers that
+grows when a slot past its end is written. Slots 100 to 103 hold the cluster flight speed, turn rate, ship response and
+ship size, and slots 104 to 107 hold the same four for system view, each as a percent of the director's default. Slot
+109 holds the flight sound volume plus 1, so that 0% can be stored. In those nine slots, 0 or a missing slot means
+100%. Slot 108 is 1 when the mass relay movie is off, and 0 or missing when it is on. LE1CP keeps its FOV in slot 0.
+The game has one profile, so a choice holds for every career and save.
 
 The game writes the profile file only now and then, so the menu writes it after each change, as the Options screen
 does. It never saves a profile the game has not read from disk yet, as that would replace the player's options and
@@ -114,7 +144,7 @@ base class is LE1CP's `ModSettingsSubmenu`. The menu package carries a copy of i
 patch's own class ([ASSETS.md](ASSETS.md#the-community-patch-settings-page-class)).
 
 The strings are in [`src/tlk/`](../src/tlk), one file for each of the eight languages. Each line is a string id, a
-tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220029, and they
+tab and the text, in UTF-8, and lines that start with `#` are comments. The ids are 74220000 to 74220033, and they
 start with 7422, the mod's mount. 74220020 is no longer used. Every file must have exactly the ids of `INT.tsv`, or the
 build stops.
 

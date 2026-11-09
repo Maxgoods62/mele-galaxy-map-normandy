@@ -9,13 +9,16 @@ Class ModSettingsSubmenu_GalaxyMapNormandy extends ModSettingsSubmenu
 // its sr field, so a word that should follow the language is never a literal in an s field: it goes in the sr field, or
 // in the s field as string($id). The mod's name is $74220000: the page title, each step page's subtitle, and the root
 // row in the .m3cd. A row's value on the right is the percent pattern $74220028 with the digits put in (PercentPattern,
-// PercentText), so a language writes its percent its own way.
+// PercentText), so a language writes its percent its own way. The Mass relay movie row has no step page: its action
+// turns the cinematic on or off, and its value is the game's own On and Off in the mod's strings ($74220032, $74220033).
 
+var transient int RelayRow;
 var transient int RestoreRow;
 
 public function bool OnRefreshMenu(Object outerMenu)
 {
     local Class<GalaxyMapNormandySettings> S;
+    local ModSettingItemData Relay;
     local ModSettingItemData Item;
     local string Pattern;
 
@@ -23,6 +26,19 @@ public function bool OnRefreshMenu(Object outerMenu)
     Pattern = Class'ModSettingsSubmenu_GalaxyMapNormandyStep'.static.PercentPattern();
     menuItems.Length = 0;
     AddSetting(S.default.FlightVolumeId, $74220023, $74220024, Pattern);
+    RelayRow = menuItems.Length;
+    Relay.srLeftText = $74220030;
+    if (S.static.IsRelayMovieOn())
+    {
+        Relay.srRightText = $74220032;
+    }
+    else
+    {
+        Relay.srRightText = $74220033;
+    }
+    Relay.srDescriptionTitleText = $74220030;
+    Relay.srDescriptionText = $74220031;
+    menuItems.AddItem(Relay);
     AddSetting(S.default.ClusterSpeedId, $74220001, $74220002, Pattern);
     AddSetting(S.default.ClusterTurnId, $74220003, $74220004, Pattern);
     AddSetting(S.default.ClusterResponseId, $74220005, $74220006, Pattern);
@@ -62,7 +78,11 @@ public function AddSetting(int Id, stringref Label, stringref Description, strin
 // The menu then applies the row (it writes nothing: no plot ids on it) and refreshes the page.
 public function bool OnActionButtonPressed(Object outerMenu, int selectionIndex)
 {
-    if (selectionIndex == RestoreRow)
+    if (selectionIndex == RelayRow)
+    {
+        Class'GalaxyMapNormandySettings'.static.SetRelayMovie(!Class'GalaxyMapNormandySettings'.static.IsRelayMovieOn());
+    }
+    else if (selectionIndex == RestoreRow)
     {
         Class'GalaxyMapNormandySettings'.static.ResetAll();
     }

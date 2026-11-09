@@ -7,6 +7,10 @@ Mass Effect 2 too: hold the left button to fly toward the arrow, and click to
 select. An Enter Orbit button shows when the ship is on something you can
 enter. The controller keeps the normal game's controls.
 
+At galaxy level, picking another cluster is the jump: the mass relay movie
+plays, and the map comes back at cluster level with the ship at that
+cluster's relay.
+
 You need:
 - Mass Effect Legendary Edition
 - the LE1 Community Patch 2.0 or later
@@ -25,8 +29,8 @@ list of installed DLC mods.
 
 Settings: pause the game, open Mod Settings and pick Galaxy Map Normandy. You
 can set the ship's flight speed, turn rate, response and size, and the volume
-of its flight sound. Your choices hold for every save and apply the next time
-the map opens.
+of its flight sound, and turn the mass relay movie off. Your choices hold for
+every save and apply the next time the map opens.
 
 Source code and documentation:
 https://github.com/Maxgoods62/mele-galaxy-map-normandy

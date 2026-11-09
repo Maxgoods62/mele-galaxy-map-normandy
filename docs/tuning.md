@@ -5,7 +5,7 @@ The director is the actor that runs the ship, its sound and the mouse while the 
 on this page is a property of that class, and its default is in the `defaultproperties` block at the end of the file.
 
 You can try a value in a running game, where the change lasts for a while. To keep it, you change its default and
-build the mod again. The nine in-game settings work on top of some of these values.
+build the mod again. The in-game settings work on top of some of these values.
 
 Speeds are in the game's distance units per second. Sizes in pixels are for a screen 1080 pixels high, and they scale
 with the height of your screen.
@@ -13,7 +13,8 @@ with the height of your screen.
 ## In-game settings
 
 The Galaxy Map Normandy page of the Mod Settings Menu has four settings for each map level, and Flight sound volume for
-both. Each one multiplies a director value.
+both. Each one multiplies a director value. The page's Mass relay movie row is not a director value: it changes the
+map's travel scene ([The jump](#the-jump)).
 
 | Setting | At cluster level | In system view |
 |---|---|---|
@@ -24,10 +25,9 @@ both. Each one multiplies a director value.
 | Flight sound volume | the flight sound's volume ([Sound](#sound)) | the same |
 
 Each setting is a percent of the default: 50, 75, 100, 125, 150 or 200, and Flight sound volume 0 to 140 in steps of
-10. The director reads the nine settings once,
-each time the map opens. It multiplies a value by its setting whenever it uses the value, and never writes the result
-back. So a value you change in a running game still gets the setting on top. [using.md](using.md) shows the settings
-pages and says where the game keeps them.
+10. The director reads the settings once, each time the map opens. It multiplies a value by its setting whenever it
+uses the value, and never writes the result back. So a value you change in a running game still gets the setting on
+top. [using.md](using.md) shows the settings pages and says where the game keeps them.
 
 Flight speed reaches further than the other settings. The flight speed value times its setting is the speed scale of
 that map level, which the director keeps in `SpeedScale`. The speed scale multiplies the game's own cursor speed, the
@@ -414,6 +414,32 @@ than the controller. The limiter scales the counts down and caps their rate.
 | `MouseScale` | `0.4` | factor | Factor on the raw mouse counts |
 | `MouseMaxRate` | `480.0` | counts/s | Cap on the scaled counts |
 
+## The jump
+
+At galaxy level, a pick of another cluster sends the Normandy there through the map's own travel, with the relay
+movie, and the map comes back at cluster level. [how-it-works.md](how-it-works.md#the-jump-to-another-cluster) says
+how.
+
+| Value | Default | Unit | What it does |
+|---|---|---|---|
+| `bClusterJump` | `TRUE` | on or off | Makes a pick of another cluster the jump. Off, the pick only zooms in |
+| `ClusterHosts` | 22 numbers | system numbers | The relay system of each cluster |
+| `JumpSettleTime` | `0.1` | seconds | How long the map stays still after the zoom before the jump |
+| `JumpZoomTimeout` | `5.0` | seconds | Longest wait for the zoom to end |
+| `JumpSentTimeout` | `2.0` | seconds | Longest wait for the travel to start |
+| `TravelScenePath` | the `TravelScene` sequence | object path | Where the Mass relay movie setting changes the links |
+
+`ClusterHosts` has one number per cluster, in the order of the cluster numbers, counted from 0: the number at index
+8 is for `Cluster08`. Each number is the system the Normandy arrives at, the 02 of `System02`, and 0 means none. The
+defaults are the systems that hold the clusters' mass relays: the first system of most clusters, and another one in six
+clusters, such as system 7 in cluster 9. A pick of a cluster with no entry, or with 0, only zooms in, and the game log
+gets a line that contains `No relay system known`. A cluster that another mod adds is in that case.
+
+The director reads `bClusterJump` each frame and `ClusterHosts` at each pick, so a live change shows at the next pick.
+It reads `TravelScenePath` when the map opens. The timeouts count seconds of open map. When one runs out, the jump is
+dropped, the map stays at cluster level as in the normal game, and the game log gets a line that starts with
+`Jump to Active_World`.
+
 ## Values to read
 
 The director writes these values itself. `live_get` reads them while the Normandy is loaded, and they start over when
@@ -433,6 +459,8 @@ its level loads again.
 | `FlySpeed` | Speed of the heading model, in units/s |
 | `VirtualStickX`, `VirtualStickY` | The virtual stick before its cap (1 is a full stick) |
 | `LoadedFlightSound` | The flight sound now loaded, -1 before the first |
+| `JumpState` | Where a jump is: `EJS_None`, `EJS_Zooming`, `EJS_Sent` or `EJS_Away` |
+| `bRelayMovie` | `true` when the Mass relay movie setting is on, read when the map opens |
 
 A setting multiplier is the stored percent divided by 100, so 1.0 is 100%. `PeakSpeed` and `PeakMouseRate` keep
 their highest value. Set one to 0 with `live_set` to measure again.

@@ -19,6 +19,10 @@ language, under the same names, at a mount above 7422 that no other mod uses.
    they replace.
 4. Install your mod with M3, with the game closed. Galaxy Map Normandy stays installed.
 
+A new version of this mod can add ids or change their English text, and its entry in the
+[CHANGELOG](../CHANGELOG.md) lists them. Your files replace this mod's files whole, so an id they lack loses its text:
+build your files again from the new version's files.
+
 ## The files
 
 The game reads the file of its text language.
@@ -43,7 +47,9 @@ both French files) with the toolkit's `lectool tlkpackage`, which writes both ta
 and the other files in `src/tlk/` hold the same ids in each language. The table below says where each one shows.
 
 Each setting has a name and a description. The name shows on the setting's row, as the title of the pane on the right
-and as the title of its step page. The description shows in the pane on the right.
+and as the title of its step page. The description shows in the pane on the right. Mass relay movie has no step
+page: its row shows 74220032 (On) or 74220033 (Off). These hold the game's own words for On and Off, string ids 184267
+and 184268 in your language's game files. The description, 74220031, names the Off word too: keep the two the same.
 
 | Id | Where it shows | English |
 |---|---|---|
@@ -65,11 +71,11 @@ and as the title of its step page. The description shows in the pane on the righ
 | 74220015 | a setting's name | System: ship size |
 | 74220016 | its description | Size of the ship in system view. |
 | 74220017 | the last row of the settings page | Restore defaults |
-| 74220018 | its description | Sets every setting on this page back to 100%. |
+| 74220018 | its description | Sets every setting on this page back to its default. |
 | 74220019 | the subtitle of the settings page | Changes show the next time the map opens. |
 | 74220020 | no longer used: leave it out, and never give the number to a new string | |
 | 74220021 | right of the step in use | Current |
-| 74220022 | the description of the mod's row in Mod Settings | Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, and the volume of its flight sound. The same for every save. |
+| 74220022 | the description of the mod's row in Mod Settings | Flight speed, turn rate, response and size of the ship on the galaxy map, at cluster level and in system view, the volume of its flight sound, and the mass relay movie. The same for every save. |
 | 74220023 | a setting's name | Flight sound volume |
 | 74220024 | its description | How loud the ship's flight sound is on the galaxy map, at both levels: the whoosh, the engine and the drive. 0% turns it off. |
 | 74220025 | the Enter button at cluster level | Enter System |
@@ -77,6 +83,10 @@ and as the title of its step page. The description shows in the pane on the righ
 | 74220027 | the Enter button on something still to scan | Scan |
 | 74220028 | a percent: each setting's value and each step | {0}% |
 | 74220029 | the 100% step, the default | {0}% (default) |
+| 74220030 | a setting's name | Mass relay movie |
+| 74220031 | its description | Plays the mass relay movie when you pick another cluster on the galaxy map. Off: the ship jumps there without it. |
+| 74220032 | the value of Mass relay movie when it plays | On |
+| 74220033 | the value of Mass relay movie when it does not | Off |
 
 In 74220028 and 74220029, `{0}` is the number. Write a percent as the game does in your language: English writes 100%,
 French 100 % with a no-break space (U+00A0) before the %. Never use U+202F, the narrow no-break space: the game's fonts
@@ -85,7 +95,7 @@ lack it.
 The mod's name is also the subtitle of each step page, a line about 459 pixels wide: keep it about as long as "Galaxy
 Map Normandy".
 
-Ids 74220030 to 74229999 are kept for this mod's later strings, and 74220020 is retired: leave them out of your
+Ids 74220034 to 74229999 are kept for this mod's later strings, and 74220020 is retired: leave them out of your
 files.
 
 ## When a string is missing

@@ -49,12 +49,16 @@ can enter. At galaxy level and in planet view, the map works as in the normal ga
 shows at galaxy level. At cluster and system level the ship takes its place, and the name labels stay. All controls:
 [docs/using.md](docs/using.md#controls).
 
+At galaxy level, picking another cluster is the jump: the mass relay movie plays, and the map comes back at cluster
+level with the ship at that cluster's relay. Moves inside a cluster work as in the normal game.
+
 ## Settings
 
 Pause the game, open Mod Settings and pick Galaxy Map Normandy. You can set the ship's flight speed, turn rate,
 response and size, from 50% to 200%, and the volume of its flight sound, from 0% to 140%. Cluster level and system
-view have separate settings, except for the volume. Your choices hold for
-every save and apply the next time the map opens. Details: [docs/using.md](docs/using.md#settings).
+view have separate settings, except for the volume. The Mass relay movie row turns the movie off: the jump still
+happens, with no movie. Your choices hold for every save and apply the next time the map opens. Details:
+[docs/using.md](docs/using.md#settings).
 
 ## Compatibility
 

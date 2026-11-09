@@ -5,6 +5,15 @@ became v1.0 with the changes marked v1.0 in that list. The version number is `mo
 
 ## Unreleased
 
+- At galaxy level, picking another cluster is now the jump. The map zooms in, the Normandy leaves dock if it is docked,
+  the mass relay movie plays, and the map comes back at cluster level with the ship at that cluster's relay system.
+  There is no travel prompt. Before, as in the normal game, the pick only zoomed in, and the movie played later, at
+  the pick of a system there. Picking your own cluster and moves inside a cluster work as before. A cluster that
+  another mod adds still works as in the normal game.
+- A new setting, Mass relay movie, turns the relay movie off: the jump still happens, without the movie. It is on by
+  default, and Restore defaults turns it back on.
+- For translators: new ids 74220030 to 74220033 (the Mass relay movie row), and new English text in 74220018 (the
+  Restore defaults description) and 74220022 (the description of the mod's row in Mod Settings).
 - The ship, its engine trail and its flight sounds stay in memory only while the galaxy map is open. Before, they stayed
   loaded after the map closed, until the player left the Normandy.
 - They take about 3 MB of memory instead of 28 MB. The starfield the ship's windows reflect is now compressed, 256 pixels
